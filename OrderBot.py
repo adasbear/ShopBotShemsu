@@ -1,6 +1,8 @@
+import os
 import sqlite3
 import logging
 from datetime import datetime
+from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import (
@@ -8,28 +10,42 @@ from telegram.ext import (
     CallbackQueryHandler, filters, ContextTypes, ConversationHandler
 )
 
-# --- CONFIGURATION ---
-TOKEN = "8783688125:AAEBGTQYkDEo925gQXslKSX2atPl6IDuf7k"
-ADMIN_ID = 5970769337
+# Load environment variables
+load_dotenv()
+TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 # States
-REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, BROADCAST_TEXT, GIVING_FEEDBACK = range(7)
+(REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, 
+ CONFIRM_ORDER, BROADCAST_TEXT, GIVING_FEEDBACK, 
+ EDIT_MENU_PRICE, ADD_ITEM_NAME, ADD_ITEM_PRICE) = range(10)
 
-# Menu with Prices
-FOOD_MENU = {
-    "🍔 Burger": 5.0, "🍕 Pizza": 8.0, "🍟 Fries": 2.5, "🥤 Coke": 1.5, "🧃 Juice": 2.0
-}
-
-# --- DATABASE SETUP ---
+# --- DATABASE LOGIC ---
 def init_db():
     conn = sqlite3.connect('food_bot.db')
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, full_name TEXT, username TEXT)')
     c.execute('CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, item TEXT, qty INTEGER, status TEXT, timestamp DATETIME)')
     c.execute('CREATE TABLE IF NOT EXISTS feedback (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, name TEXT, msg TEXT)')
+    # New Table for Dynamic Menu
+    c.execute('CREATE TABLE IF NOT EXISTS menu (name TEXT PRIMARY KEY, price REAL)')
+    
+    # Seed initial menu if empty
+    c.execute("SELECT COUNT(*) FROM menu")
+    if c.fetchone()[0] == 0:
+        initial_menu = [("🍔 Burger", 5.0), ("🍕 Pizza", 8.0), ("🍟 Fries", 2.5), ("🥤 Coke", 1.5)]
+        c.executemany("INSERT INTO menu VALUES (?, ?)", initial_menu)
+    
     conn.commit()
     conn.close()
 
+def get_menu():
+    conn = sqlite3.connect('food_bot.db')
+    menu = {row[0]: row[1] for row in conn.execute("SELECT name, price FROM menu").fetchall()}
+    conn.close()
+    return menu
+
+# --- KEYBOARDS ---
 def get_main_keyboard(user_id):
     buttons = [["🍽 Menu", "👤 Profile"], ["🧾 My Orders", "💬 Feedback"], ["📋 Commands"]]
     if user_id == ADMIN_ID:
@@ -57,13 +73,14 @@ async def register_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn.execute("INSERT OR REPLACE INTO users VALUES (?, ?, ?)", (user_id, full_name, update.effective_user.username))
     conn.commit()
     conn.close()
-    await update.message.reply_text("✅ Registration successful!", reply_markup=get_main_keyboard(user_id))
+    await update.message.reply_text("✅ Registered!", reply_markup=get_main_keyboard(user_id))
     return ConversationHandler.END
 
-# --- ORDERING FLOW ---
+# --- ORDERING SYSTEM (Dynamic) ---
 async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    current_menu = get_menu()
     context.user_data['session_items'] = []
-    kb = [[InlineKeyboardButton(f"{k} - ${v}", callback_data=f"order_{k}")] for k, v in FOOD_MENU.items()]
+    kb = [[InlineKeyboardButton(f"{k} - ${v}", callback_data=f"order_{k}")] for k, v in current_menu.items()]
     await update.message.reply_text("<b>🍴 SELECT ITEMS</b>", reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
     return MENU_SELECTION
 
@@ -80,8 +97,9 @@ async def handle_qty(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Enter a valid number.")
         return QTY_INPUT
     
+    current_menu = get_menu()
     item = context.user_data['current_item']
-    context.user_data['session_items'].append({'item': item, 'qty': int(qty), 'price': FOOD_MENU[item]})
+    context.user_data['session_items'].append({'item': item, 'qty': int(qty), 'price': current_menu[item]})
     total = sum(i['qty'] * i['price'] for i in context.user_data['session_items'])
     
     kb = [[InlineKeyboardButton("➕ Add More", callback_data="add_more")],
@@ -93,15 +111,16 @@ async def review_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     if query.data == "add_more":
-        kb = [[InlineKeyboardButton(f"{k}", callback_data=f"order_{k}")] for k in FOOD_MENU.keys()]
+        current_menu = get_menu()
+        kb = [[InlineKeyboardButton(f"{k}", callback_data=f"order_{k}")] for k in current_menu.keys()]
         await query.edit_message_text("Select another item:", reply_markup=InlineKeyboardMarkup(kb))
         return MENU_SELECTION
     
-    summary = "<b>🛒 FINAL ORDER REVIEW</b>\n\n"
     total = sum(i['qty'] * i['price'] for i in context.user_data['session_items'])
+    summary = "<b>🛒 FINAL ORDER REVIEW</b>\n\n"
     for i in context.user_data['session_items']:
         summary += f"• {i['qty']}x {i['item']} - <i>${i['qty']*i['price']:.2f}</i>\n"
-    summary += f"\n<b>💰 TOTAL TO PAY: ${total:.2f}</b>\n\nConfirm order?"
+    summary += f"\n<b>💰 TOTAL: ${total:.2f}</b>\n\nConfirm order?"
     
     kb = [[InlineKeyboardButton("🚀 CONFIRM", callback_data="confirm")], [InlineKeyboardButton("❌ CANCEL", callback_data="cancel")]]
     await query.edit_message_text(summary, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
@@ -134,13 +153,13 @@ async def finalize_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=ADMIN_ID, text=admin_summary, parse_mode=ParseMode.HTML)
     return ConversationHandler.END
 
-# --- ADMIN PANEL ---
+# --- ADMIN: EDIT MENU FEATURE ---
 async def admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID: return
     kb = [
         [InlineKeyboardButton("📊 Summary Tally", callback_data="admin_view_summary")],
         [InlineKeyboardButton("👤 Individual Orders", callback_data="admin_view_indiv")],
-        [InlineKeyboardButton("💬 View Feedbacks", callback_data="admin_view_feed")],
+        [InlineKeyboardButton("✏️ Edit Menu", callback_data="admin_edit_menu")],
         [InlineKeyboardButton("📢 Broadcast Message", callback_data="admin_broadcast")],
         [InlineKeyboardButton("✅ Mark ALL Arrived", callback_data="admin_all_arrived")]
     ]
@@ -150,42 +169,52 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    if query.data == "admin_view_summary":
+    if query.data == "admin_edit_menu":
+        current_menu = get_menu()
+        txt = "<b>Current Menu:</b>\n"
+        kb = []
+        for name, price in current_menu.items():
+            txt += f"• {name}: ${price}\n"
+            kb.append([InlineKeyboardButton(f"❌ Delete {name}", callback_data=f"del_{name}")])
+        kb.append([InlineKeyboardButton("➕ Add New Item", callback_data="add_new_item")])
+        await query.edit_message_text(txt, reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
+
+    elif query.data == "add_new_item":
+        await query.edit_message_text("Type the NAME of the new food/drink:")
+        return ADD_ITEM_NAME
+
+    elif query.data.startswith("del_"):
+        item_to_del = query.data.replace("del_", "")
+        conn = sqlite3.connect('food_bot.db')
+        conn.execute("DELETE FROM menu WHERE name=?", (item_to_del,))
+        conn.commit()
+        conn.close()
+        await query.edit_message_text(f"🗑 Deleted {item_to_del} from menu.")
+        return ConversationHandler.END
+
+    elif query.data == "admin_broadcast":
+        await query.edit_message_text("🎤 <b>Type your broadcast message:</b>", parse_mode=ParseMode.HTML)
+        return BROADCAST_TEXT
+
+    elif query.data == "admin_view_summary":
         conn = sqlite3.connect('food_bot.db')
         inventory = conn.execute("SELECT item, SUM(qty) FROM orders WHERE status='Pending' GROUP BY item").fetchall()
         conn.close()
         msg = "<b>📦 TOTAL ITEMS TO PREPARE:</b>\n\n"
-        if not inventory: msg = "No pending items."
-        else:
-            for item, count in inventory: msg += f"• {item}: <b>{count}</b>\n"
-        await query.edit_message_text(msg, parse_mode=ParseMode.HTML)
+        for item, count in inventory: msg += f"• {item}: <b>{count}</b>\n"
+        await query.edit_message_text(msg or "No pending items.", parse_mode=ParseMode.HTML)
 
     elif query.data == "admin_view_indiv":
         conn = sqlite3.connect('food_bot.db')
         details = conn.execute("SELECT orders.id, users.full_name, item, qty FROM orders JOIN users ON orders.user_id = users.user_id WHERE status='Pending'").fetchall()
         conn.close()
         if not details:
-            await query.edit_message_text("No pending individual orders.")
+            await query.edit_message_text("No pending orders.")
             return
-
-        await query.edit_message_text("<b>👤 PENDING INDIVIDUAL ORDERS:</b>\n<i>Click button to notify user.</i>", parse_mode=ParseMode.HTML)
+        await query.edit_message_text("<b>👤 PENDING ORDERS:</b>", parse_mode=ParseMode.HTML)
         for oid, name, item, qty in details:
-            kb = [[InlineKeyboardButton(f"✅ Mark Delivered", callback_data=f"indiv_arrived_{oid}")]]
-            await context.bot.send_message(ADMIN_ID, f"👤 <b>{name}</b>\nOrder: {qty}x {item}", reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
-
-    elif query.data == "admin_view_feed":
-        conn = sqlite3.connect('food_bot.db')
-        feeds = conn.execute("SELECT name, msg FROM feedback ORDER BY id DESC LIMIT 10").fetchall()
-        conn.close()
-        msg = "<b>💬 RECENT FEEDBACK:</b>\n\n"
-        if not feeds: msg = "No feedback yet."
-        else:
-            for name, feed in feeds: msg += f"👤 <b>{name}</b>: <i>{feed}</i>\n---\n"
-        await query.edit_message_text(msg, parse_mode=ParseMode.HTML)
-
-    elif query.data == "admin_broadcast":
-        await query.edit_message_text("🎤 <b>Type your broadcast message:</b>\n<i>The message you type next will be sent to all users.</i>", parse_mode=ParseMode.HTML)
-        return BROADCAST_TEXT
+            kb = [[InlineKeyboardButton(f"✅ Delivered", callback_data=f"indiv_arrived_{oid}")]]
+            await context.bot.send_message(ADMIN_ID, f"👤 <b>{name}</b>\n{qty}x {item}", reply_markup=InlineKeyboardMarkup(kb), parse_mode=ParseMode.HTML)
 
     elif query.data == "admin_all_arrived":
         conn = sqlite3.connect('food_bot.db')
@@ -199,41 +228,56 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("✅ Everyone has been notified!")
     return ConversationHandler.END
 
-async def indiv_mark_arrived(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    oid = query.data.replace("indiv_arrived_", "")
-    
-    conn = sqlite3.connect('food_bot.db')
-    order_data = conn.execute("SELECT user_id, item, qty FROM orders WHERE id=?", (oid,)).fetchone()
-    if order_data:
-        uid, item, qty = order_data
-        conn.execute("UPDATE orders SET status='Arrived' WHERE id=?", (oid,))
-        conn.commit()
-        try:
-            await context.bot.send_message(uid, f"✅ <b>Order Arrived!</b>\nYour <b>{qty}x {item}</b> is ready. Come get it! 🏃‍♂️", parse_mode=ParseMode.HTML)
-            await query.edit_message_text(f"✅ User notified for {qty}x {item}.")
-        except:
-            await query.edit_message_text("❌ Notification failed (User blocked bot).")
-    conn.close()
+# --- ADMIN MENU EDIT FLOW ---
+async def add_item_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['new_item_name'] = update.message.text
+    await update.message.reply_text(f"What is the price for {update.message.text}? (e.g., 5.50)")
+    return ADD_ITEM_PRICE
 
+async def add_item_price(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    price_text = update.message.text
+    try:
+        price = float(price_text)
+        name = context.user_data['new_item_name']
+        conn = sqlite3.connect('food_bot.db')
+        conn.execute("INSERT INTO menu (name, price) VALUES (?, ?)", (name, price))
+        conn.commit()
+        conn.close()
+        await update.message.reply_text(f"✅ Added {name} at ${price:.2f} to the menu!", reply_markup=get_main_keyboard(ADMIN_ID))
+    except:
+        await update.message.reply_text("❌ Invalid price. Item not added. Use /start to try again.")
+    return ConversationHandler.END
+
+# --- BROADCAST & MISC ---
 async def perform_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message.text
     conn = sqlite3.connect('food_bot.db')
     users = conn.execute("SELECT user_id FROM users").fetchall()
     conn.close()
-    
     count = 0
     for (uid,) in users:
         try:
             await context.bot.send_message(uid, f"📢 <b>ANNOUNCEMENT</b>\n\n{msg}", parse_mode=ParseMode.HTML)
             count += 1
         except: continue
-    
     await update.message.reply_text(f"✅ Broadcast sent to <b>{count}</b> users.", reply_markup=get_main_keyboard(ADMIN_ID), parse_mode=ParseMode.HTML)
     return ConversationHandler.END
 
-# --- OTHER HANDLERS ---
+async def indiv_mark_arrived(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    oid = query.data.replace("indiv_arrived_", "")
+    conn = sqlite3.connect('food_bot.db')
+    order_data = conn.execute("SELECT user_id, item, qty FROM orders WHERE id=?", (oid,)).fetchone()
+    if order_data:
+        uid, item, qty = order_data
+        conn.execute("UPDATE orders SET status='Arrived' WHERE id=?", (oid,))
+        conn.commit()
+        try: await context.bot.send_message(uid, f"✅ <b>Order Arrived!</b>\nYour <b>{qty}x {item}</b> is ready! 🏃‍♂️", parse_mode=ParseMode.HTML)
+        except: pass
+        await query.edit_message_text(f"✅ Delivered: {qty}x {item}.")
+    conn.close()
+
 async def view_my_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     conn = sqlite3.connect('food_bot.db')
@@ -242,10 +286,9 @@ async def view_my_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not orders:
         await update.message.reply_text("❌ No orders yet.")
         return
-    msg = "<b>🧾 YOUR RECENT ORDERS</b>\n\n"
+    msg = "<b>🧾 RECENT ORDERS</b>\n\n"
     for item, qty, status in orders:
-        icon = "⏳" if status == "Pending" else "✅"
-        msg += f"{icon} <b>{item}</b> (x{qty}) - {status}\n"
+        msg += f"• <b>{item}</b> (x{qty}) - {status}\n"
     await update.message.reply_text(msg, parse_mode=ParseMode.HTML)
 
 async def start_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -261,7 +304,6 @@ async def save_feedback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn.commit()
     conn.close()
     await update.message.reply_text("❤️ Thanks!", reply_markup=get_main_keyboard(user_id))
-    await context.bot.send_message(ADMIN_ID, f"💬 <b>Feedback from {name}:</b>\n{msg}", parse_mode=ParseMode.HTML)
     return ConversationHandler.END
 
 # --- MAIN ---
@@ -286,6 +328,8 @@ def main():
             CONFIRM_ORDER: [CallbackQueryHandler(finalize_order)],
             GIVING_FEEDBACK: [MessageHandler(filters.TEXT & ~filters.COMMAND, save_feedback)],
             BROADCAST_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, perform_broadcast)],
+            ADD_ITEM_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_item_name)],
+            ADD_ITEM_PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_item_price)],
         },
         fallbacks=[CommandHandler('start', start)],
     )
