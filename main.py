@@ -74,8 +74,12 @@ conv = ConversationHandler(
 application.add_handler(conv)
 application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^deliver_|^ord_"))
 
+async def _start_polling():
+    await application.bot.delete_webhook()
+    await application.run_polling()
+
 def _run_bot():
-    asyncio.run(application.run_polling())
+    asyncio.run(_start_polling())
 
 threading.Thread(target=_run_bot, daemon=True).start()
 
