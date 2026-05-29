@@ -76,10 +76,17 @@ application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^au
 
 async def _start_polling():
     await application.bot.delete_webhook()
-    await application.run_polling()
+    await application.initialize()
+    await application.start()
+    await application.updater.start_polling()
+    while True:
+        await asyncio.sleep(3600)
 
 def _run_bot():
-    asyncio.run(_start_polling())
+    try:
+        asyncio.run(_start_polling())
+    except Exception as e:
+        logging.error(f"Bot polling crashed: {e}")
 
 threading.Thread(target=_run_bot, daemon=True).start()
 
