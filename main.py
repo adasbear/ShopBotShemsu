@@ -82,11 +82,11 @@ async def _init_app():
     global _started
     await application.initialize()
     await application.start()
+    _started = True
     webhook_url = os.getenv("WEBHOOK_URL")
     if webhook_url:
         await application.bot.set_webhook(url=webhook_url)
         logging.info(f"Webhook set to {webhook_url}")
-    _started = True
 
 def _run_loop():
     global _loop
@@ -101,11 +101,14 @@ threading.Thread(target=_run_loop, daemon=True).start()
 def webhook():
     if not _started:
         return "Initializing...", 503
-    update = Update.de_json(request.get_json(force=True), application.bot)
-    future = asyncio.run_coroutine_threadsafe(
-        application.process_update(update), _loop
-    )
-    future.result(timeout=30)
+    try:
+        update = Update.de_json(request.get_json(force=True), application.bot)
+        future = asyncio.run_coroutine_threadsafe(
+            application.process_update(update), _loop
+        )
+        future.result(timeout=30)
+    except Exception as e:
+        logging.error(f"Webhook error: {e}")
     return "ok"
 
 @app.route("/health")
