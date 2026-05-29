@@ -5,9 +5,11 @@ from telegram.ext import ContextTypes, ConversationHandler
 from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER
 from database import get_menu, save_order, get_user, get_admin_user_id
 from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard
-from utils.helpers import build_order_summary
+from utils.helpers import build_order_summary, check_banned
 
 async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if await check_banned(update, context):
+        return ConversationHandler.END
     context.user_data["session_items"] = []
     await update.message.reply_text(
         "SELECT ITEMS",

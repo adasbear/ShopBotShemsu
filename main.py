@@ -2,7 +2,7 @@ import asyncio
 import logging
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
-from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE
+from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN
 from database import init_db
 
 from handlers.start import start, register_user
@@ -15,6 +15,7 @@ from handlers.admin import (
     admin_add_item_price, admin_back_to_portal, admin_inline_callback
 )
 from handlers.feedback import view_my_orders, start_feedback, save_feedback_handler
+from handlers.contact import contact_admin_start, contact_admin_callback, contact_admin_send
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -43,6 +44,9 @@ async def main():
             MessageHandler(filters.Regex("^Mark Delivered$"), admin_show_individual),
             MessageHandler(filters.Regex("^Mark All Arrived$"), admin_mark_all),
             MessageHandler(filters.Regex("^Back to Portal$"), admin_back_to_portal),
+            # Contact admin entry points
+            MessageHandler(filters.Regex("^Contact Admin$"), contact_admin_start),
+            CallbackQueryHandler(contact_admin_callback, pattern="^contact_admin$"),
         ],
         states={
             REGISTRATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, register_user)],
@@ -54,6 +58,7 @@ async def main():
             ADMIN_BROADCAST: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_do_broadcast)],
             ADMIN_ADD_ITEM_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_item_name)],
             ADMIN_ADD_ITEM_PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_item_price)],
+            CONTACT_ADMIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, contact_admin_send)],
         },
         fallbacks=[CommandHandler("start", start)],
     )

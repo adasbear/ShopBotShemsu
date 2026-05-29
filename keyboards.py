@@ -24,6 +24,9 @@ def confirm_cancel_keyboard():
     ]
     return InlineKeyboardMarkup(kb)
 
+def get_banned_keyboard():
+    return ReplyKeyboardMarkup([["Contact Admin"]], resize_keyboard=True)
+
 def delivered_keyboard(order_id):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("Delivered", callback_data=f"deliver_{order_id}")]

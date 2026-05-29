@@ -15,7 +15,7 @@ from keyboards import (
     admin_menu_edit_keyboard, admin_users_keyboard,
     admin_user_action_keyboard, delivered_keyboard
 )
-from utils.helpers import is_admin
+from utils.helpers import is_admin, BAN_MESSAGE
 
 def _check(update):
     return is_admin(update.effective_user.username)
@@ -238,9 +238,27 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
         if parts[0] == "aban":
             await ban_user(target_id)
             is_banned = True
+            try:
+                await context.bot.send_message(
+                    target_id, BAN_MESSAGE,
+                    reply_markup=InlineKeyboardMarkup([[
+                        InlineKeyboardButton("Contact Admin", callback_data="contact_admin")
+                    ]]),
+                    parse_mode=ParseMode.HTML
+                )
+            except:
+                pass
         else:
             await unban_user(target_id)
             is_banned = False
+            try:
+                await context.bot.send_message(
+                    target_id,
+                    "<b>You have been unbanned</b>\n\nYou can now use the bot again.",
+                    parse_mode=ParseMode.HTML
+                )
+            except:
+                pass
         user = context.user_data.get("admin_selected_user", {})
         name = user.get("full_name", "User")
         await query.edit_message_text(

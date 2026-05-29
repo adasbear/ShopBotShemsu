@@ -2,20 +2,19 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import REGISTRATION, ADMIN_USERNAME
+from config import REGISTRATION
 from database import get_user, register_user as db_register_user
 from keyboards import get_main_keyboard
-from utils.helpers import is_admin
+from utils.helpers import is_admin, check_banned
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     username = update.effective_user.username
 
-    user = await get_user(user_id)
-
-    if user and user.get("banned"):
-        await update.message.reply_text("You have been removed from this bot.")
+    if await check_banned(update, context):
         return ConversationHandler.END
+
+    user = await get_user(user_id)
 
     if is_admin(username):
         from handlers.admin import show_admin_portal
