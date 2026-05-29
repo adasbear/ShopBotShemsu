@@ -50,10 +50,10 @@ PythonAnywhere web apps need env vars set manually. Run these commands to create
 echo "BOT_TOKEN=8768868555:AAFriBhP04Ib9okUIbBfBiidVd55J-LVI3o" > .env
 echo "SUPABASE_URL=https://yqpmyowjomnbnvysbokv.supabase.co" >> .env
 echo "SUPABASE_KEY=sb_publishable_4T5Ul7YIoU_fvW5gShZo5g_abo7ixpV" >> .env
-echo "WEBHOOK_URL=https://YOURUSERNAME.pythonanywhere.com/webhook" >> .env
+echo "WEBHOOK_URL=https://adilararsa.pythonanywhere.com/webhook" >> .env
 ```
 
-> **IMPORTANT:** Replace `YOURUSERNAME` with your actual PythonAnywhere username.
+> **IMPORTANT:** Replace `adilararsa` with your actual PythonAnywhere username.
 
 ---
 
@@ -67,16 +67,22 @@ echo "WEBHOOK_URL=https://YOURUSERNAME.pythonanywhere.com/webhook" >> .env
 
 | Field | Value |
 |-------|-------|
-| Source code | `/home/YOURUSERNAME/ShopBotShemsu` |
-| Working directory | `/home/YOURUSERNAME/ShopBotShemsu` |
+| Source code | `/home/adilararsa/ShopBotShemsu` |
+| Working directory | `/home/adilararsa/ShopBotShemsu` |
 | WSGI configuration file | Click the link, then **replace everything** with the contents of `wsgi.py` |
 
-6. Click **Save**
+6. Scroll down to the **Virtualenv** section. Enter:
+   ```
+   /home/adilararsa/.virtualenvs/botenv
+   ```
+   (This is critical — without it, PythonAnywhere won't find your installed packages)
+
+7. Click **Save**
 
 To edit the WSGI file quickly, you can also run in Bash:
 
 ```bash
-cp wsgi.py /var/www/YOURUSERNAME_pythonanywhere_com_wsgi.py
+cp wsgi.py /var/www/adilararsa_pythonanywhere_com_wsgi.py
 ```
 
 ---
@@ -86,7 +92,7 @@ cp wsgi.py /var/www/YOURUSERNAME_pythonanywhere_com_wsgi.py
 In the Bash console, run this ONE-TIME command to tell Telegram where to send updates:
 
 ```bash
-curl -X POST "https://api.telegram.org/bot8768868555:AAFriBhP04Ib9okUIbBfBiidVd55J-LVI3o/setWebhook?url=https://YOURUSERNAME.pythonanywhere.com/webhook"
+curl -X POST "https://api.telegram.org/bot8768868555:AAFriBhP04Ib9okUIbBfBiidVd55J-LVI3o/setWebhook?url=https://adilararsa.pythonanywhere.com/webhook"
 ```
 
 You should get back: `{"ok": true, "result": true, "description": "Webhook was set"}`
@@ -103,7 +109,7 @@ You should get back: `{"ok": true, "result": true, "description": "Webhook was s
 
 ## Step 9 — Check if it works
 
-Visit: `https://YOURUSERNAME.pythonanywhere.com/health`
+Visit: `https://adilararsa.pythonanywhere.com/health`
 
 You should see: `ok`
 
@@ -122,7 +128,7 @@ PythonAnywhere free tier goes to sleep after a while. We need a ping every 5 min
 | Field | Value |
 |-------|-------|
 | Title | `ShopBot health check` |
-| URL | `https://YOURUSERNAME.pythonanywhere.com/health` |
+| URL | `https://adilararsa.pythonanywhere.com/health` |
 | Interval | Every 5 minutes |
 | Method | GET |
 
