@@ -315,6 +315,7 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
         action = parts[1]
         order_group = parts[2]
         menu = await get_menu()
+        original_text = query.message.text_html or query.message.text
 
         if action == "accept":
             await update_order_status(order_group, "Accepted")
@@ -332,8 +333,9 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
                 except:
                     pass
             await query.edit_message_text(
-                f"Order accepted.",
-                reply_markup=order_ready_keyboard(order_group)
+                original_text + "\n\n✅ <b>ACCEPTED</b>",
+                reply_markup=order_ready_keyboard(order_group),
+                parse_mode=ParseMode.HTML
             )
         else:
             await update_order_status(order_group, "Cancelled")
@@ -351,7 +353,10 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
                     )
                 except:
                     pass
-            await query.edit_message_text("Order declined.")
+            await query.edit_message_text(
+                original_text + "\n\n❌ <b>DECLINED</b>",
+                parse_mode=ParseMode.HTML
+            )
         return ConversationHandler.END
 
     if data.startswith("ord_ready_"):
@@ -368,9 +373,11 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
                 )
             except:
                 pass
+        original_text = query.message.text_html or query.message.text
         await query.edit_message_text(
-            "Marked as ready.",
-            reply_markup=order_deliver_keyboard(order_group)
+            original_text + "\n\n🟡 <b>READY FOR PICKUP</b>",
+            reply_markup=order_deliver_keyboard(order_group),
+            parse_mode=ParseMode.HTML
         )
         return ConversationHandler.END
 
@@ -388,8 +395,11 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
                 )
             except:
                 pass
-        await query.edit_message_text("Order delivered.")
-        user = context.user_data.get("admin_selected_user", {})
+        original_text = query.message.text_html or query.message.text
+        await query.edit_message_text(
+            original_text + "\n\n✅ <b>DELIVERED</b>",
+            parse_mode=ParseMode.HTML
+        )
         return ConversationHandler.END
 
     # --- User management ---
