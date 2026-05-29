@@ -27,10 +27,33 @@ def confirm_cancel_keyboard():
 def get_banned_keyboard():
     return ReplyKeyboardMarkup([["Contact Admin"]], resize_keyboard=True)
 
+# --- Order flow inline keyboards ---
+
+def order_accept_decline_keyboard(order_group):
+    kb = [
+        [InlineKeyboardButton("Accept", callback_data=f"ord_accept_{order_group}"),
+         InlineKeyboardButton("Decline", callback_data=f"ord_decline_{order_group}")]
+    ]
+    return InlineKeyboardMarkup(kb)
+
+def order_ready_keyboard(order_group):
+    kb = [
+        [InlineKeyboardButton("Ready for Pickup", callback_data=f"ord_ready_{order_group}")]
+    ]
+    return InlineKeyboardMarkup(kb)
+
+def order_deliver_keyboard(order_group):
+    kb = [
+        [InlineKeyboardButton("Delivered", callback_data=f"ord_deliver_{order_group}")]
+    ]
+    return InlineKeyboardMarkup(kb)
+
 def delivered_keyboard(order_id):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("Delivered", callback_data=f"deliver_{order_id}")]
     ])
+
+# --- Admin keyboards ---
 
 def get_admin_keyboard():
     buttons = [
@@ -41,7 +64,8 @@ def get_admin_keyboard():
 
 def get_admin_orders_keyboard():
     buttons = [
-        ["Summary", "Mark Delivered", "Mark All Arrived"],
+        ["New Orders", "Accepted", "Ready"],
+        ["Today's Profit"],
         ["Back to Portal"]
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)

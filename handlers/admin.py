@@ -8,17 +8,31 @@ from database import (
     get_menu, add_menu_item, delete_menu_item,
     get_pending_summary, get_pending_orders_with_users,
     get_pending_user_ids, mark_all_arrived, mark_order_arrived,
-    get_all_feedback, get_all_users
+    get_all_feedback, get_all_users,
+    get_grouped_orders_by_status, update_order_status,
+    get_todays_profit
 )
 from keyboards import (
     get_admin_keyboard, get_admin_orders_keyboard,
     admin_menu_edit_keyboard, admin_users_keyboard,
-    admin_user_action_keyboard, delivered_keyboard
+    admin_user_action_keyboard, delivered_keyboard,
+    order_accept_decline_keyboard, order_ready_keyboard,
+    order_deliver_keyboard
 )
 from utils.helpers import is_admin, BAN_MESSAGE
 
 def _check(update):
     return is_admin(update.effective_user.username)
+
+def _format_items(item_list, menu):
+    lines = []
+    total = 0
+    for it in item_list:
+        price = menu.get(it["item"], 0)
+        cost = it["qty"] * price
+        total += cost
+        lines.append(f"{it['qty']}x {it['item']} (${cost:.2f})")
+    return lines, total
 
 # --- Portal entry ---
 
@@ -79,6 +93,81 @@ async def admin_show_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return ConversationHandler.END
 
+async def admin_show_new_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    groups = await get_grouped_orders_by_status("Pending")
+    if not groups:
+        await update.message.reply_text("No new orders.", reply_markup=get_admin_orders_keyboard())
+        return ConversationHandler.END
+    menu = await get_menu()
+    msg = f"<b>New Orders ({len(groups)})</b>\n\n"
+    for g in groups:
+        lines, total = _format_items(g["items"], menu)
+        msg += f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: ${total:.2f}\n\n"
+    await update.message.reply_text(msg.strip(), parse_mode=ParseMode.HTML)
+    for g in groups:
+        lines, total = _format_items(g["items"], menu)
+        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: ${total:.2f}"
+        await context.bot.send_message(
+            update.effective_user.id,
+            text,
+            reply_markup=order_accept_decline_keyboard(g["order_group"]),
+            parse_mode=ParseMode.HTML
+        )
+    return ConversationHandler.END
+
+async def admin_show_accepted(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    groups = await get_grouped_orders_by_status("Accepted")
+    if not groups:
+        await update.message.reply_text("No accepted orders.", reply_markup=get_admin_orders_keyboard())
+        return ConversationHandler.END
+    menu = await get_menu()
+    for g in groups:
+        lines, total = _format_items(g["items"], menu)
+        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: ${total:.2f}"
+        await context.bot.send_message(
+            update.effective_user.id,
+            text,
+            reply_markup=order_ready_keyboard(g["order_group"]),
+            parse_mode=ParseMode.HTML
+        )
+    return ConversationHandler.END
+
+async def admin_show_ready(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    groups = await get_grouped_orders_by_status("Ready")
+    if not groups:
+        await update.message.reply_text("No ready orders.", reply_markup=get_admin_orders_keyboard())
+        return ConversationHandler.END
+    menu = await get_menu()
+    for g in groups:
+        lines, total = _format_items(g["items"], menu)
+        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: ${total:.2f}"
+        await context.bot.send_message(
+            update.effective_user.id,
+            text,
+            reply_markup=order_deliver_keyboard(g["order_group"]),
+            parse_mode=ParseMode.HTML
+        )
+    return ConversationHandler.END
+
+async def admin_show_profit(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    profit = await get_todays_profit()
+    await update.message.reply_text(
+        f"<b>Today's Profit</b>\n\nTotal: ${profit:.2f}",
+        reply_markup=get_admin_orders_keyboard(),
+        parse_mode=ParseMode.HTML
+    )
+    return ConversationHandler.END
+
+# --- Old order views (kept for backward compat) ---
+
 async def admin_show_summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _check(update):
         return ConversationHandler.END
@@ -100,7 +189,7 @@ async def admin_show_individual(update: Update, context: ContextTypes.DEFAULT_TY
         await update.message.reply_text("No pending orders.", reply_markup=get_admin_orders_keyboard())
         return ConversationHandler.END
     await update.message.reply_text("Pending orders (tap to mark delivered):", reply_markup=get_admin_orders_keyboard())
-    for oid, name, item, qty in orders:
+    for oid, name, item, qty, _ in orders:
         await context.bot.send_message(
             update.effective_user.id,
             f"{name}\n{qty}x {item}",
@@ -203,7 +292,7 @@ async def admin_back_to_portal(update: Update, context: ContextTypes.DEFAULT_TYP
     )
     return ConversationHandler.END
 
-# --- Inline Callback Handler (ban/unban, delete item, mark delivered) ---
+# --- Inline Callback Handler ---
 
 async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -214,10 +303,94 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
     data = query.data
 
-    # User selected from list → show ban/unban option
+    # --- Order management callbacks ---
+
+    if data.startswith("ord_accept_") or data.startswith("ord_decline_"):
+        parts = data.split("_", 2)
+        action = parts[1]
+        order_group = parts[2]
+        menu = await get_menu()
+
+        if action == "accept":
+            await update_order_status(order_group, "Accepted")
+            groups = await get_grouped_orders_by_status("Accepted")
+            target = next((g for g in groups if g["order_group"] == order_group), None)
+            if target:
+                try:
+                    lines, total = _format_items(target["items"], menu)
+                    text = (
+                        f"<b>Order Accepted!</b>\n\n"
+                        + "\n".join(lines)
+                        + f"\n\nTotal: ${total:.2f}\n\nYour order is being prepared."
+                    )
+                    await context.bot.send_message(target["user_id"], text, parse_mode=ParseMode.HTML)
+                except:
+                    pass
+            await query.edit_message_text(
+                f"Order accepted.",
+                reply_markup=order_ready_keyboard(order_group)
+            )
+        else:
+            await update_order_status(order_group, "Cancelled")
+            groups_before = await get_grouped_orders_by_status("Pending")
+            target = next((g for g in groups_before if g["order_group"] == order_group), None)
+            if not target:
+                groups_cancelled = await get_grouped_orders_by_status("Cancelled")
+                target = next((g for g in groups_cancelled if g["order_group"] == order_group), None)
+            if target:
+                try:
+                    await context.bot.send_message(
+                        target["user_id"],
+                        "<b>Order Declined</b>\n\nSorry, your order has been declined. Contact admin for details.",
+                        parse_mode=ParseMode.HTML
+                    )
+                except:
+                    pass
+            await query.edit_message_text("Order declined.")
+        return ConversationHandler.END
+
+    if data.startswith("ord_ready_"):
+        order_group = data.split("_", 2)[2]
+        await update_order_status(order_group, "Ready")
+        groups = await get_grouped_orders_by_status("Ready")
+        target = next((g for g in groups if g["order_group"] == order_group), None)
+        if target:
+            try:
+                await context.bot.send_message(
+                    target["user_id"],
+                    "<b>Order Ready for Pickup!</b>\n\nYour order is ready. Please come and pick it up.",
+                    parse_mode=ParseMode.HTML
+                )
+            except:
+                pass
+        await query.edit_message_text(
+            "Marked as ready.",
+            reply_markup=order_deliver_keyboard(order_group)
+        )
+        return ConversationHandler.END
+
+    if data.startswith("ord_deliver_"):
+        order_group = data.split("_", 2)[2]
+        await update_order_status(order_group, "Delivered")
+        groups = await get_grouped_orders_by_status("Delivered")
+        target = next((g for g in groups if g["order_group"] == order_group), None)
+        if target:
+            try:
+                await context.bot.send_message(
+                    target["user_id"],
+                    "<b>Order Delivered!</b>\n\nThank you for your order! Come back soon.",
+                    parse_mode=ParseMode.HTML
+                )
+            except:
+                pass
+        await query.edit_message_text("Order delivered.")
+        user = context.user_data.get("admin_selected_user", {})
+        return ConversationHandler.END
+
+    # --- User management ---
+
     if data.startswith("auser_"):
         target_id = int(data.split("_", 1)[1])
-        from database import get_all_users_detailed
         users = await get_all_users_detailed()
         user = next((u for u in users if u["user_id"] == target_id), None)
         if not user:
@@ -231,7 +404,6 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
         )
         return ConversationHandler.END
 
-    # Execute ban/unban
     if data.startswith("aban_") or data.startswith("aunban_"):
         parts = data.split("_", 1)
         target_id = int(parts[1])
@@ -268,7 +440,6 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
         )
         return ConversationHandler.END
 
-    # Back to users list
     if data == "aback_users":
         users = await get_all_users_detailed()
         await query.edit_message_text(
@@ -278,7 +449,8 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
         )
         return ConversationHandler.END
 
-    # Delete menu item
+    # --- Menu management ---
+
     if data.startswith("adel_"):
         name = data.replace("adel_", "")
         await delete_menu_item(name)
@@ -288,12 +460,12 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
         )
         return ConversationHandler.END
 
-    # Add item (callback from inline keyboard)
     if data == "admin_add_item":
         await query.edit_message_text("Enter the <b>name</b> of the new item:", parse_mode=ParseMode.HTML)
         return ADMIN_ADD_ITEM_NAME
 
-    # Mark delivered
+    # --- Legacy deliver (per-item, backward compat) ---
+
     if data.startswith("deliver_"):
         order_id = int(data.replace("deliver_", ""))
         order = await mark_order_arrived(order_id)

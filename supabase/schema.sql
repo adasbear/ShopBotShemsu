@@ -34,12 +34,13 @@ CREATE TABLE IF NOT EXISTS menu (
 -- Every order placed by users
 -- =====================================================
 CREATE TABLE IF NOT EXISTS orders (
-    id        BIGSERIAL PRIMARY KEY,          -- Auto-incrementing order ID
-    user_id   BIGINT NOT NULL REFERENCES users(user_id),  -- Who placed it
-    item      TEXT NOT NULL,                  -- Item name (matches menu.name)
-    qty       INTEGER NOT NULL CHECK (qty > 0),  -- Quantity ordered
-    status    TEXT NOT NULL DEFAULT 'Pending',     -- 'Pending' or 'Arrived'
-    timestamp TIMESTAMPTZ DEFAULT NOW()       -- When the order was placed
+    id          BIGSERIAL PRIMARY KEY,          -- Auto-incrementing order ID
+    user_id     BIGINT NOT NULL REFERENCES users(user_id),  -- Who placed it
+    item        TEXT NOT NULL,                  -- Item name (matches menu.name)
+    qty         INTEGER NOT NULL CHECK (qty > 0),  -- Quantity ordered
+    status      TEXT NOT NULL DEFAULT 'Pending',     -- 'Pending'|'Accepted'|'Ready'|'Delivered'|'Cancelled'
+    order_group TEXT,                           -- Groups multi-item orders together
+    timestamp   TIMESTAMPTZ DEFAULT NOW()       -- When the order was placed
 );
 
 -- Indexes for fast lookups

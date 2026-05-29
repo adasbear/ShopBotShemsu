@@ -9,7 +9,9 @@ from handlers.start import start, register_user
 from handlers.order import show_menu, handle_menu_selection, handle_qty, review_order, finalize_order
 from handlers.admin import (
     show_admin_portal, admin_show_users, admin_show_menu,
-    admin_show_orders, admin_show_summary, admin_show_individual,
+    admin_show_orders, admin_show_new_orders, admin_show_accepted,
+    admin_show_ready, admin_show_profit,
+    admin_show_summary, admin_show_individual,
     admin_mark_all, admin_start_broadcast,
     admin_do_broadcast, admin_add_item_start, admin_add_item_name,
     admin_add_item_price, admin_back_to_portal, admin_inline_callback
@@ -39,6 +41,10 @@ async def main():
             MessageHandler(filters.Regex("^Users$"), admin_show_users),
             MessageHandler(filters.Regex("^Manage Menu$"), admin_show_menu),
             MessageHandler(filters.Regex("^Orders$"), admin_show_orders),
+            MessageHandler(filters.Regex("^New Orders$"), admin_show_new_orders),
+            MessageHandler(filters.Regex("^Accepted$"), admin_show_accepted),
+            MessageHandler(filters.Regex("^Ready$"), admin_show_ready),
+            MessageHandler(filters.Regex("^Today's Profit$"), admin_show_profit),
             MessageHandler(filters.Regex("^Broadcast$"), admin_start_broadcast),
             MessageHandler(filters.Regex("^Summary$"), admin_show_summary),
             MessageHandler(filters.Regex("^Mark Delivered$"), admin_show_individual),
@@ -64,7 +70,7 @@ async def main():
     )
 
     app.add_handler(conv)
-    app.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^deliver_"))
+    app.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^deliver_|^ord_"))
 
     async with app:
         await app.start()
