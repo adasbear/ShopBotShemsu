@@ -46,6 +46,9 @@ async def get_admin_user_id():
     result = await _db(lambda: _supabase.table("users").select("user_id").eq("username", "Barc_h").execute())
     if result.data:
         return result.data[0]["user_id"]
+    from config import ADMIN_USER_ID
+    if ADMIN_USER_ID:
+        return ADMIN_USER_ID
     return None
 
 # --- Menu ---

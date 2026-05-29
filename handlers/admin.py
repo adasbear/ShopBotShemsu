@@ -10,7 +10,7 @@ from database import (
     get_pending_user_ids, mark_all_arrived, mark_order_arrived,
     get_all_feedback, get_all_users,
     get_grouped_orders_by_status, update_order_status,
-    get_todays_profit
+    get_todays_profit, register_user as db_register_user
 )
 from keyboards import (
     get_admin_keyboard, get_admin_orders_keyboard,
@@ -39,6 +39,11 @@ def _format_items(item_list, menu):
 async def show_admin_portal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _check(update):
         return ConversationHandler.END
+    await db_register_user(
+        update.effective_user.id,
+        update.effective_user.full_name or "Admin",
+        update.effective_user.username
+    )
     await update.message.reply_text(
         "<b>Admin Portal</b>\n\nManage your bot from here.",
         reply_markup=get_admin_keyboard(),
