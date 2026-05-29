@@ -2,8 +2,7 @@ import os
 import asyncio
 import logging
 import threading
-from flask import Flask, request
-from telegram import Update
+from flask import Flask
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
 from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN
@@ -32,7 +31,7 @@ app = Flask(__name__)
 
 init_db()
 
-application = Application.builder().token(BOT_TOKEN).updater(None).connect_timeout(30).read_timeout(30).build()
+application = Application.builder().token(BOT_TOKEN).connect_timeout(30).read_timeout(30).build()
 
 conv = ConversationHandler(
     entry_points=[
@@ -75,45 +74,15 @@ conv = ConversationHandler(
 application.add_handler(conv)
 application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^deliver_|^ord_"))
 
-_loop = None
-_started = False
+def _run_bot():
+    asyncio.run(application.run_polling())
 
-async def _init_app():
-    global _started
-    await application.initialize()
-    await application.start()
-    _started = True
-    webhook_url = os.getenv("WEBHOOK_URL")
-    if webhook_url:
-        await application.bot.set_webhook(url=webhook_url)
-        logging.info(f"Webhook set to {webhook_url}")
+threading.Thread(target=_run_bot, daemon=True).start()
 
-def _run_loop():
-    global _loop
-    _loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(_loop)
-    _loop.run_until_complete(_init_app())
-    _loop.run_forever()
-
-threading.Thread(target=_run_loop, daemon=True).start()
-
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    if not _started:
-        return "Initializing...", 503
-    try:
-        update = Update.de_json(request.get_json(force=True), application.bot)
-        future = asyncio.run_coroutine_threadsafe(
-            application.process_update(update), _loop
-        )
-        future.result(timeout=30)
-    except Exception as e:
-        logging.error(f"Webhook error: {e}")
-    return "ok"
+@app.route("/")
+def home():
+    return "Bot is running."
 
 @app.route("/health")
 def health():
     return "ok"
-
-if __name__ == "__main__":
-    app.run()
