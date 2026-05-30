@@ -8,6 +8,7 @@ async def menu_inline_keyboard():
     from database import get_menu
     menu = await get_menu()
     kb = [[InlineKeyboardButton(f"{k} - ${v}", callback_data=f"order_{k}")] for k, v in menu.items()]
+    kb.append([InlineKeyboardButton("Other ✏️", callback_data="order_Other")])
     return InlineKeyboardMarkup(kb)
 
 def add_more_or_review_keyboard(total):

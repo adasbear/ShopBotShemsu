@@ -1,9 +1,9 @@
 import time
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER
+from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, OTHER_ITEM_INPUT
 from database import get_menu, save_order, get_user, get_admin_user_id
 from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard, order_accept_decline_keyboard
 from utils.helpers import build_order_summary, check_banned
@@ -22,9 +22,27 @@ async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    context.user_data["current_item"] = query.data.replace("order_", "")
+    item = query.data.replace("order_", "")
+    if item == "Other":
+        await query.edit_message_text("What item do you want? Type the name below:")
+        return OTHER_ITEM_INPUT
+    context.user_data["current_item"] = item
+    context.user_data["custom_item"] = False
     await query.edit_message_text(
-        f"How many <b>{context.user_data['current_item']}</b>?",
+        f"How many <b>{item}</b>?",
+        parse_mode=ParseMode.HTML
+    )
+    return QTY_INPUT
+
+async def handle_custom_item_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    name = update.message.text.strip()
+    if not name:
+        await update.message.reply_text("Please enter a valid item name.")
+        return OTHER_ITEM_INPUT
+    context.user_data["current_item"] = name
+    context.user_data["custom_item"] = True
+    await update.message.reply_text(
+        f"How many <b>{name}</b>?",
         parse_mode=ParseMode.HTML
     )
     return QTY_INPUT
@@ -35,10 +53,15 @@ async def handle_qty(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Enter a valid number.")
         return QTY_INPUT
 
-    menu = await get_menu()
     item = context.user_data["current_item"]
+    if context.user_data.get("custom_item"):
+        price = 0.0
+    else:
+        menu = await get_menu()
+        price = menu[item]
+
     context.user_data["session_items"].append({
-        "item": item, "qty": int(qty), "price": menu[item]
+        "item": item, "qty": int(qty), "price": price, "custom": context.user_data.get("custom_item", False)
     })
 
     _, total = build_order_summary(context.user_data["session_items"])
@@ -53,11 +76,9 @@ async def review_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     if query.data == "add_more":
-        menu = await get_menu()
-        kb = [[InlineKeyboardButton(f"{k}", callback_data=f"order_{k}")] for k in menu]
         await query.edit_message_text(
             "Select another item:",
-            reply_markup=InlineKeyboardMarkup(kb)
+            reply_markup=await menu_inline_keyboard()
         )
         return MENU_SELECTION
 
@@ -91,7 +112,10 @@ async def finalize_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for i in items:
         cost = i["qty"] * i["price"]
         total_cost += cost
-        item_lines.append(f"{i['qty']}x {i['item']} (${cost:.2f})")
+        if i.get("custom"):
+            item_lines.append(f"{i['qty']}x {i['item']} (Custom request)")
+        else:
+            item_lines.append(f"{i['qty']}x {i['item']} (${cost:.2f})")
         await save_order(user_id, i["item"], i["qty"], order_group)
 
     await query.edit_message_text(

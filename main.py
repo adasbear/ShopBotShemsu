@@ -5,11 +5,11 @@ import threading
 from flask import Flask
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
-from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN
+from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT
 from database import init_db
 
 from handlers.start import start, register_user
-from handlers.order import show_menu, handle_menu_selection, handle_qty, review_order, finalize_order
+from handlers.order import show_menu, handle_menu_selection, handle_qty, review_order, finalize_order, handle_custom_item_name
 from handlers.admin import (
     show_admin_portal, admin_show_users, admin_show_menu,
     admin_show_orders, admin_show_new_orders, admin_show_accepted,
@@ -67,6 +67,7 @@ conv = ConversationHandler(
         ADMIN_ADD_ITEM_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_item_name)],
         ADMIN_ADD_ITEM_PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_item_price)],
         CONTACT_ADMIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, contact_admin_send)],
+        OTHER_ITEM_INPUT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_custom_item_name)],
     },
     fallbacks=[CommandHandler("start", start)],
 )
