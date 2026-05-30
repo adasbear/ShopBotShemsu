@@ -6,7 +6,7 @@ from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
-from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE
+from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, HELP_MENU
 from database import init_db
 
 from handlers.start import start, register_user
@@ -24,6 +24,7 @@ from handlers.admin import (
 )
 from handlers.manage_order import view_my_orders, handle_manage_order, handle_order_action, handle_edit_item, handle_edit_qty
 from handlers.feedback import start_feedback, save_feedback_handler
+from handlers.help import show_help, handle_help_callback
 from handlers.contact import contact_admin_start, contact_admin_callback, contact_admin_send
 
 logging.basicConfig(
@@ -45,6 +46,7 @@ conv = ConversationHandler(
     entry_points=[
         CommandHandler("start", start),
         CommandHandler("admin", show_admin_portal),
+        MessageHandler(filters.Regex("^Help$"), show_help),
         MessageHandler(filters.Regex("^Refresh$"), start),
         MessageHandler(filters.Regex("^Menu$"), show_menu),
         MessageHandler(filters.Regex("^Feedback$"), start_feedback),
@@ -86,6 +88,7 @@ conv = ConversationHandler(
         ORDER_ACTION: [CallbackQueryHandler(handle_order_action)],
         EDIT_ITEM: [CallbackQueryHandler(handle_edit_item)],
         EDIT_QTY: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_qty)],
+        HELP_MENU: [CallbackQueryHandler(handle_help_callback, pattern="^help_")],
     },
     fallbacks=[CommandHandler("start", start), CommandHandler("cancel", cancel)],
 )

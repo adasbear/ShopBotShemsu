@@ -22,10 +22,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
 
     if not user:
-        await update.message.reply_text(
-            "Welcome! Please enter your <b>Full Name</b> to register:",
-            parse_mode=ParseMode.HTML
+        welcome = (
+            "<b>Welcome to ShopBot Shemsu! 🛒</b>\n\n"
+            "Order your favourite food & drinks directly from this bot.\n\n"
+            "• Browse the <b>Menu</b> and add items to your order\n"
+            "• Add custom requests with <b>Other</b>\n"
+            "• Add special instructions after ordering\n"
+            "• Track your <b>My Orders</b>\n\n"
+            "To get started, please enter your <b>Full Name</b> below:"
         )
+        await update.message.reply_text(welcome, parse_mode=ParseMode.HTML)
         return REGISTRATION
 
     await update.message.reply_text(
