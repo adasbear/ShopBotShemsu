@@ -3,9 +3,9 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, OTHER_ITEM_INPUT
+from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT
 from database import get_menu, save_order, get_user, get_admin_user_id
-from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard, order_accept_decline_keyboard
+from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard, order_accept_decline_keyboard, comment_choice_keyboard
 from utils.helpers import build_order_summary, check_banned
 
 async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -129,22 +129,60 @@ async def finalize_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
             item_lines.append(f"{i['qty']}x {i['item']} (${cost:.2f})")
         await save_order(user_id, i["item"], i["qty"], order_group)
 
+    context.user_data["order_group"] = order_group
+    context.user_data["order_name"] = user_name
+    context.user_data["order_items"] = item_lines
+    context.user_data["order_total"] = total_cost
+
     await query.edit_message_text(
-        f"Order Placed!\nTotal: ${total_cost:.2f}",
+        f"Order Placed! (${total_cost:.2f})\n\nAny special instructions?",
+        reply_markup=comment_choice_keyboard(),
         parse_mode=ParseMode.HTML
     )
+    return COMMENT_CHOICE
 
-    admin_id = await get_admin_user_id()
-    if admin_id:
-        admin_text = (
-            f"<b>NEW ORDER FROM: {user_name}</b>\n\n"
-            f"{chr(10).join(item_lines)}\n\n"
-            f"TOTAL: ${total_cost:.2f}"
-        )
-        await context.bot.send_message(
-            chat_id=admin_id,
-            text=admin_text,
-            reply_markup=order_accept_decline_keyboard(order_group),
-            parse_mode=ParseMode.HTML
-        )
+async def handle_comment_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "skip_comment":
+        await query.edit_message_text("Order submitted. Thank you!")
+        await _notify_admin(context)
+        return ConversationHandler.END
+
+    await query.edit_message_text("Type your special instructions below:")
+    return ORDER_COMMENT
+
+async def handle_order_comment(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    comment = update.message.text.strip()
+    if not comment:
+        await update.message.reply_text("Please type your instructions or send /cancel.")
+        return ORDER_COMMENT
+
+    from database import save_order_comment
+    await save_order_comment(context.user_data["order_group"], comment)
+    context.user_data["order_comment"] = comment
+
+    await update.message.reply_text("Comment saved! Order submitted.")
+    await _notify_admin(context)
     return ConversationHandler.END
+
+async def _notify_admin(context):
+    from database import get_admin_user_id
+    admin_id = await get_admin_user_id()
+    if not admin_id:
+        return
+    comment = context.user_data.get("order_comment")
+    text = (
+        f"<b>NEW ORDER FROM: {context.user_data['order_name']}</b>\n\n"
+        f"{chr(10).join(context.user_data['order_items'])}\n\n"
+        f"TOTAL: ${context.user_data['order_total']:.2f}"
+    )
+    if comment:
+        text += f"\n\n<b>Comment:</b> {comment}"
+    await context.bot.send_message(
+        chat_id=admin_id,
+        text=text,
+        reply_markup=order_accept_decline_keyboard(context.user_data["order_group"]),
+        parse_mode=ParseMode.HTML
+    )

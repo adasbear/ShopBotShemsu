@@ -20,6 +20,13 @@ def add_more_or_review_keyboard(total):
     ]
     return InlineKeyboardMarkup(kb)
 
+def comment_choice_keyboard():
+    kb = [
+        [InlineKeyboardButton("Add Comment ✏️", callback_data="add_comment")],
+        [InlineKeyboardButton("No Thanks ✅", callback_data="skip_comment")]
+    ]
+    return InlineKeyboardMarkup(kb)
+
 def confirm_cancel_keyboard():
     kb = [
         [InlineKeyboardButton("CONFIRM", callback_data="confirm")],

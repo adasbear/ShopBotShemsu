@@ -155,6 +155,15 @@ async def get_todays_profit():
 
 # --- Feedback ---
 
+# --- Order Comments ---
+
+async def save_order_comment(order_group, comment):
+    await _db(lambda: _supabase.table("order_comments").upsert({
+        "order_group": order_group, "comment": comment
+    }).execute())
+
+# --- Feedback ---
+
 async def save_feedback(user_id, msg):
     name_result = await _db(lambda: _supabase.table("users").select("full_name").eq("user_id", user_id).execute())
     name = name_result.data[0]["full_name"] if name_result.data else "Unknown"
