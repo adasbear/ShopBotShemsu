@@ -1,7 +1,7 @@
 from telegram import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 
 def get_main_keyboard():
-    buttons = [["Menu", "Profile"], ["My Orders", "Feedback"], ["Commands"]]
+    buttons = [["Menu", "Profile"], ["My Orders", "Feedback"], ["Refres"]]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
 async def menu_inline_keyboard(show_back=True, parent=None):
