@@ -23,6 +23,17 @@ async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TY
     query = update.callback_query
     await query.answer()
     item = query.data.replace("order_", "")
+    if item == "back":
+        items = context.user_data.get("session_items", [])
+        if items:
+            _, total = build_order_summary(items)
+            await query.edit_message_text(
+                "Back to order review.",
+                reply_markup=add_more_or_review_keyboard(total)
+            )
+            return ADD_MORE_PROMPT
+        await query.edit_message_text("Order Cancelled.")
+        return ConversationHandler.END
     if item == "Other":
         await query.edit_message_text("What item do you want? Type the name below:")
         return OTHER_ITEM_INPUT
@@ -49,8 +60,8 @@ async def handle_custom_item_name(update: Update, context: ContextTypes.DEFAULT_
 
 async def handle_qty(update: Update, context: ContextTypes.DEFAULT_TYPE):
     qty = update.message.text
-    if not qty.isdigit():
-        await update.message.reply_text("Enter a valid number.")
+    if not qty.isdigit() or int(qty) == 0:
+        await update.message.reply_text("Enter a valid number greater than 0.")
         return QTY_INPUT
 
     item = context.user_data["current_item"]

@@ -3,6 +3,7 @@ import asyncio
 import logging
 import threading
 from flask import Flask
+from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
 from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT
@@ -69,11 +70,15 @@ conv = ConversationHandler(
         CONTACT_ADMIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, contact_admin_send)],
         OTHER_ITEM_INPUT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_custom_item_name)],
     },
-    fallbacks=[CommandHandler("start", start)],
+    fallbacks=[CommandHandler("start", start), CommandHandler("cancel", cancel)],
 )
 
 application.add_handler(conv)
 application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^deliver_|^ord_"))
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text("Cancelled.")
+    return ConversationHandler.END
 
 async def _start_polling():
     await application.bot.delete_webhook()

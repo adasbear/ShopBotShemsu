@@ -4,11 +4,13 @@ def get_main_keyboard():
     buttons = [["Menu", "Profile"], ["My Orders", "Feedback"], ["Commands"]]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
-async def menu_inline_keyboard():
+async def menu_inline_keyboard(show_back=True):
     from database import get_menu
     menu = await get_menu()
     kb = [[InlineKeyboardButton(f"{k} - ${v}", callback_data=f"order_{k}")] for k, v in menu.items()]
     kb.append([InlineKeyboardButton("Other ✏️", callback_data="order_Other")])
+    if show_back:
+        kb.append([InlineKeyboardButton("⬅ Back", callback_data="order_back")])
     return InlineKeyboardMarkup(kb)
 
 def add_more_or_review_keyboard(total):
