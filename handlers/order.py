@@ -109,7 +109,7 @@ async def review_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return MENU_SELECTION
 
     summary, total = build_order_summary(context.user_data["session_items"])
-    text = f"FINAL ORDER REVIEW\n\n{summary}\n\nTOTAL: ${total:.2f}\n\nConfirm order?"
+    text = f"FINAL ORDER REVIEW\n\n{summary}\n\nTOTAL: Birr {total:.2f}\n\nConfirm order?"
 
     await query.edit_message_text(
         text,
@@ -141,7 +141,7 @@ async def finalize_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if i.get("custom"):
             item_lines.append(f"{i['qty']}x {i['item']} (Custom request)")
         else:
-            item_lines.append(f"{i['qty']}x {i['item']} (${cost:.2f})")
+            item_lines.append(f"{i['qty']}x {i['item']} (Birr {cost:.2f})")
         await save_order(user_id, i["item"], i["qty"], order_group)
 
     context.user_data["order_group"] = order_group
@@ -150,7 +150,7 @@ async def finalize_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["order_total"] = total_cost
 
     await query.edit_message_text(
-        f"Order Placed! (${total_cost:.2f})\n\nAny special instructions?",
+        f"Order Placed! (Birr {total_cost:.2f})\n\nAny special instructions?",
         reply_markup=comment_choice_keyboard(),
         parse_mode=ParseMode.HTML
     )
@@ -191,7 +191,7 @@ async def _notify_admin(context):
     text = (
         f"<b>NEW ORDER FROM: {context.user_data['order_name']}</b>\n\n"
         f"{chr(10).join(context.user_data['order_items'])}\n\n"
-        f"TOTAL: ${context.user_data['order_total']:.2f}"
+        f"TOTAL: Birr {context.user_data['order_total']:.2f}"
     )
     if comment:
         text += f"\n\n<b>Comment:</b> {comment}"

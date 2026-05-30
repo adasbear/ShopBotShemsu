@@ -33,7 +33,7 @@ def _format_items(item_list, menu):
         price = menu.get(it["item"], 0)
         cost = it["qty"] * price
         total += cost
-        lines.append(f"{it['qty']}x {it['item']} (${cost:.2f})")
+        lines.append(f"{it['qty']}x {it['item']} (Birr {cost:.2f})")
     return lines, total
 
 # --- Portal entry ---
@@ -85,9 +85,9 @@ async def admin_show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if sub:
                 txt += f"📁 <b>{r['name']}</b>\n"
                 for s in sub:
-                    txt += f"   {s['name']} - ${s['price']}\n"
+                    txt += f"   {s['name']} - Birr {s['price']}\n"
             else:
-                txt += f"{r['name']} - ${r['price']}\n"
+                txt += f"{r['name']} - Birr {r['price']}\n"
     await update.message.reply_text(
         txt,
         reply_markup=await admin_menu_edit_keyboard(),
@@ -118,11 +118,11 @@ async def admin_show_new_orders(update: Update, context: ContextTypes.DEFAULT_TY
     msg = f"<b>New Orders ({len(groups)})</b>\n\n"
     for g in groups:
         lines, total = _format_items(g["items"], menu)
-        msg += f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: ${total:.2f}\n\n"
+        msg += f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: Birr {total:.2f}\n\n"
     await update.message.reply_text(msg.strip(), parse_mode=ParseMode.HTML)
     for g in groups:
         lines, total = _format_items(g["items"], menu)
-        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: ${total:.2f}"
+        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: Birr {total:.2f}"
         await context.bot.send_message(
             update.effective_user.id,
             text,
@@ -141,7 +141,7 @@ async def admin_show_accepted(update: Update, context: ContextTypes.DEFAULT_TYPE
     menu = await get_menu()
     for g in groups:
         lines, total = _format_items(g["items"], menu)
-        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: ${total:.2f}"
+        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: Birr {total:.2f}"
         await context.bot.send_message(
             update.effective_user.id,
             text,
@@ -160,7 +160,7 @@ async def admin_show_ready(update: Update, context: ContextTypes.DEFAULT_TYPE):
     menu = await get_menu()
     for g in groups:
         lines, total = _format_items(g["items"], menu)
-        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: ${total:.2f}"
+        text = f"<b>{g['full_name']}</b>\n" + "\n".join(lines) + f"\nTotal: Birr {total:.2f}"
         await context.bot.send_message(
             update.effective_user.id,
             text,
@@ -174,7 +174,7 @@ async def admin_show_profit(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
     profit = await get_todays_profit()
     await update.message.reply_text(
-        f"<b>Today's Profit</b>\n\nTotal: ${profit:.2f}",
+        f"<b>Today's Profit</b>\n\nTotal: Birr {profit:.2f}",
         reply_markup=get_admin_orders_keyboard(),
         parse_mode=ParseMode.HTML
     )
@@ -289,7 +289,7 @@ async def admin_add_item_price(update: Update, context: ContextTypes.DEFAULT_TYP
         price = float(update.message.text)
         name = context.user_data["admin_new_item"]
         await add_menu_item(name, price)
-        await update.message.reply_text(f"Added {name} at ${price:.2f}!", reply_markup=get_admin_keyboard())
+        await update.message.reply_text(f"Added {name} at Birr {price:.2f}!", reply_markup=get_admin_keyboard())
     except:
         await update.message.reply_text("Invalid price. Item not added.", reply_markup=get_admin_keyboard())
     return ConversationHandler.END
@@ -325,7 +325,7 @@ async def admin_manage_category(update: Update, context: ContextTypes.DEFAULT_TY
     from keyboards import admin_category_keyboard
     items = await get_sub_menu(category)
     if items:
-        lines = "\n".join(f"{n} - ${p}" for n, p in items.items())
+        lines = "\n".join(f"{n} - Birr {p}" for n, p in items.items())
         txt = f"<b>{category}</b> sub-items:\n\n{lines}"
     else:
         txt = f"<b>{category}</b> has no sub-items yet."
@@ -366,7 +366,7 @@ async def admin_add_sub_item_price(update: Update, context: ContextTypes.DEFAULT
         parent = context.user_data["admin_sub_parent"]
         await add_menu_item(name, price, parent)
         await update.message.reply_text(
-            f"Added {name} (${price:.2f}) under {parent}!",
+            f"Added {name} (Birr {price:.2f}) under {parent}!",
             reply_markup=await admin_menu_edit_keyboard()
         )
     except:
@@ -415,7 +415,7 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
                     text = (
                         f"<b>Order Accepted!</b>\n\n"
                         + "\n".join(lines)
-                        + f"\n\nTotal: ${total:.2f}\n\nYour order is being prepared."
+                        + f"\n\nTotal: Birr {total:.2f}\n\nYour order is being prepared."
                     )
                     await context.bot.send_message(target["user_id"], text, parse_mode=ParseMode.HTML)
                 except:
@@ -577,7 +577,7 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
         from keyboards import admin_category_keyboard
         items = await get_sub_menu(category)
         if items:
-            lines = "\n".join(f"{n} - ${p}" for n, p in items.items())
+            lines = "\n".join(f"{n} - Birr {p}" for n, p in items.items())
             txt = f"<b>{category}</b> sub-items:\n\n{lines}"
         else:
             txt = f"<b>{category}</b> has no sub-items yet."
@@ -602,9 +602,9 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
             if sub:
                 txt += f"📁 <b>{r['name']}</b>\n"
                 for s in sub:
-                    txt += f"   {s['name']} - ${s['price']}\n"
+                    txt += f"   {s['name']} - Birr {s['price']}\n"
             else:
-                txt += f"{r['name']} - ${r['price']}\n"
+                txt += f"{r['name']} - Birr {r['price']}\n"
         await query.edit_message_text(txt.strip(), reply_markup=await admin_menu_edit_keyboard())
         return ConversationHandler.END
 
