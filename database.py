@@ -153,7 +153,41 @@ async def get_todays_profit():
     total = sum(row["qty"] * menu.get(row["item"], 0) for row in result.data)
     return total
 
-# --- Feedback ---
+# --- Order management (edit/cancel) ---
+
+async def get_user_grouped_orders(user_id, limit=5):
+    result = await _db(lambda: _supabase.table("orders")
+        .select("id, item, qty, status, order_group, timestamp")
+        .eq("user_id", user_id)
+        .order("timestamp", desc=True)
+        .limit(50)
+        .execute())
+    groups = {}
+    for r in result.data:
+        g = r["order_group"]
+        if g not in groups:
+            groups[g] = {
+                "order_group": g,
+                "timestamp": r["timestamp"],
+                "status": r["status"],
+                "items": []
+            }
+        groups[g]["items"].append({"id": r["id"], "item": r["item"], "qty": r["qty"]})
+    sorted_groups = sorted(groups.values(), key=lambda x: x["timestamp"], reverse=True)
+    return sorted_groups[:limit]
+
+async def get_order_items(order_group):
+    result = await _db(lambda: _supabase.table("orders")
+        .select("id, item, qty, status, timestamp")
+        .eq("order_group", order_group)
+        .execute())
+    return result.data
+
+async def update_item_qty(item_id, new_qty):
+    await _db(lambda: _supabase.table("orders").update({"qty": new_qty}).eq("id", item_id).execute())
+
+async def cancel_order_group(order_group):
+    await _db(lambda: _supabase.table("orders").update({"status": "Cancelled"}).eq("order_group", order_group).execute())
 
 # --- Order Comments ---
 

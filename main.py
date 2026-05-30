@@ -6,7 +6,7 @@ from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
-from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT
+from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY
 from database import init_db
 
 from handlers.start import start, register_user
@@ -20,7 +20,8 @@ from handlers.admin import (
     admin_do_broadcast, admin_add_item_start, admin_add_item_name,
     admin_add_item_price, admin_back_to_portal, admin_inline_callback
 )
-from handlers.feedback import view_my_orders, start_feedback, save_feedback_handler
+from handlers.manage_order import view_my_orders, handle_manage_order, handle_order_action, handle_edit_item, handle_edit_qty
+from handlers.feedback import start_feedback, save_feedback_handler
 from handlers.contact import contact_admin_start, contact_admin_callback, contact_admin_send
 
 logging.basicConfig(
@@ -75,6 +76,10 @@ conv = ConversationHandler(
         OTHER_ITEM_INPUT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_custom_item_name)],
         COMMENT_CHOICE: [CallbackQueryHandler(handle_comment_choice)],
         ORDER_COMMENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_order_comment)],
+        MANAGE_ORDER: [CallbackQueryHandler(handle_manage_order)],
+        ORDER_ACTION: [CallbackQueryHandler(handle_order_action)],
+        EDIT_ITEM: [CallbackQueryHandler(handle_edit_item)],
+        EDIT_QTY: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_qty)],
     },
     fallbacks=[CommandHandler("start", start), CommandHandler("cancel", cancel)],
 )
