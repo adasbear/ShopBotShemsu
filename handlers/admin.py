@@ -436,7 +436,7 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
                 try:
                     await context.bot.send_message(
                         target["user_id"],
-                        "<b>Order Declined</b>\n\nSorry, your order has been declined. Contact admin for details.",
+                        f"<b>Order Declined</b>\n\nSorry, your order has been declined. Contact @{ADMIN_USERNAME} for details.",
                         parse_mode=ParseMode.HTML
                     )
                 except:

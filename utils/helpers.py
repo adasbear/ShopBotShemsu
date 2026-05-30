@@ -8,7 +8,7 @@ from keyboards import get_banned_keyboard
 BAN_MESSAGE = (
     "<b>You have been banned</b>\n\n"
     "You have violated one or more of our rules so you are banned.\n"
-    "If you believe this was a mistake, use the <b>Contact Admin</b> button below."
+    f"If you believe this was a mistake, contact @{ADMIN_USERNAME} or use the <b>Contact Admin</b> button below."
 )
 
 def is_admin(username):
