@@ -45,7 +45,7 @@ conv = ConversationHandler(
     entry_points=[
         CommandHandler("start", start),
         CommandHandler("admin", show_admin_portal),
-        MessageHandler(filters.Regex("^Refres$"), start),
+        MessageHandler(filters.Regex("^Refresh$"), start),
         MessageHandler(filters.Regex("^Menu$"), show_menu),
         MessageHandler(filters.Regex("^Feedback$"), start_feedback),
         MessageHandler(filters.Regex("^My Orders$"), view_my_orders),
