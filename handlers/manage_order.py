@@ -31,7 +31,8 @@ async def view_my_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for o in orders:
         icon = {"Pending": "🕐", "Delivered": "✅", "Cancelled": "❌"}.get(o["status"], "📦")
         ts = datetime.fromisoformat(o["timestamp"].replace("Z", "+00:00"))
-        label = f"{icon} {ts.strftime('%b %d, %I:%M %p')} - {o['status']}"
+        items_str = ", ".join(f"{i['qty']}x {i['item']}" for i in o["items"])
+        label = f"{icon} {ts.strftime('%b %d, %I:%M %p')} - {items_str}"
         kb.append([InlineKeyboardButton(label, callback_data=f"myorder_{o['order_group']}")])
 
     await update.message.reply_text(
@@ -91,7 +92,8 @@ async def handle_order_action(update: Update, context: ContextTypes.DEFAULT_TYPE
         for o in orders:
             icon = {"Pending": "🕐", "Delivered": "✅", "Cancelled": "❌"}.get(o["status"], "📦")
             ts = datetime.fromisoformat(o["timestamp"].replace("Z", "+00:00"))
-            label = f"{icon} {ts.strftime('%b %d, %I:%M %p')} - {o['status']}"
+            items_str = ", ".join(f"{i['qty']}x {i['item']}" for i in o["items"])
+            label = f"{icon} {ts.strftime('%b %d, %I:%M %p')} - {items_str}"
             kb.append([InlineKeyboardButton(label, callback_data=f"myorder_{o['order_group']}")])
         await query.edit_message_text(
             "YOUR ORDERS\n\nTap an order to manage:",
@@ -135,6 +137,11 @@ async def handle_order_action(update: Update, context: ContextTypes.DEFAULT_TYPE
                 parse_mode=ParseMode.HTML
             )
         await query.edit_message_text("Order cancelled.")
+        await context.bot.send_message(
+            chat_id=update.effective_user.id,
+            text="What would you like to do?",
+            reply_markup=get_main_keyboard()
+        )
         return ConversationHandler.END
 
     if action == "back_to_order":
@@ -160,7 +167,12 @@ async def handle_edit_item(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     if query.data == "done_editing":
-        await query.edit_message_text("Order updated!", reply_markup=get_main_keyboard())
+        await query.edit_message_text("Order updated!")
+        await context.bot.send_message(
+            chat_id=update.effective_user.id,
+            text="What would you like to do?",
+            reply_markup=get_main_keyboard()
+        )
         return ConversationHandler.END
 
     item_id = int(query.data.replace("edititem_", ""))
