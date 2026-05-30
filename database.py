@@ -57,13 +57,31 @@ async def get_menu():
     result = await _db(lambda: _supabase.table("menu").select("name, price").execute())
     return {row["name"]: row["price"] for row in result.data}
 
+async def get_top_level_menu():
+    result = await _db(lambda: _supabase.table("menu").select("name, price").is_("parent", "null").execute())
+    return {row["name"]: row["price"] for row in result.data}
+
+async def get_sub_menu(parent):
+    result = await _db(lambda: _supabase.table("menu").select("name, price").eq("parent", parent).execute())
+    return {row["name"]: row["price"] for row in result.data}
+
+async def has_sub_items(name):
+    result = await _db(lambda: _supabase.table("menu").select("name").eq("parent", name).limit(1).execute())
+    return len(result.data) > 0
+
+async def get_all_menu_items():
+    result = await _db(lambda: _supabase.table("menu").select("name, price, parent").order("parent").execute())
+    return result.data
+
 async def delete_menu_item(name):
+    await _db(lambda: _supabase.table("menu").delete().eq("parent", name).execute())
     await _db(lambda: _supabase.table("menu").delete().eq("name", name).execute())
 
-async def add_menu_item(name, price):
-    await _db(lambda: _supabase.table("menu").upsert({
-        "name": name, "price": price
-    }).execute())
+async def add_menu_item(name, price, parent=None):
+    data = {"name": name, "price": price}
+    if parent:
+        data["parent"] = parent
+    await _db(lambda: _supabase.table("menu").upsert(data).execute())
 
 # --- Orders ---
 

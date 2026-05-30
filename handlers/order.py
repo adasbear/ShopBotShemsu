@@ -4,7 +4,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
 from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT
-from database import get_menu, save_order, get_user, get_admin_user_id
+from database import get_menu, save_order, get_user, get_admin_user_id, has_sub_items
 from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard, order_accept_decline_keyboard, comment_choice_keyboard
 from utils.helpers import build_order_summary, check_banned
 
@@ -23,6 +23,14 @@ async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TY
     query = update.callback_query
     await query.answer()
     item = query.data.replace("order_", "")
+    if item == "back_to_main":
+        context.user_data.pop("menu_parent", None)
+        await query.edit_message_text(
+            "SELECT ITEMS",
+            reply_markup=await menu_inline_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+        return MENU_SELECTION
     if item == "back":
         items = context.user_data.get("session_items", [])
         if items:
@@ -37,6 +45,13 @@ async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TY
     if item == "Other":
         await query.edit_message_text("What item do you want? Type the name below:")
         return OTHER_ITEM_INPUT
+    if await has_sub_items(item):
+        await query.edit_message_text(
+            f"SELECT {item.upper()}",
+            reply_markup=await menu_inline_keyboard(parent=item),
+            parse_mode=ParseMode.HTML
+        )
+        return MENU_SELECTION
     context.user_data["current_item"] = item
     context.user_data["custom_item"] = False
     await query.edit_message_text(

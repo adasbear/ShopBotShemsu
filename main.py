@@ -6,7 +6,7 @@ from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
-from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY
+from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE
 from database import init_db
 
 from handlers.start import start, register_user
@@ -18,7 +18,9 @@ from handlers.admin import (
     admin_show_summary, admin_show_individual,
     admin_mark_all, admin_start_broadcast,
     admin_do_broadcast, admin_add_item_start, admin_add_item_name,
-    admin_add_item_price, admin_back_to_portal, admin_inline_callback
+    admin_add_item_price, admin_add_category_start, admin_add_category_name,
+    admin_add_sub_item_start, admin_add_sub_item_name, admin_add_sub_item_price,
+    admin_back_to_portal, admin_inline_callback
 )
 from handlers.manage_order import view_my_orders, handle_manage_order, handle_order_action, handle_edit_item, handle_edit_qty
 from handlers.feedback import start_feedback, save_feedback_handler
@@ -72,6 +74,9 @@ conv = ConversationHandler(
         ADMIN_BROADCAST: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_do_broadcast)],
         ADMIN_ADD_ITEM_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_item_name)],
         ADMIN_ADD_ITEM_PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_item_price)],
+        ADMIN_ADD_CATEGORY: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_category_name)],
+        ADMIN_ADD_SUBITEM_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_sub_item_name)],
+        ADMIN_ADD_SUBITEM_PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_sub_item_price)],
         CONTACT_ADMIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, contact_admin_send)],
         OTHER_ITEM_INPUT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_custom_item_name)],
         COMMENT_CHOICE: [CallbackQueryHandler(handle_comment_choice)],
@@ -85,7 +90,7 @@ conv = ConversationHandler(
 )
 
 application.add_handler(conv)
-application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^deliver_|^ord_"))
+application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_"))
 
 async def _start_polling():
     await application.bot.delete_webhook()

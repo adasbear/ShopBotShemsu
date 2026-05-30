@@ -2,10 +2,11 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import ADMIN_USERNAME, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE
+from config import ADMIN_USERNAME, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE
 from database import (
     get_all_users_detailed, ban_user, unban_user,
     get_menu, add_menu_item, delete_menu_item,
+    get_all_menu_items,
     get_pending_summary, get_pending_orders_with_users,
     get_pending_user_ids, mark_all_arrived, mark_order_arrived,
     get_all_feedback, get_all_users,
@@ -14,8 +15,9 @@ from database import (
 )
 from keyboards import (
     get_admin_keyboard, get_admin_orders_keyboard,
-    admin_menu_edit_keyboard, admin_users_keyboard,
-    admin_user_action_keyboard, delivered_keyboard,
+    admin_menu_edit_keyboard, admin_category_keyboard,
+    admin_users_keyboard, admin_user_action_keyboard,
+    delivered_keyboard,
     order_accept_decline_keyboard, order_ready_keyboard,
     order_deliver_keyboard
 )
@@ -72,13 +74,20 @@ async def admin_show_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def admin_show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _check(update):
         return ConversationHandler.END
-    menu = await get_menu()
-    if not menu:
+    items = await get_all_menu_items()
+    if not items:
         txt = "Menu is empty."
     else:
         txt = "<b>Menu</b>\n\n"
-        for name, price in menu.items():
-            txt += f"{name} - ${price}\n"
+        cats = [r for r in items if r["parent"] is None]
+        for r in cats:
+            sub = [s for s in items if s["parent"] == r["name"]]
+            if sub:
+                txt += f"📁 <b>{r['name']}</b>\n"
+                for s in sub:
+                    txt += f"   {s['name']} - ${s['price']}\n"
+            else:
+                txt += f"{r['name']} - ${r['price']}\n"
     await update.message.reply_text(
         txt,
         reply_markup=await admin_menu_edit_keyboard(),
@@ -285,6 +294,85 @@ async def admin_add_item_price(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text("Invalid price. Item not added.", reply_markup=get_admin_keyboard())
     return ConversationHandler.END
 
+# --- Add Category Flow ---
+
+async def admin_add_category_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    await update.message.reply_text("Enter the <b>name</b> of the new category:", parse_mode=ParseMode.HTML)
+    return ADMIN_ADD_CATEGORY
+
+async def admin_add_category_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    name = update.message.text.strip()
+    if not name:
+        await update.message.reply_text("Name cannot be empty.")
+        return ADMIN_ADD_CATEGORY
+    await add_menu_item(name, 0.0)
+    await update.message.reply_text(f"Category <b>{name}</b> added!", reply_markup=await admin_menu_edit_keyboard())
+    return ConversationHandler.END
+
+# --- Manage Category (view sub-items, add sub-item) ---
+
+async def admin_manage_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    if not _check(update):
+        return ConversationHandler.END
+    category = query.data.replace("manage_cat_", "")
+    context.user_data["manage_category"] = category
+    from keyboards import admin_category_keyboard
+    items = await get_sub_menu(category)
+    if items:
+        lines = "\n".join(f"{n} - ${p}" for n, p in items.items())
+        txt = f"<b>{category}</b> sub-items:\n\n{lines}"
+    else:
+        txt = f"<b>{category}</b> has no sub-items yet."
+    await query.edit_message_text(txt, reply_markup=await admin_category_keyboard(category))
+    return ConversationHandler.END
+
+# --- Add Sub-item Flow ---
+
+async def admin_add_sub_item_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    if not _check(update):
+        return ConversationHandler.END
+    category = query.data.replace("add_subitem_", "")
+    context.user_data["admin_sub_parent"] = category
+    await query.edit_message_text(
+        f"Enter the <b>name</b> of the sub-item under {category}:",
+        parse_mode=ParseMode.HTML
+    )
+    return ADMIN_ADD_SUBITEM_NAME
+
+async def admin_add_sub_item_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    context.user_data["admin_new_item"] = update.message.text
+    await update.message.reply_text(
+        f"Enter the <b>price</b> for {update.message.text}:",
+        parse_mode=ParseMode.HTML
+    )
+    return ADMIN_ADD_SUBITEM_PRICE
+
+async def admin_add_sub_item_price(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    try:
+        price = float(update.message.text)
+        name = context.user_data["admin_new_item"]
+        parent = context.user_data["admin_sub_parent"]
+        await add_menu_item(name, price, parent)
+        await update.message.reply_text(
+            f"Added {name} (${price:.2f}) under {parent}!",
+            reply_markup=await admin_menu_edit_keyboard()
+        )
+    except:
+        await update.message.reply_text("Invalid price.", reply_markup=await admin_menu_edit_keyboard())
+    return ConversationHandler.END
+
 # --- Back to Portal ---
 
 async def admin_back_to_portal(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -478,6 +566,47 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
     if data == "admin_add_item":
         await query.edit_message_text("Enter the <b>name</b> of the new item:", parse_mode=ParseMode.HTML)
         return ADMIN_ADD_ITEM_NAME
+
+    if data == "admin_add_category":
+        await query.edit_message_text("Enter the <b>name</b> of the new category:", parse_mode=ParseMode.HTML)
+        return ADMIN_ADD_CATEGORY
+
+    if data.startswith("manage_cat_"):
+        category = data.replace("manage_cat_", "")
+        context.user_data["manage_category"] = category
+        from keyboards import admin_category_keyboard
+        items = await get_sub_menu(category)
+        if items:
+            lines = "\n".join(f"{n} - ${p}" for n, p in items.items())
+            txt = f"<b>{category}</b> sub-items:\n\n{lines}"
+        else:
+            txt = f"<b>{category}</b> has no sub-items yet."
+        await query.edit_message_text(txt, reply_markup=await admin_category_keyboard(category))
+        return ConversationHandler.END
+
+    if data.startswith("add_subitem_"):
+        category = data.replace("add_subitem_", "")
+        context.user_data["admin_sub_parent"] = category
+        await query.edit_message_text(
+            f"Enter the <b>name</b> of the sub-item under {category}:",
+            parse_mode=ParseMode.HTML
+        )
+        return ADMIN_ADD_SUBITEM_NAME
+
+    if data == "admin_back_menu":
+        menu_items = await get_all_menu_items()
+        txt = "<b>Menu</b>\n\n"
+        cats = [r for r in menu_items if r["parent"] is None]
+        for r in cats:
+            sub = [s for s in menu_items if s["parent"] == r["name"]]
+            if sub:
+                txt += f"📁 <b>{r['name']}</b>\n"
+                for s in sub:
+                    txt += f"   {s['name']} - ${s['price']}\n"
+            else:
+                txt += f"{r['name']} - ${r['price']}\n"
+        await query.edit_message_text(txt.strip(), reply_markup=await admin_menu_edit_keyboard())
+        return ConversationHandler.END
 
     # --- Legacy deliver (per-item, backward compat) ---
 
