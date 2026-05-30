@@ -23,7 +23,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not user:
         welcome = (
-            "<b>Welcome to ShopBot Shemsu! 🛒</b>\n\n"
+            "<b>Welcome to Shemsu Shop! 🛒</b>\n\n"
             "Order your favourite food & drinks directly from this bot.\n\n"
             "• Browse the <b>Menu</b> and add items to your order\n"
             "• Add custom requests with <b>Other</b>\n"
