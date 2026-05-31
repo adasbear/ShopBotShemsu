@@ -438,7 +438,8 @@ async def admin_show_all_debts_handler(update: Update, context: ContextTypes.DEF
     else:
         txt = f"<b>Active Debts ({len(debts)})</b>\n\n"
         for d in debts[:15]:
-            txt += f"• @{d['username']} — Birr {d['amount']:.2f}\n"
+            name = d.get("full_name", "")
+            txt += f"• {name} (@{d['username']}) — Birr {d['amount']:.2f}\n"
     await update.message.reply_text(
         txt,
         reply_markup=await admin_debts_inline_keyboard("active"),
@@ -460,8 +461,10 @@ async def _finish_delivery(context, query, order_group, on_debt=False):
                 menu = await get_menu()
                 items = target.get("items", [])
                 total = sum(it["qty"] * menu.get(it["item"], 0) for it in items)
+                full_name = (user or {}).get("full_name", username)
                 await db_add_debt(
                     username=username,
+                    full_name=full_name,
                     amount=total,
                     description=f"Delivered order #{order_group}",
                     order_group=order_group,
@@ -530,7 +533,7 @@ async def _handle_debt_inline(update: Update, context: ContextTypes.DEFAULT_TYPE
         if debt:
             await query.edit_message_text(
                 f"<b>Debt Detail</b>\n\n"
-                f"User: @{debt['username']}\n"
+                f"User: {debt.get('full_name', '')} (@{debt['username']})\n"
                 f"Amount: Birr {debt['amount']:.2f}\n"
                 f"Status: {debt['status'].title()}\n"
                 f"Description: {debt.get('description', '-')}\n"
@@ -544,7 +547,8 @@ async def _handle_debt_inline(update: Update, context: ContextTypes.DEFAULT_TYPE
         debts = await get_all_debts(status_filter="active")
         txt = f"<b>Active Debts ({len(debts)})</b>\n\n"
         for d in debts[:15]:
-            txt += f"• @{d['username']} — Birr {d['amount']:.2f}\n"
+            name = d.get("full_name", "")
+            txt += f"• {name} (@{d['username']}) — Birr {d['amount']:.2f}\n"
         await query.edit_message_text(
             txt, reply_markup=await admin_debts_inline_keyboard("active"),
             parse_mode=ParseMode.HTML
@@ -555,7 +559,8 @@ async def _handle_debt_inline(update: Update, context: ContextTypes.DEFAULT_TYPE
         debts = await get_all_debts()
         txt = f"<b>All Debts ({len(debts)})</b>\n\n"
         for d in debts[:15]:
-            txt += f"• @{d['username']} — Birr {d['amount']:.2f} ({d['status']})\n"
+            name = d.get("full_name", "")
+            txt += f"• {name} (@{d['username']}) — Birr {d['amount']:.2f} ({d['status']})\n"
         await query.edit_message_text(
             txt, reply_markup=await admin_debts_inline_keyboard(),
             parse_mode=ParseMode.HTML
@@ -566,7 +571,8 @@ async def _handle_debt_inline(update: Update, context: ContextTypes.DEFAULT_TYPE
         debts = await get_all_debts(status_filter="active")
         txt = f"<b>Active Debts ({len(debts)})</b>\n\n"
         for d in debts[:15]:
-            txt += f"• @{d['username']} — Birr {d['amount']:.2f}\n"
+            name = d.get("full_name", "")
+            txt += f"• {name} (@{d['username']}) — Birr {d['amount']:.2f}\n"
         await query.edit_message_text(
             txt, reply_markup=await admin_debts_inline_keyboard("active"),
             parse_mode=ParseMode.HTML

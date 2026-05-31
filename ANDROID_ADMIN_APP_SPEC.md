@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-A native Android app for the shop admin (`@Barc_h`, user ID `7531836547`) to manage the Telegram food ordering bot. The app connects directly to the same Supabase PostgreSQL database that the Telegram bot uses — no additional backend needed.
+A native Android app for the shop admin (`@PPopa054`, user ID `7041035485`) to manage the Telegram food ordering bot. The app connects directly to the same Supabase PostgreSQL database that the Telegram bot uses — no additional backend needed.
 
 **Why an Android app?** The current admin interface lives inside Telegram (inline keyboards, reply keyboards). An Android app gives a native UI with real-time updates, better UX for order management, and persistent push notifications.
 
@@ -25,8 +25,8 @@ A native Android app for the shop admin (`@Barc_h`, user ID `7531836547`) to man
 
 | Field | Value |
 |-------|-------|
-| **Telegram Username** | `Barc_h` |
-| **Telegram User ID** | `7531836547` |
+| **Telegram Username** | `PPopa054` |
+| **Telegram User ID** | `7041035485` |
 | **Bot Token** | `8768868555:AAFriBhP04Ib9okUIbBfBiidVd55J-LVI3o` |
 
 ### Supabase SDK for Android
@@ -54,7 +54,7 @@ val supabase = createSupabaseClient(
 
 ## 3. Database Schema (Supabase PostgreSQL)
 
-Four tables. The app reads/writes all of them directly via Supabase REST API.
+Six tables. The app reads/writes all of them directly via Supabase REST API.
 
 ### Table: `users`
 
@@ -114,6 +114,39 @@ CREATE TABLE feedback (
 ```
 
 **App usage:** Read feedback, optionally reply via Telegram.
+
+### Table: `debt_allow_list`
+
+```sql
+CREATE TABLE debt_allow_list (
+    id         SERIAL PRIMARY KEY,
+    username   TEXT NOT NULL UNIQUE,
+    added_by   BIGINT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**App usage:** View, add, remove usernames allowed to take debt.
+
+### Table: `debts`
+
+```sql
+CREATE TABLE debts (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT REFERENCES users(user_id),
+    username    TEXT NOT NULL,
+    amount      NUMERIC(10,2) NOT NULL,
+    description TEXT,
+    status      TEXT NOT NULL DEFAULT 'active',
+    order_group TEXT,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    paid_at     TIMESTAMPTZ
+);
+```
+
+**Statuses:** `active` → `paid` | `waived`
+
+**App usage:** View all debts (filter by status), mark as paid, waive, auto-create from delivered orders.
 
 ---
 
@@ -233,7 +266,65 @@ supabase.from("orders").update({ "status" to "Accepted" }) {
   ```
 - Show progress: count sent / total
 
-### 4.8 Profit & Reports Screen
+### 4.8 Debt Management Screen
+
+A dedicated screen to manage the debt system. Accessible from the bottom navigation or dashboard card.
+
+**Allow List tab:**
+- List of usernames approved to take debt
+- Each row: `@username` (added date)
+- **FAB** to add a username (text input dialog)
+- Swipe to remove from allow list
+- Realtime subscription to `debt_allow_list` for live updates
+
+**Debts tab with segmented control: Active | Paid | All:**
+- Each row: `@username` — Birr amount — status badge (Active 🟡 / Paid ✅ / Waived 🚫)
+- Tap → **Debt Detail** view:
+  - Username, amount, description
+  - Status, created date, paid date (if applicable)
+  - Linked order_group (tappable → navigates to order detail)
+  - Action buttons:
+    - **Mark Paid ✅** (if active) → sets `status = 'paid'`, `paid_at = NOW()`
+    - **Waive 🚫** (if active) → sets `status = 'waived'`
+- Summary card at top: total active debt amount across all users
+
+**Delivery flow integration (inside Order Detail):**
+When admin marks an order as **Delivered** (status = `Ready`), show a confirmation dialog:
+- **"Mark as Paid 💰"** → status = `Delivered`, user notified "Delivered! 💰"
+- **"Mark as Debt 📋"** → status = `Delivered` + insert row into `debts` table, user notified "Delivered (on debt)"
+
+**API calls:**
+```kotlin
+// Fetch allow list
+supabase.from("debt_allow_list").select("*").order("username")
+
+// Add to allow list
+supabase.from("debt_allow_list").insert(mapOf("username" to "user", "added_by" to adminId))
+
+// Remove from allow list
+supabase.from("debt_allow_list").delete { filter { eq("username", "user") } }
+
+// Fetch debts (filtered)
+supabase.from("debts").select("*").order("created_at", desc = true)
+// With filter: .eq("status", "active")
+
+// Mark debt as paid
+supabase.from("debts").update(mapOf("status" to "paid", "paid_at" to now())) {
+    filter { eq("id", debtId) }
+}
+
+// Waive debt
+supabase.from("debts").update(mapOf("status" to "waived")) {
+    filter { eq("id", debtId) }
+}
+
+// Get active debt total for a user
+supabase.from("debts").select("amount") {
+    filter { eq("username", "user"); eq("status", "active") }
+}
+```
+
+### 4.9 Profit & Reports Screen
 
 - **Today's Profit** (call `getTodaysProfit()` equivalent)
 - **This Week** sum
@@ -334,16 +425,37 @@ suspend fun sendTelegramMessage(chatId: Long, text: String) {
 
 ---
 
-## 9. Quick-Start: SQL to Seed the Admin (run in Supabase SQL Editor)
+## 9. Quick-Start: SQL to Set Up Database (run in Supabase SQL Editor)
 
 ```sql
 -- Ensure the admin exists in the users table
 INSERT INTO users (user_id, full_name, username, banned)
-VALUES (7531836547, 'Admin', 'Barc_h', false)
-ON CONFLICT (user_id) DO UPDATE SET username = 'Barc_h', full_name = 'Admin';
+VALUES (7041035485, 'Admin', 'PPopa054', false)
+ON CONFLICT (user_id) DO UPDATE SET username = 'PPopa054', full_name = 'Admin';
 
 -- Ensure order_group column exists
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_group TEXT;
+
+-- Create debt_allow_list table
+CREATE TABLE IF NOT EXISTS debt_allow_list (
+    id         SERIAL PRIMARY KEY,
+    username   TEXT NOT NULL UNIQUE,
+    added_by   BIGINT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create debts table
+CREATE TABLE IF NOT EXISTS debts (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT REFERENCES users(user_id),
+    username    TEXT NOT NULL,
+    amount      NUMERIC(10,2) NOT NULL,
+    description TEXT,
+    status      TEXT NOT NULL DEFAULT 'active',
+    order_group TEXT,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    paid_at     TIMESTAMPTZ
+);
 ```
 
 ---

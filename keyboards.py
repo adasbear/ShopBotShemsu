@@ -176,7 +176,8 @@ async def admin_debts_inline_keyboard(filter_status=None):
     debts = await get_all_debts(status_filter=filter_status)
     kb = []
     for d in debts[:15]:
-        label = f"{d['username']} - Birr {d['amount']:.2f} ({d['status']})"
+        name = d.get("full_name", d["username"])
+        label = f"{name} (@{d['username']}) - Birr {d['amount']:.2f}"
         kb.append([InlineKeyboardButton(label, callback_data=f"adebt_{d['id']}")])
     kb.append([InlineKeyboardButton("Show Active", callback_data="adebt_filter_active")])
     kb.append([InlineKeyboardButton("Show All", callback_data="adebt_filter_all")])

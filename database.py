@@ -255,16 +255,19 @@ async def get_debt_allow_list():
 
 # --- Debts ---
 
-async def add_debt(username, amount, description="", order_group=None, user_id=None):
+async def add_debt(username, amount, description="", order_group=None, user_id=None, full_name=None):
     clean = username.lstrip("@")
-    await _db(lambda: _supabase.table("debts").insert({
+    data = {
         "username": clean,
         "user_id": user_id,
         "amount": amount,
         "description": description,
         "status": "active",
-        "order_group": order_group
-    }).execute())
+        "order_group": order_group,
+    }
+    if full_name:
+        data["full_name"] = full_name
+    await _db(lambda: _supabase.table("debts").insert(data).execute())
 
 async def get_user_debts(username):
     clean = username.lstrip("@")
@@ -321,8 +324,9 @@ async def seed_debts_from_json(entries):
         if not exists.data:
             await _db(lambda: _supabase.table("debts").insert({
                 "username": clean,
+                "full_name": entry["name"],
                 "amount": entry["debt_etb"],
-                "description": f"Imported: {entry['name']}",
+                "description": "Imported from existing records",
                 "status": "active"
             }).execute())
             count += 1

@@ -34,8 +34,9 @@ async def view_my_debt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lines = [f"<b>Active Debt:</b> Birr {active_total:.2f}\n"]
     for d in debts:
         icon = {"active": "🕐", "paid": "✅", "waived": "🚫"}.get(d["status"], "❓")
+        label = d.get("description", "Order")
         lines.append(
-            f"{icon} Birr {d['amount']:.2f} — {d.get('description', 'Order')} "
+            f"{icon} Birr {d['amount']:.2f} — {label} "
             f"({d['status'].title()})"
         )
     await update.message.reply_text(
@@ -81,8 +82,11 @@ async def handle_debt_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if allowed:
             for i in items:
                 await save_order(user_id, i["item"], i["qty"], order_group)
+            user_record = await get_user(user_id)
+            full_name = (user_record or {}).get("full_name", username)
             await add_debt(
                 username=username,
+                full_name=full_name,
                 amount=context.user_data["order_total"],
                 description=f"Order #{order_group}",
                 order_group=order_group,
@@ -114,8 +118,9 @@ async def _notify_admin_debt(context, username):
     if not admin_id:
         return
     comment = context.user_data.get("order_comment")
+    order_name = context.user_data.get("order_name", username)
     text = (
-        f"<b>DEBT ORDER FROM: @{username}</b>\n\n"
+        f"<b>DEBT ORDER FROM: {order_name} (@{username})</b>\n\n"
         f"{chr(10).join(context.user_data['order_items'])}\n\n"
         f"TOTAL: Birr {context.user_data['order_total']:.2f}"
     )
