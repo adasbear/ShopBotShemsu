@@ -229,3 +229,101 @@ async def get_all_feedback():
         .order("created_at", desc=True)
         .execute())
     return result.data
+
+# --- Debt Allow List ---
+
+async def add_to_debt_allow_list(username, added_by):
+    clean = username.lstrip("@")
+    await _db(lambda: _supabase.table("debt_allow_list").upsert({
+        "username": clean, "added_by": added_by
+    }).execute())
+
+async def remove_from_debt_allow_list(username):
+    clean = username.lstrip("@")
+    await _db(lambda: _supabase.table("debt_allow_list").delete().eq("username", clean).execute())
+
+async def is_allowed_debt(username):
+    if not username:
+        return False
+    clean = username.lstrip("@")
+    result = await _db(lambda: _supabase.table("debt_allow_list").select("id").eq("username", clean).limit(1).execute())
+    return len(result.data) > 0
+
+async def get_debt_allow_list():
+    result = await _db(lambda: _supabase.table("debt_allow_list").select("*").order("username").execute())
+    return result.data
+
+# --- Debts ---
+
+async def add_debt(username, amount, description="", order_group=None, user_id=None):
+    clean = username.lstrip("@")
+    await _db(lambda: _supabase.table("debts").insert({
+        "username": clean,
+        "user_id": user_id,
+        "amount": amount,
+        "description": description,
+        "status": "active",
+        "order_group": order_group
+    }).execute())
+
+async def get_user_debts(username):
+    clean = username.lstrip("@")
+    result = await _db(lambda: _supabase.table("debts")
+        .select("*")
+        .eq("username", clean)
+        .order("created_at", desc=True)
+        .limit(50)
+        .execute())
+    return result.data
+
+async def get_user_active_debt_total(username):
+    clean = username.lstrip("@")
+    result = await _db(lambda: _supabase.table("debts")
+        .select("amount")
+        .eq("username", clean)
+        .eq("status", "active")
+        .execute())
+    return sum(r["amount"] for r in result.data)
+
+async def get_all_debts(status_filter=None):
+    q = _supabase.table("debts").select("*")
+    if status_filter:
+        q = q.eq("status", status_filter)
+    q = q.order("created_at", desc=True)
+    result = await _db(lambda: q.execute())
+    return result.data
+
+async def mark_debt_paid(debt_id):
+    await _db(lambda: _supabase.table("debts")
+        .update({"status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()})
+        .eq("id", debt_id)
+        .execute())
+
+async def waive_debt(debt_id):
+    await _db(lambda: _supabase.table("debts")
+        .update({"status": "waived"})
+        .eq("id", debt_id)
+        .execute())
+
+# --- Seed debts from JSON (one-time import) ---
+
+async def seed_debts_from_json(entries):
+    count = 0
+    for entry in entries:
+        clean = entry["telegram_username"].lstrip("@")
+        exists = await _db(lambda: _supabase.table("debts")
+            .select("id")
+            .eq("username", clean)
+            .eq("amount", entry["debt_etb"])
+            .eq("status", "active")
+            .limit(1)
+            .execute())
+        if not exists.data:
+            await _db(lambda: _supabase.table("debts").insert({
+                "username": clean,
+                "amount": entry["debt_etb"],
+                "description": f"Imported: {entry['name']}",
+                "status": "active"
+            }).execute())
+            count += 1
+    return count

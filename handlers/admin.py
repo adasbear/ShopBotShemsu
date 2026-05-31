@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import ADMIN_USERNAME, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE
+from config import ADMIN_USERNAME, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, ADMIN_DEBT_MENU
 from database import (
     get_all_users_detailed, ban_user, unban_user,
     get_menu, add_menu_item, delete_menu_item,
@@ -11,15 +11,20 @@ from database import (
     get_pending_user_ids, mark_all_arrived, mark_order_arrived,
     get_all_feedback, get_all_users,
     get_grouped_orders_by_status, update_order_status,
-    get_todays_profit, register_user as db_register_user
+    get_todays_profit, register_user as db_register_user,
+    add_to_debt_allow_list, remove_from_debt_allow_list,
+    get_debt_allow_list, add_debt, get_user,
+    get_all_debts, mark_debt_paid, waive_debt
 )
 from keyboards import (
-    get_admin_keyboard, get_admin_orders_keyboard,
+    get_admin_keyboard, get_admin_orders_keyboard, get_admin_debt_keyboard,
     admin_menu_edit_keyboard, admin_category_keyboard,
     admin_users_keyboard, admin_user_action_keyboard,
     delivered_keyboard,
     order_accept_decline_keyboard, order_ready_keyboard,
-    order_deliver_keyboard
+    order_deliver_keyboard, deliver_paid_debt_keyboard,
+    admin_allow_list_inline_keyboard, admin_debts_inline_keyboard,
+    admin_debt_action_keyboard
 )
 from utils.helpers import is_admin, BAN_MESSAGE
 
@@ -385,6 +390,189 @@ async def admin_back_to_portal(update: Update, context: ContextTypes.DEFAULT_TYP
     )
     return ConversationHandler.END
 
+# --- Debt Management ---
+
+async def admin_debt_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    await update.message.reply_text(
+        "<b>Debt Management</b>\n\nChoose an option:",
+        reply_markup=get_admin_debt_keyboard(),
+        parse_mode=ParseMode.HTML
+    )
+    return ConversationHandler.END
+
+async def admin_show_allow_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    entries = await get_debt_allow_list()
+    if not entries:
+        txt = "Allow list is empty.\n\nTap <b>Add Username</b> to add someone."
+    else:
+        txt = "<b>Debt Allow List</b>\n\n"
+        for e in entries:
+            txt += f"• @{e['username']}\n"
+    await update.message.reply_text(
+        txt,
+        reply_markup=await admin_allow_list_inline_keyboard(),
+        parse_mode=ParseMode.HTML
+    )
+    return ConversationHandler.END
+
+async def admin_add_allow_list_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    context.user_data["expect_allow_username"] = True
+    await update.message.reply_text(
+        "Enter the Telegram <b>username</b> to allow for debt (with or without @):",
+        parse_mode=ParseMode.HTML
+    )
+    return ConversationHandler.END
+
+async def admin_show_all_debts_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    debts = await get_all_debts(status_filter="active")
+    if not debts:
+        txt = "No active debts."
+    else:
+        txt = f"<b>Active Debts ({len(debts)})</b>\n\n"
+        for d in debts[:15]:
+            txt += f"• @{d['username']} — Birr {d['amount']:.2f}\n"
+    await update.message.reply_text(
+        txt,
+        reply_markup=await admin_debts_inline_keyboard("active"),
+        parse_mode=ParseMode.HTML
+    )
+    return ConversationHandler.END
+
+async def _finish_delivery(context, query, order_group, on_debt=False):
+    await update_order_status(order_group, "Delivered")
+    groups = await get_grouped_orders_by_status("Delivered")
+    target = next((g for g in groups if g["order_group"] == order_group), None)
+    if target:
+        try:
+            text = "<b>Order Delivered!</b>\n\nThank you for your order!"
+            if on_debt:
+                from database import add_debt as db_add_debt, get_user
+                user = await get_user(target["user_id"])
+                username = (user or {}).get("username") or "unknown"
+                menu = await get_menu()
+                items = target.get("items", [])
+                total = sum(it["qty"] * menu.get(it["item"], 0) for it in items)
+                await db_add_debt(
+                    username=username,
+                    amount=total,
+                    description=f"Delivered order #{order_group}",
+                    order_group=order_group,
+                    user_id=target["user_id"]
+                )
+                text += " <i>(recorded as debt)</i>"
+            else:
+                text += " 💰"
+            await context.bot.send_message(
+                target["user_id"],
+                text,
+                parse_mode=ParseMode.HTML
+            )
+        except Exception as e:
+            pass
+    original_text = query.message.text_html or query.message.text
+    label = "✅ <b>DELIVERED (DEBT)</b>" if on_debt else "✅ <b>DELIVERED (PAID)</b>"
+    await query.edit_message_text(
+        original_text + "\n\n" + label,
+        parse_mode=ParseMode.HTML
+    )
+
+# --- Debt inline callbacks ---
+
+async def _handle_debt_inline(update: Update, context: ContextTypes.DEFAULT_TYPE, query, data):
+    if data.startswith("adel_allow_"):
+        username = data.replace("adel_allow_", "")
+        await remove_from_debt_allow_list(username)
+        await query.edit_message_text(
+            f"Removed @{username} from allow list.",
+            reply_markup=await admin_allow_list_inline_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    if data == "admin_add_allow":
+        context.user_data["expect_allow_username"] = True
+        await query.edit_message_text(
+            "Enter the Telegram <b>username</b> to allow for debt:",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    if data == "admin_back_debt":
+        await query.edit_message_text(
+            "<b>Debt Management</b>",
+            reply_markup=get_admin_debt_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    if data.startswith("adebt_"):
+        debt_id = int(data.split("_")[1])
+        if data.startswith("adebt_paid_"):
+            await mark_debt_paid(debt_id)
+            await query.edit_message_text("Debt marked as paid ✅")
+            return
+        if data.startswith("adebt_waive_"):
+            await waive_debt(debt_id)
+            await query.edit_message_text("Debt waived 🚫")
+            return
+        # View debt detail
+        from database import get_all_debts
+        all_debts = await get_all_debts()
+        debt = next((d for d in all_debts if d["id"] == debt_id), None)
+        if debt:
+            await query.edit_message_text(
+                f"<b>Debt Detail</b>\n\n"
+                f"User: @{debt['username']}\n"
+                f"Amount: Birr {debt['amount']:.2f}\n"
+                f"Status: {debt['status'].title()}\n"
+                f"Description: {debt.get('description', '-')}\n"
+                f"Created: {debt['created_at']}",
+                reply_markup=admin_debt_action_keyboard(debt_id),
+                parse_mode=ParseMode.HTML
+            )
+        return
+
+    if data == "adebt_filter_active":
+        debts = await get_all_debts(status_filter="active")
+        txt = f"<b>Active Debts ({len(debts)})</b>\n\n"
+        for d in debts[:15]:
+            txt += f"• @{d['username']} — Birr {d['amount']:.2f}\n"
+        await query.edit_message_text(
+            txt, reply_markup=await admin_debts_inline_keyboard("active"),
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    if data == "adebt_filter_all":
+        debts = await get_all_debts()
+        txt = f"<b>All Debts ({len(debts)})</b>\n\n"
+        for d in debts[:15]:
+            txt += f"• @{d['username']} — Birr {d['amount']:.2f} ({d['status']})\n"
+        await query.edit_message_text(
+            txt, reply_markup=await admin_debts_inline_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    if data == "adebt_back_to_list":
+        debts = await get_all_debts(status_filter="active")
+        txt = f"<b>Active Debts ({len(debts)})</b>\n\n"
+        for d in debts[:15]:
+            txt += f"• @{d['username']} — Birr {d['amount']:.2f}\n"
+        await query.edit_message_text(
+            txt, reply_markup=await admin_debts_inline_keyboard("active"),
+            parse_mode=ParseMode.HTML
+        )
+        return
+
 # --- Inline Callback Handler ---
 
 async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -395,6 +583,10 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
         return ConversationHandler.END
 
     data = query.data
+
+    # --- Debt callbacks ---
+    if data.startswith("adel_allow_") or data.startswith("adebt_") or data == "admin_add_allow" or data == "admin_back_debt" or data == "adebt_back_to_list" or data == "adebt_filter_active" or data == "adebt_filter_all":
+        return await _handle_debt_inline(update, context, query, data)
 
     # --- Order management callbacks ---
 
@@ -471,23 +663,22 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
 
     if data.startswith("ord_deliver_"):
         order_group = data.split("_", 2)[2]
-        await update_order_status(order_group, "Delivered")
-        groups = await get_grouped_orders_by_status("Delivered")
-        target = next((g for g in groups if g["order_group"] == order_group), None)
-        if target:
-            try:
-                await context.bot.send_message(
-                    target["user_id"],
-                    "<b>Order Delivered!</b>\n\nThank you for your order! Come back soon.",
-                    parse_mode=ParseMode.HTML
-                )
-            except:
-                pass
         original_text = query.message.text_html or query.message.text
         await query.edit_message_text(
-            original_text + "\n\n✅ <b>DELIVERED</b>",
+            original_text + "\n\n<b>Mark as?</b>",
+            reply_markup=deliver_paid_debt_keyboard(order_group),
             parse_mode=ParseMode.HTML
         )
+        return ConversationHandler.END
+
+    if data.startswith("ord_paid_"):
+        order_group = data.split("_", 2)[2]
+        await _finish_delivery(context, query, order_group, on_debt=False)
+        return ConversationHandler.END
+
+    if data.startswith("ord_debt_"):
+        order_group = data.split("_", 2)[2]
+        await _finish_delivery(context, query, order_group, on_debt=True)
         return ConversationHandler.END
 
     # --- User management ---

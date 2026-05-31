@@ -1,7 +1,7 @@
 from telegram import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 
 def get_main_keyboard():
-    buttons = [["Menu", "Profile"], ["My Orders", "Feedback"], ["Help", "Refresh"]]
+    buttons = [["Menu", "Profile"], ["My Orders", "Feedback"], ["Help", "Refresh"], ["My Debt"]]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
 async def menu_inline_keyboard(show_back=True, parent=None):
@@ -76,7 +76,8 @@ def delivered_keyboard(order_id):
 def get_admin_keyboard():
     buttons = [
         ["Users", "Manage Menu", "Orders"],
-        ["Feedback", "Broadcast"]
+        ["Debt Management", "Feedback"],
+        ["Broadcast"]
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
@@ -126,5 +127,66 @@ def admin_user_action_keyboard(user_id, is_banned):
     kb = [
         [InlineKeyboardButton(action, callback_data=cb)],
         [InlineKeyboardButton("Back to Users", callback_data="aback_users")]
+    ]
+    return InlineKeyboardMarkup(kb)
+
+# --- Debt keyboards ---
+
+def debt_choice_keyboard():
+    kb = [
+        [InlineKeyboardButton("Pay Now 💰", callback_data="pay_now")],
+        [InlineKeyboardButton("Take on Debt 📋", callback_data="debt_take")],
+        [InlineKeyboardButton("Cancel Order ❌", callback_data="debt_cancel")]
+    ]
+    return InlineKeyboardMarkup(kb)
+
+def debt_not_allowed_keyboard():
+    kb = [
+        [InlineKeyboardButton("Pay Now 💰", callback_data="pay_now")],
+        [InlineKeyboardButton("Cancel Order ❌", callback_data="debt_cancel")]
+    ]
+    return InlineKeyboardMarkup(kb)
+
+def deliver_paid_debt_keyboard(order_group):
+    kb = [
+        [InlineKeyboardButton("Paid 💰", callback_data=f"ord_paid_{order_group}"),
+         InlineKeyboardButton("Debt 📋", callback_data=f"ord_debt_{order_group}")]
+    ]
+    return InlineKeyboardMarkup(kb)
+
+def get_admin_debt_keyboard():
+    buttons = [
+        ["Allow List", "All Debts"],
+        ["Back to Portal"]
+    ]
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+
+async def admin_allow_list_inline_keyboard():
+    from database import get_debt_allow_list
+    entries = await get_debt_allow_list()
+    kb = []
+    for e in entries:
+        kb.append([InlineKeyboardButton(f"Remove @{e['username']}", callback_data=f"adel_allow_{e['username']}")])
+    kb.append([InlineKeyboardButton("Add Username ➕", callback_data="admin_add_allow")])
+    kb.append([InlineKeyboardButton("⬅ Back", callback_data="admin_back_debt")])
+    return InlineKeyboardMarkup(kb)
+
+async def admin_debts_inline_keyboard(filter_status=None):
+    from database import get_all_debts
+    debts = await get_all_debts(status_filter=filter_status)
+    kb = []
+    for d in debts[:15]:
+        label = f"{d['username']} - Birr {d['amount']:.2f} ({d['status']})"
+        kb.append([InlineKeyboardButton(label, callback_data=f"adebt_{d['id']}")])
+    kb.append([InlineKeyboardButton("Show Active", callback_data="adebt_filter_active")])
+    kb.append([InlineKeyboardButton("Show All", callback_data="adebt_filter_all")])
+    kb.append([InlineKeyboardButton("⬅ Back", callback_data="admin_back_debt")])
+    return InlineKeyboardMarkup(kb)
+
+def admin_debt_action_keyboard(debt_id):
+    kb = [
+        [InlineKeyboardButton("Mark Paid ✅", callback_data=f"adebt_paid_{debt_id}")],
+        [InlineKeyboardButton("Waive 🚫", callback_data=f"adebt_waive_{debt_id}")],
+        [InlineKeyboardButton("⬅ Back", callback_data="adebt_back_to_list")]
     ]
     return InlineKeyboardMarkup(kb)

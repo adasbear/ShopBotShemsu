@@ -3,9 +3,9 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT
+from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, DEBT_CHOICE
 from database import get_menu, save_order, get_user, get_admin_user_id, has_sub_items
-from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard, order_accept_decline_keyboard, comment_choice_keyboard
+from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard, order_accept_decline_keyboard, comment_choice_keyboard, debt_choice_keyboard
 from utils.helpers import build_order_summary, check_banned
 
 async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -142,19 +142,19 @@ async def finalize_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
             item_lines.append(f"{i['qty']}x {i['item']} (Custom request)")
         else:
             item_lines.append(f"{i['qty']}x {i['item']} (Birr {cost:.2f})")
-        await save_order(user_id, i["item"], i["qty"], order_group)
 
+    context.user_data["user_id"] = user_id
     context.user_data["order_group"] = order_group
     context.user_data["order_name"] = user_name
     context.user_data["order_items"] = item_lines
     context.user_data["order_total"] = total_cost
 
     await query.edit_message_text(
-        f"Order Placed! (Birr {total_cost:.2f})\n\nAny special instructions?",
-        reply_markup=comment_choice_keyboard(),
+        "How would you like to pay?",
+        reply_markup=debt_choice_keyboard(),
         parse_mode=ParseMode.HTML
     )
-    return COMMENT_CHOICE
+    return DEBT_CHOICE
 
 async def handle_comment_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -162,7 +162,8 @@ async def handle_comment_choice(update: Update, context: ContextTypes.DEFAULT_TY
 
     if query.data == "skip_comment":
         await query.edit_message_text("Order submitted. Thank you!")
-        await _notify_admin(context)
+        if not context.user_data.get("on_debt"):
+            await _notify_admin(context)
         return ConversationHandler.END
 
     await query.edit_message_text("Type your special instructions below:")
@@ -179,7 +180,8 @@ async def handle_order_comment(update: Update, context: ContextTypes.DEFAULT_TYP
     context.user_data["order_comment"] = comment
 
     await update.message.reply_text("Comment saved! Order submitted.")
-    await _notify_admin(context)
+    if not context.user_data.get("on_debt"):
+        await _notify_admin(context)
     return ConversationHandler.END
 
 async def _notify_admin(context):
