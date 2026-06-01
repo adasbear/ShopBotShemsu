@@ -201,14 +201,14 @@ def get_admin_payment_keyboard():
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
-async def payment_methods_inline_keyboard():
+async def payment_methods_inline_keyboard(prefix="pay"):
     from database import get_payment_accounts
     accounts = await get_payment_accounts()
     kb = []
     for a in accounts:
         label = f"{a['bank_name']} - {a['number']}"
-        kb.append([InlineKeyboardButton(label, callback_data=f"pay_{a['id']}")])
-    kb.append([InlineKeyboardButton("⬅ Back", callback_data="pay_back")])
+        kb.append([InlineKeyboardButton(label, callback_data=f"{prefix}_{a['id']}")])
+    kb.append([InlineKeyboardButton("⬅ Back", callback_data=f"{prefix}_back")])
     return InlineKeyboardMarkup(kb)
 
 async def admin_payment_accounts_keyboard():

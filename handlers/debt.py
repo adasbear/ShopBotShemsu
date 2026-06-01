@@ -1,16 +1,17 @@
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
 from config import DEBT_CHOICE, COMMENT_CHOICE, PAYMENT_CHOICE
 from database import (
     get_user, save_order, is_allowed_debt, add_debt,
-    get_user_debts, get_user_active_debt_total, get_admin_user_id
+    get_user_debts, get_user_active_debt_total, get_admin_user_id,
+    get_payment_accounts, save_debt_payment
 )
 from keyboards import (
     debt_choice_keyboard, debt_not_allowed_keyboard,
     comment_choice_keyboard, get_main_keyboard,
-    order_accept_decline_keyboard
+    order_accept_decline_keyboard, payment_methods_inline_keyboard
 )
 from utils.helpers import check_banned
 
@@ -39,12 +40,103 @@ async def view_my_debt(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"{icon} Birr {d['amount']:.2f} — {label} "
             f"({d['status'].title()})"
         )
+    kb = [[InlineKeyboardButton("Pay Now 💰", callback_data="debt_pay_start")]] if active_total > 0 else []
     await update.message.reply_text(
         "\n".join(lines),
-        reply_markup=get_main_keyboard(),
+        reply_markup=InlineKeyboardMarkup(kb) if kb else get_main_keyboard(),
         parse_mode=ParseMode.HTML
     )
     return ConversationHandler.END
+
+
+async def handle_debt_pay_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+
+    if data == "debt_pay_start":
+        username = update.effective_user.username
+        active_total = await get_user_active_debt_total(username)
+        if active_total <= 0:
+            await query.edit_message_text("No active debt to pay.")
+            return
+        context.user_data["debt_pay_amount"] = active_total
+        context.user_data["debt_pay_username"] = username
+        context.user_data["debt_pay_user_id"] = update.effective_user.id
+        await query.edit_message_text(
+            f"<b>Paying Debt:</b> Birr {active_total:.2f}\n\nSelect a payment method:",
+            reply_markup=await payment_methods_inline_keyboard(prefix="debt_pay"),
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    if data == "debt_pay_back":
+        await query.edit_message_text("Payment cancelled.")
+        return
+
+    if data.startswith("debt_pay_"):
+        pid = int(data.split("_")[2])
+        accounts = await get_payment_accounts()
+        account = next((a for a in accounts if a["id"] == pid), None)
+        if not account:
+            await query.edit_message_text("Payment method not found.")
+            return
+        context.user_data["debt_pay_account"] = account
+        context.user_data["expect_debt_pay_confirm"] = True
+        await query.edit_message_text(
+            f"<b>Transfer to:</b>\n\n"
+            f"Bank: {account['bank_name']}\n"
+            f"Account: <code>{account['number']}</code>\n"
+            f"Name: {account['holder_name']}\n\n"
+            "After sending, paste the <b>confirmation message</b> you received from the bank or Telebirr below.\n\n"
+            "⚠️ Do not send screenshots — paste the text message only.",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+
+async def handle_debt_pay_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.user_data.get("expect_debt_pay_confirm"):
+        return
+    confirmation = update.message.text.strip()
+    if not confirmation:
+        await update.message.reply_text("Please paste the confirmation message.")
+        return
+
+    username = context.user_data.get("debt_pay_username")
+    user_id = context.user_data.get("debt_pay_user_id")
+    amount = context.user_data.get("debt_pay_amount")
+    account = context.user_data.get("debt_pay_account", {})
+
+    bank = account.get("bank_name", "?")
+    num = account.get("number", "?")
+    holder = account.get("holder_name", "?")
+    pay_str = f"{bank} - {num} ({holder})\nConfirmation: {confirmation}"
+
+    await save_debt_payment(username, user_id, amount, pay_str)
+
+    context.user_data["expect_debt_pay_confirm"] = False
+    for k in ["debt_pay_username", "debt_pay_user_id", "debt_pay_amount", "debt_pay_account"]:
+        context.user_data.pop(k, None)
+
+    await update.message.reply_text(
+        f"Debt payment of Birr {amount:.2f} submitted! The admin will process it shortly.",
+        parse_mode=ParseMode.HTML
+    )
+
+    admin_id = await get_admin_user_id()
+    if admin_id:
+        user_record = await get_user(user_id)
+        full_name = (user_record or {}).get("full_name", username)
+        await context.bot.send_message(
+            chat_id=admin_id,
+            text=(
+                f"<b>DEBT PAYMENT FROM: {full_name} (@{username})</b>\n\n"
+                f"Amount: Birr {amount:.2f}\n\n"
+                f"Payment:\n{pay_str}"
+            ),
+            parse_mode=ParseMode.HTML
+        )
 
 
 async def handle_debt_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):

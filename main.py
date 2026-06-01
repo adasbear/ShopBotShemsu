@@ -27,7 +27,7 @@ from handlers.admin import (
 from handlers.manage_order import view_my_orders, handle_manage_order, handle_order_action, handle_edit_item, handle_edit_qty
 from handlers.feedback import start_feedback, save_feedback_handler
 from handlers.help import show_help, handle_help_callback
-from handlers.debt import view_my_debt, handle_debt_choice
+from handlers.debt import view_my_debt, handle_debt_choice, handle_debt_pay_callback, handle_debt_pay_confirmation
 from handlers.payment import handle_payment_choice, handle_payment_confirmation
 from handlers.contact import contact_admin_start, contact_admin_callback, contact_admin_send
 
@@ -263,9 +263,11 @@ async def _handle_decline_reason(update: Update, context: ContextTypes.DEFAULT_T
         parse_mode=ParseMode.HTML
     )
 
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_debt_pay_confirmation))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_decline_reason))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_allow_username))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_payment_input))
+application.add_handler(CallbackQueryHandler(handle_debt_pay_callback, pattern="^debt_pay_"))
 application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_"))
 
 async def _start_polling():
