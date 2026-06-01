@@ -5,7 +5,7 @@ from telegram.ext import ContextTypes, ConversationHandler
 from config import PAYMENT_CHOICE, PAYMENT_CONFIRM, COMMENT_CHOICE
 from database import (
     get_payment_accounts, add_payment_account, delete_payment_account,
-    save_order
+    save_order, save_order_payment
 )
 from keyboards import (
     payment_methods_inline_keyboard, comment_choice_keyboard
@@ -69,7 +69,9 @@ async def handle_payment_confirmation(update: Update, context: ContextTypes.DEFA
     bank = account.get("bank_name", "?")
     num = account.get("number", "?")
     holder = account.get("holder_name", "?")
-    context.user_data["payment_info"] = f"{bank} - {num} ({holder})\nConfirmation: {confirmation}"
+    pay_str = f"{bank} - {num} ({holder})\nConfirmation: {confirmation}"
+    context.user_data["payment_info"] = pay_str
+    await save_order_payment(order_group, pay_str)
     context.user_data["on_debt"] = False
 
     await update.message.reply_text(
