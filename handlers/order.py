@@ -190,11 +190,14 @@ async def _notify_admin(context):
     if not admin_id:
         return
     comment = context.user_data.get("order_comment")
+    payment = context.user_data.get("payment_info")
     text = (
         f"<b>NEW ORDER FROM: {context.user_data['order_name']}</b>\n\n"
         f"{chr(10).join(context.user_data['order_items'])}\n\n"
         f"TOTAL: Birr {context.user_data['order_total']:.2f}"
     )
+    if payment:
+        text += f"\n\n<b>Payment:</b>\n{payment}"
     if comment:
         text += f"\n\n<b>Comment:</b> {comment}"
     await context.bot.send_message(
