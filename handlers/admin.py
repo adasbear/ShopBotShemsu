@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import ADMIN_USERNAME, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, ADMIN_DEBT_MENU
+from config import ADMIN_USERNAME, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, ADMIN_DEBT_MENU, ADMIN_PAYMENT_MENU
 from database import (
     get_all_users_detailed, ban_user, unban_user,
     get_menu, add_menu_item, delete_menu_item,
@@ -14,17 +14,19 @@ from database import (
     get_todays_profit, register_user as db_register_user,
     add_to_debt_allow_list, remove_from_debt_allow_list,
     get_debt_allow_list, add_debt, get_user,
-    get_all_debts, mark_debt_paid, waive_debt
+    get_all_debts, mark_debt_paid, waive_debt,
+    get_payment_accounts, add_payment_account, delete_payment_account
 )
 from keyboards import (
-    get_admin_keyboard, get_admin_orders_keyboard, get_admin_debt_keyboard,
+    get_admin_keyboard, get_admin_orders_keyboard, get_admin_debt_keyboard, get_admin_payment_keyboard,
     admin_menu_edit_keyboard, admin_category_keyboard,
     admin_users_keyboard, admin_user_action_keyboard,
     delivered_keyboard,
     order_accept_decline_keyboard, order_ready_keyboard,
     order_deliver_keyboard, deliver_paid_debt_keyboard,
     admin_allow_list_inline_keyboard, admin_debts_inline_keyboard,
-    admin_debt_action_keyboard
+    admin_debt_action_keyboard,
+    admin_payment_accounts_keyboard
 )
 from utils.helpers import is_admin, BAN_MESSAGE
 
@@ -447,6 +449,51 @@ async def admin_show_all_debts_handler(update: Update, context: ContextTypes.DEF
     )
     return ConversationHandler.END
 
+# --- Payment Account Management ---
+
+async def admin_payment_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    accounts = await get_payment_accounts()
+    txt = "<b>Payment Accounts</b>\n\n"
+    if accounts:
+        for a in accounts:
+            txt += f"• {a['bank_name']}: <code>{a['number']}</code> ({a['holder_name']})\n"
+    else:
+        txt += "No accounts yet."
+    await update.message.reply_text(
+        txt,
+        reply_markup=await admin_payment_accounts_keyboard(),
+        parse_mode=ParseMode.HTML
+    )
+    return ConversationHandler.END
+
+async def _handle_payment_inline(update: Update, context: ContextTypes.DEFAULT_TYPE, query, data):
+    if data.startswith("apay_del_"):
+        pid = int(data.split("_")[2])
+        await delete_payment_account(pid)
+        await query.edit_message_text(
+            "Deleted.",
+            reply_markup=await admin_payment_accounts_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    if data == "apay_add":
+        context.user_data["expect_payment_bank"] = True
+        await query.edit_message_text(
+            "Enter the <b>bank name</b> (e.g. CBE, Abyssinia, Telebirr):",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    if data == "apay_back":
+        await query.edit_message_text(
+            "<b>Admin Portal</b>",
+            reply_markup=get_admin_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+
 async def _finish_delivery(context, query, order_group, on_debt=False):
     await update_order_status(order_group, "Delivered")
     groups = await get_grouped_orders_by_status("Delivered")
@@ -593,6 +640,10 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
     # --- Debt callbacks ---
     if data.startswith("adel_allow_") or data.startswith("adebt_") or data == "admin_add_allow" or data == "admin_back_debt" or data == "adebt_back_to_list" or data == "adebt_filter_active" or data == "adebt_filter_all":
         return await _handle_debt_inline(update, context, query, data)
+
+    # --- Payment callbacks ---
+    if data.startswith("apay_"):
+        return await _handle_payment_inline(update, context, query, data)
 
     # --- Order management callbacks ---
 

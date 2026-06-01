@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import DEBT_CHOICE, COMMENT_CHOICE
+from config import DEBT_CHOICE, COMMENT_CHOICE, PAYMENT_CHOICE
 from database import (
     get_user, save_order, is_allowed_debt, add_debt,
     get_user_debts, get_user_active_debt_total, get_admin_user_id
@@ -61,14 +61,8 @@ async def handle_debt_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user_id = update.effective_user.id
 
     if choice == "pay_now":
-        for i in items:
-            await save_order(user_id, i["item"], i["qty"], order_group)
-        await query.edit_message_text(
-            f"Order Placed! (Birr {context.user_data['order_total']:.2f})\n\nAny special instructions?",
-            reply_markup=comment_choice_keyboard(),
-            parse_mode=ParseMode.HTML
-        )
-        return COMMENT_CHOICE
+        from handlers.payment import show_payment_methods
+        return await show_payment_methods(update, context)
 
     if choice == "debt_take":
         username = update.effective_user.username

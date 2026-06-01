@@ -310,6 +310,36 @@ async def waive_debt(debt_id):
 
 # --- Seed debts from JSON (one-time import) ---
 
+# --- Payment Accounts ---
+
+async def get_payment_accounts():
+    result = await _db(lambda: _supabase.table("payment_accounts").select("*").order("bank_name").execute())
+    return result.data
+
+async def add_payment_account(bank_name, number, holder_name):
+    await _db(lambda: _supabase.table("payment_accounts").insert({
+        "bank_name": bank_name,
+        "number": number,
+        "holder_name": holder_name
+    }).execute())
+
+async def delete_payment_account(pid):
+    await _db(lambda: _supabase.table("payment_accounts").delete().eq("id", pid).execute())
+
+async def seed_payment_accounts():
+    existing = await get_payment_accounts()
+    if existing:
+        return 0
+    defaults = [
+        ("CBE", "1000404793199", "Alazar"),
+        ("Abyssinia", "207710668", "Alazar"),
+        ("Awash", "013201733496400", "Alazar"),
+        ("Telebirr", "0907319664", "Alazar"),
+    ]
+    for bank, num, holder in defaults:
+        await add_payment_account(bank, num, holder)
+    return len(defaults)
+
 async def seed_debts_from_json(entries):
     count = 0
     for entry in entries:

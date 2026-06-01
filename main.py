@@ -6,7 +6,7 @@ from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
-from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, HELP_MENU, DEBT_CHOICE
+from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, HELP_MENU, DEBT_CHOICE, PAYMENT_CHOICE, PAYMENT_CONFIRM
 from database import init_db
 
 from handlers.start import start, register_user
@@ -22,12 +22,13 @@ from handlers.admin import (
     admin_add_sub_item_start, admin_add_sub_item_name, admin_add_sub_item_price,
     admin_back_to_portal, admin_inline_callback,
     admin_debt_menu, admin_show_allow_list,
-    admin_show_all_debts_handler
+    admin_show_all_debts_handler, admin_payment_menu
 )
 from handlers.manage_order import view_my_orders, handle_manage_order, handle_order_action, handle_edit_item, handle_edit_qty
 from handlers.feedback import start_feedback, save_feedback_handler
 from handlers.help import show_help, handle_help_callback
 from handlers.debt import view_my_debt, handle_debt_choice
+from handlers.payment import handle_payment_choice, handle_payment_confirmation
 from handlers.contact import contact_admin_start, contact_admin_callback, contact_admin_send
 
 logging.basicConfig(
@@ -38,6 +39,17 @@ logging.basicConfig(
 app = Flask(__name__)
 
 init_db()
+
+async def _seed_payment_accounts():
+    from database import seed_payment_accounts
+    count = await seed_payment_accounts()
+    if count:
+        logging.info(f"Seeded {count} default payment accounts.")
+
+try:
+    asyncio.run(_seed_payment_accounts())
+except Exception as e:
+    logging.warning(f"Payment seeding skipped: {e}")
 
 async def _seed_debts():
     from database import seed_debts_from_json
@@ -116,6 +128,8 @@ conv = ConversationHandler(
         MessageHandler(filters.Regex("^Mark All Arrived$"), admin_mark_all),
         MessageHandler(filters.Regex("^Back to Portal$"), admin_back_to_portal),
         MessageHandler(filters.Regex("^My Debt$"), view_my_debt),
+        MessageHandler(filters.Regex("^Payment Accounts$"), admin_payment_menu),
+        MessageHandler(filters.Regex("^Manage Payments$"), admin_payment_menu),
         MessageHandler(filters.Regex("^Debt Management$"), admin_debt_menu),
         MessageHandler(filters.Regex("^Allow List$"), admin_show_allow_list),
         MessageHandler(filters.Regex("^All Debts$"), admin_show_all_debts_handler),
@@ -145,6 +159,8 @@ conv = ConversationHandler(
         EDIT_QTY: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_edit_qty)],
         HELP_MENU: [CallbackQueryHandler(handle_help_callback, pattern="^help_")],
         DEBT_CHOICE: [CallbackQueryHandler(handle_debt_choice)],
+        PAYMENT_CHOICE: [CallbackQueryHandler(handle_payment_choice)],
+        PAYMENT_CONFIRM: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_payment_confirmation)],
     },
     fallbacks=[CommandHandler("start", start), CommandHandler("cancel", cancel)],
 )
@@ -171,8 +187,43 @@ async def _handle_allow_username(update: Update, context: ContextTypes.DEFAULT_T
         reply_markup=get_admin_debt_keyboard()
     )
 
+async def _handle_payment_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    step = context.user_data.get("expect_payment_input")
+    if not step:
+        return
+    from utils.helpers import is_admin
+    if not is_admin(update.effective_user.username):
+        context.user_data["expect_payment_input"] = None
+        return
+    text = update.message.text.strip()
+    if not text:
+        await update.message.reply_text("Input cannot be empty.")
+        return
+    from database import add_payment_account
+    from keyboards import get_admin_payment_keyboard, admin_payment_accounts_keyboard
+    if step == "bank":
+        context.user_data["payment_new_bank"] = text
+        context.user_data["expect_payment_input"] = "number"
+        await update.message.reply_text("Enter the <b>account number</b>:", parse_mode=ParseMode.HTML)
+        return
+    if step == "number":
+        context.user_data["payment_new_number"] = text
+        context.user_data["expect_payment_input"] = "holder"
+        await update.message.reply_text("Enter the <b>account holder name</b>:", parse_mode=ParseMode.HTML)
+        return
+    if step == "holder":
+        bank = context.user_data.pop("payment_new_bank", "Unknown")
+        number = context.user_data.pop("payment_new_number", "Unknown")
+        context.user_data["expect_payment_input"] = None
+        await add_payment_account(bank, number, text)
+        await update.message.reply_text(
+            f"Added {bank} - {number} ({text})!",
+            reply_markup=get_admin_payment_keyboard()
+        )
+
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_allow_username))
-application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_"))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_payment_input))
+application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_"))
 
 async def _start_polling():
     await application.bot.delete_webhook()

@@ -77,7 +77,7 @@ def get_admin_keyboard():
     buttons = [
         ["Users", "Manage Menu", "Orders"],
         ["Debt Management", "Feedback"],
-        ["Broadcast"]
+        ["Payment Accounts", "Broadcast"]
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
@@ -190,4 +190,33 @@ def admin_debt_action_keyboard(debt_id):
         [InlineKeyboardButton("Waive 🚫", callback_data=f"adebt_waive_{debt_id}")],
         [InlineKeyboardButton("⬅ Back", callback_data="adebt_back_to_list")]
     ]
+    return InlineKeyboardMarkup(kb)
+
+# --- Payment keyboards ---
+
+def get_admin_payment_keyboard():
+    buttons = [
+        ["Manage Payments"],
+        ["Back to Portal"]
+    ]
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+
+async def payment_methods_inline_keyboard():
+    from database import get_payment_accounts
+    accounts = await get_payment_accounts()
+    kb = []
+    for a in accounts:
+        label = f"{a['bank_name']} - {a['number']}"
+        kb.append([InlineKeyboardButton(label, callback_data=f"pay_{a['id']}")])
+    kb.append([InlineKeyboardButton("⬅ Back", callback_data="pay_back")])
+    return InlineKeyboardMarkup(kb)
+
+async def admin_payment_accounts_keyboard():
+    from database import get_payment_accounts
+    accounts = await get_payment_accounts()
+    kb = []
+    for a in accounts:
+        kb.append([InlineKeyboardButton(f"Delete {a['bank_name']}", callback_data=f"apay_del_{a['id']}")])
+    kb.append([InlineKeyboardButton("Add Account ➕", callback_data="apay_add")])
+    kb.append([InlineKeyboardButton("⬅ Back", callback_data="apay_back")])
     return InlineKeyboardMarkup(kb)
