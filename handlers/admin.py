@@ -675,25 +675,25 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
                 parse_mode=ParseMode.HTML
             )
         else:
-            await update_order_status(order_group, "Cancelled")
-            groups_before = await get_grouped_orders_by_status("Pending")
-            target = next((g for g in groups_before if g["order_group"] == order_group), None)
-            if not target:
-                groups_cancelled = await get_grouped_orders_by_status("Cancelled")
-                target = next((g for g in groups_cancelled if g["order_group"] == order_group), None)
+            context.user_data["decline_order_group"] = order_group
+            context.user_data["decline_original_text"] = original_text
+            context.user_data["decline_msg_chat_id"] = query.message.chat_id
+            context.user_data["decline_msg_id"] = query.message.message_id
+            context.user_data["decline_user_id"] = None
+            groups = await get_grouped_orders_by_status("Pending")
+            target = next((g for g in groups if g["order_group"] == order_group), None)
             if target:
-                try:
-                    await context.bot.send_message(
-                        target["user_id"],
-                        f"<b>Order Declined</b>\n\nSorry, your order has been declined. Contact @{ADMIN_USERNAME} for details.",
-                        parse_mode=ParseMode.HTML
-                    )
-                except:
-                    pass
+                context.user_data["decline_user_id"] = target["user_id"]
             await query.edit_message_text(
-                original_text + "\n\n❌ <b>DECLINED</b>",
+                original_text + "\n\n⏳ <b>Waiting for decline reason...</b>",
                 parse_mode=ParseMode.HTML
             )
+            await context.bot.send_message(
+                update.effective_user.id,
+                "Type the reason for declining this order:",
+                parse_mode=ParseMode.HTML
+            )
+            context.user_data["expect_decline_reason"] = True
         return ConversationHandler.END
 
     if data.startswith("ord_ready_"):

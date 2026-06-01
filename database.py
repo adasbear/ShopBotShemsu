@@ -219,6 +219,11 @@ async def save_order_payment(order_group, payment_info):
         "order_group": order_group, "payment_info": payment_info
     }).execute())
 
+async def save_order_decline_reason(order_group, reason):
+    await _db(lambda: _supabase.table("order_decline_reasons").upsert({
+        "order_group": order_group, "reason": reason
+    }).execute())
+
 # --- Feedback ---
 
 async def save_feedback(user_id, msg):

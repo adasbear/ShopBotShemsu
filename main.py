@@ -221,6 +221,49 @@ async def _handle_payment_input(update: Update, context: ContextTypes.DEFAULT_TY
             reply_markup=get_admin_payment_keyboard()
         )
 
+async def _handle_decline_reason(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.user_data.get("expect_decline_reason"):
+        return
+    reason = update.message.text.strip()
+    if not reason:
+        await update.message.reply_text("Reason cannot be empty.")
+        return
+    from database import save_order_decline_reason, update_order_status
+    order_group = context.user_data.get("decline_order_group")
+    user_id = context.user_data.get("decline_user_id")
+    original_text = context.user_data.get("decline_original_text", "")
+    chat_id = context.user_data.get("decline_msg_chat_id")
+    msg_id = context.user_data.get("decline_msg_id")
+    await save_order_decline_reason(order_group, reason)
+    await update_order_status(order_group, "Cancelled")
+    if user_id:
+        try:
+            await context.bot.send_message(
+                user_id,
+                f"<b>Order Declined</b>\n\n<b>Reason:</b> {reason}\n\nContact @{ADMIN_USERNAME} if you have questions.",
+                parse_mode=ParseMode.HTML
+            )
+        except:
+            pass
+    if chat_id and msg_id:
+        try:
+            await context.bot.edit_message_text(
+                chat_id=chat_id,
+                message_id=msg_id,
+                text=original_text + f"\n\n❌ <b>DECLINED</b>\nReason: {reason}",
+                parse_mode=ParseMode.HTML
+            )
+        except:
+            pass
+    context.user_data["expect_decline_reason"] = False
+    for k in ["decline_order_group", "decline_user_id", "decline_original_text", "decline_msg_chat_id", "decline_msg_id"]:
+        context.user_data.pop(k, None)
+    await update.message.reply_text(
+        f"Order declined with reason: {reason}",
+        parse_mode=ParseMode.HTML
+    )
+
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_decline_reason))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_allow_username))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_payment_input))
 application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_"))
