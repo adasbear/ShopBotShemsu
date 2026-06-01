@@ -97,8 +97,8 @@ async def handle_debt_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await _notify_admin_debt(context, username)
             return COMMENT_CHOICE
         await query.edit_message_text(
-            "You are <b>not approved</b> for debt.\n\n"
-            "Ask the admin to add you to the allow list, or pay now.",
+            "Sorry, we retired from the charity business\n\n"
+            "ዱቤ ነገ እንጂ ዛሬ የለም!! አርፈክ ክፈል!",
             reply_markup=debt_not_allowed_keyboard(),
             parse_mode=ParseMode.HTML
         )

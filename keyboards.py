@@ -24,7 +24,7 @@ async def menu_inline_keyboard(show_back=True, parent=None):
 def add_more_or_review_keyboard(total):
     kb = [
         [InlineKeyboardButton("Add More", callback_data="add_more")],
-        [InlineKeyboardButton(f"Review Order (Birr {total:.2f})", callback_data="review")]
+        [InlineKeyboardButton(f"Continue to Pay (Birr {total:.2f})", callback_data="review")]
     ]
     return InlineKeyboardMarkup(kb)
 
