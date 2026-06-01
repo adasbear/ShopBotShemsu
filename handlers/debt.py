@@ -189,8 +189,9 @@ async def handle_debt_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await _notify_admin_debt(context, username)
             return COMMENT_CHOICE
         await query.edit_message_text(
-            "Sorry, we retired from the charity business\n\n"
-            "ዱቤ ነገ እንጂ ዛሬ የለም!! አርፈክ ክፈል!",
+            "You are not eligible.\n\n"
+            "Sorry, we retired from the charity business. Continued payment delays have forced us to suspend credit services.\n\n"
+            "ዱቤ ለነገ  !!!!!",
             reply_markup=debt_not_allowed_keyboard(),
             parse_mode=ParseMode.HTML
         )

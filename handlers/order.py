@@ -161,7 +161,7 @@ async def handle_comment_choice(update: Update, context: ContextTypes.DEFAULT_TY
     await query.answer()
 
     if query.data == "skip_comment":
-        await query.edit_message_text("Order submitted. Thank you!")
+        await query.edit_message_text("Order submitted successfully and payment info is awaiting approval.")
         if not context.user_data.get("on_debt"):
             await _notify_admin(context)
         return ConversationHandler.END
@@ -179,7 +179,7 @@ async def handle_order_comment(update: Update, context: ContextTypes.DEFAULT_TYP
     await save_order_comment(context.user_data["order_group"], comment)
     context.user_data["order_comment"] = comment
 
-    await update.message.reply_text("Comment saved! Order submitted.")
+    await update.message.reply_text("Order submitted successfully and payment info is awaiting approval.")
     if not context.user_data.get("on_debt"):
         await _notify_admin(context)
     return ConversationHandler.END
