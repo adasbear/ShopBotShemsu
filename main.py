@@ -1,13 +1,17 @@
 import os
 import asyncio
 import logging
+import random
 import threading
-from flask import Flask
+from datetime import datetime, timezone, timedelta
+from flask import Flask, request, jsonify
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
-from config import BOT_TOKEN, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, HELP_MENU, DEBT_CHOICE, PAYMENT_CHOICE, PAYMENT_CONFIRM
-from database import init_db
+from config import BOT_TOKEN, ADMIN_USERNAME, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, HELP_MENU, DEBT_CHOICE, PAYMENT_CHOICE, PAYMENT_CONFIRM, PYRO_API_ID
+import database
+from database import init_db, _db, get_admin_user_id
+from otp_sender import send_otp
 
 from handlers.start import start, register_user
 from handlers.order import show_menu, handle_menu_selection, handle_qty, review_order, finalize_order, handle_custom_item_name, handle_comment_choice, handle_order_comment
@@ -285,6 +289,360 @@ def _run_bot():
         logging.error(f"Bot polling crashed: {e}")
 
 threading.Thread(target=_run_bot, daemon=True).start()
+
+async def _start_pyro():
+    from otp_sender import get_client
+    try:
+        await get_client()
+        logging.info("Pyrogram client started")
+    except Exception as e:
+        logging.warning(f"Pyrogram not available (OTP login disabled): {e}")
+
+def _run_pyro():
+    if not PYRO_API_ID:
+        logging.info("PYRO_API_ID not set, skipping Pyrogram")
+        return
+    try:
+        asyncio.run(_start_pyro())
+    except Exception as e:
+        logging.error(f"Pyrogram thread crashed: {e}")
+
+threading.Thread(target=_run_pyro, daemon=True).start()
+
+# --- API Routes for Android App ---
+
+@app.route("/api/auth/request-otp", methods=["POST"])
+def api_request_otp():
+    data = request.get_json()
+    username = (data.get("username") or "").lstrip("@")
+    if not username:
+        return jsonify({"error": "Username required"}), 400
+
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("users").select("user_id, full_name, banned")
+        .eq("username", username).limit(1).execute()
+    ))
+    if not result.data:
+        return jsonify({"error": "Username not found"}), 404
+    user = result.data[0]
+    if user.get("banned"):
+        return jsonify({"error": "You are banned"}), 403
+
+    recent = asyncio.run(_db(
+        lambda: database._supabase.table("login_otps")
+        .select("id")
+        .eq("username", username)
+        .gt("created_at", (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat())
+        .execute()
+    ))
+    if len(recent.data) >= 3:
+        return jsonify({"error": "Too many requests. Try again later."}), 429
+
+    asyncio.run(_db(
+        lambda: database._supabase.table("login_otps")
+        .delete().eq("username", username).eq("used", False).execute()
+    ))
+
+    otp = str(random.randint(100000, 999999))
+    expires = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+    asyncio.run(_db(
+        lambda: database._supabase.table("login_otps").insert({
+            "username": username, "user_id": user["user_id"],
+            "otp": otp, "expires_at": expires
+        }).execute()
+    ))
+
+    try:
+        asyncio.run(send_otp(username, otp))
+    except Exception as e:
+        logging.error(f"Failed to send OTP via Pyrogram: {e}")
+        return jsonify({"error": "Failed to send OTP"}), 500
+
+    return jsonify({"success": True})
+
+
+@app.route("/api/auth/verify-otp", methods=["POST"])
+def api_verify_otp():
+    data = request.get_json()
+    username = (data.get("username") or "").lstrip("@")
+    otp = data.get("otp", "")
+    if not username or not otp:
+        return jsonify({"error": "Username and OTP required"}), 400
+
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("login_otps")
+        .select("*")
+        .eq("username", username)
+        .eq("otp", otp)
+        .eq("used", False)
+        .gt("expires_at", datetime.now(timezone.utc).isoformat())
+        .limit(1)
+        .execute()
+    ))
+    if not result.data:
+        return jsonify({"error": "Invalid or expired OTP"}), 401
+    record = result.data[0]
+
+    asyncio.run(_db(
+        lambda: database._supabase.table("login_otps")
+        .update({"used": True}).eq("id", record["id"]).execute()
+    ))
+
+    import uuid
+    token = str(uuid.uuid4())
+    expires = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+    asyncio.run(_db(
+        lambda: database._supabase.table("sessions").insert({
+            "token": token, "user_id": record["user_id"],
+            "username": username, "expires_at": expires
+        }).execute()
+    ))
+
+    return jsonify({"success": True, "session_token": token})
+
+
+@app.route("/api/auth/session", methods=["GET"])
+def api_check_session():
+    token = request.args.get("token")
+    if not token:
+        return jsonify({"error": "Token required"}), 400
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("sessions")
+        .select("user_id, username, expires_at")
+        .eq("token", token)
+        .gt("expires_at", datetime.now(timezone.utc).isoformat())
+        .limit(1)
+        .execute()
+    ))
+    if not result.data:
+        return jsonify({"error": "Invalid or expired session"}), 401
+    session = result.data[0]
+    user_result = asyncio.run(_db(
+        lambda: database._supabase.table("users")
+        .select("full_name")
+        .eq("user_id", session["user_id"])
+        .limit(1)
+        .execute()
+    ))
+    full_name = user_result.data[0]["full_name"] if user_result.data else ""
+    return jsonify({
+        "user_id": session["user_id"],
+        "username": session["username"],
+        "full_name": full_name
+    })
+
+
+@app.route("/api/user/profile", methods=["GET"])
+def api_get_profile():
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"error": "user_id required"}), 400
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("users")
+        .select("user_id, full_name, username, banned, created_at")
+        .eq("user_id", int(user_id)).limit(1).execute()
+    ))
+    if not result.data:
+        return jsonify({"error": "Not found"}), 404
+    return jsonify(result.data[0])
+
+
+@app.route("/api/user/profile", methods=["PUT"])
+def api_update_profile():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    full_name = data.get("full_name")
+    if not user_id or not full_name:
+        return jsonify({"error": "user_id and full_name required"}), 400
+    asyncio.run(_db(
+        lambda: database._supabase.table("users")
+        .update({"full_name": full_name}).eq("user_id", int(user_id)).execute()
+    ))
+    return jsonify({"success": True})
+
+
+@app.route("/api/menu", methods=["GET"])
+def api_get_menu():
+    parent = request.args.get("parent")
+    if parent:
+        result = asyncio.run(_db(
+            lambda: database._supabase.table("menu")
+            .select("id, name, price, parent, available")
+            .eq("parent", parent).eq("available", True)
+            .order("name").execute()
+        ))
+    else:
+        result = asyncio.run(_db(
+            lambda: database._supabase.table("menu")
+            .select("id, name, price, parent, available")
+            .eq("available", True)
+            .order("parent", nulls_first=True).order("name").execute()
+        ))
+    return jsonify(result.data)
+
+
+@app.route("/api/payment-accounts", methods=["GET"])
+def api_get_payment_accounts():
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("payment_accounts")
+        .select("*").order("bank_name").execute()
+    ))
+    return jsonify(result.data)
+
+
+@app.route("/api/debt-allow-list/check", methods=["GET"])
+def api_check_debt_allow():
+    username = (request.args.get("username") or "").lstrip("@")
+    if not username:
+        return jsonify({"allowed": False})
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("debt_allow_list")
+        .select("id").eq("username", username).limit(1).execute()
+    ))
+    return jsonify({"allowed": len(result.data) > 0})
+
+
+@app.route("/api/debts", methods=["GET"])
+def api_get_debts():
+    username = (request.args.get("username") or "").lstrip("@")
+    if not username:
+        return jsonify({"error": "username required"}), 400
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("debts")
+        .select("*")
+        .eq("username", username)
+        .order("created_at", desc=True)
+        .limit(50).execute()
+    ))
+    active = asyncio.run(_db(
+        lambda: database._supabase.table("debts")
+        .select("amount")
+        .eq("username", username)
+        .eq("status", "active").execute()
+    ))
+    active_total = sum(r["amount"] for r in active.data)
+    return jsonify({"active_total": active_total, "records": result.data})
+
+
+@app.route("/api/orders", methods=["GET"])
+def api_get_orders():
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"error": "user_id required"}), 400
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("orders")
+        .select("id, item, qty, status, order_group, timestamp")
+        .eq("user_id", int(user_id))
+        .order("timestamp", desc=True)
+        .limit(50).execute()
+    ))
+    return jsonify(result.data)
+
+
+@app.route("/api/orders/group/<order_group>", methods=["GET"])
+def api_get_order_group(order_group):
+    items = asyncio.run(_db(
+        lambda: database._supabase.table("orders")
+        .select("id, item, qty, status, timestamp")
+        .eq("order_group", order_group).execute()
+    ))
+    payment = asyncio.run(_db(
+        lambda: database._supabase.table("order_payments")
+        .select("payment_info").eq("order_group", order_group).limit(1).execute()
+    ))
+    comment = asyncio.run(_db(
+        lambda: database._supabase.table("order_comments")
+        .select("comment").eq("order_group", order_group).limit(1).execute()
+    ))
+    decline = asyncio.run(_db(
+        lambda: database._supabase.table("order_decline_reasons")
+        .select("reason").eq("order_group", order_group).limit(1).execute()
+    ))
+    menu = asyncio.run(_db(
+        lambda: database._supabase.table("menu").select("name, price").execute()
+    ))
+    prices = {r["name"]: r["price"] for r in menu.data}
+    total = sum((prices.get(i["item"], 0) * i["qty"]) for i in items.data)
+    return jsonify({
+        "order_group": order_group,
+        "items": items.data,
+        "total": total,
+        "payment": payment.data[0]["payment_info"] if payment.data else None,
+        "comment": comment.data[0]["comment"] if comment.data else None,
+        "decline_reason": decline.data[0]["reason"] if decline.data else None,
+        "status": items.data[0]["status"] if items.data else None,
+        "created_at": items.data[0]["timestamp"] if items.data else None
+    })
+
+
+@app.route("/api/notifications", methods=["GET"])
+def api_get_notifications():
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"error": "user_id required"}), 400
+    result = asyncio.run(_db(
+        lambda: database._supabase.table("notifications")
+        .select("*")
+        .eq("user_id", int(user_id))
+        .order("created_at", desc=True)
+        .limit(50).execute()
+    ))
+    return jsonify(result.data)
+
+
+@app.route("/api/notifications/<int:nid>/read", methods=["PUT"])
+def api_mark_notification_read(nid):
+    asyncio.run(_db(
+        lambda: database._supabase.table("notifications")
+        .update({"read": True}).eq("id", nid).execute()
+    ))
+    return jsonify({"success": True})
+
+
+@app.route("/api/feedback", methods=["POST"])
+def api_submit_feedback():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    msg = data.get("msg")
+    if not user_id or not msg:
+        return jsonify({"error": "user_id and msg required"}), 400
+    name_result = asyncio.run(_db(
+        lambda: database._supabase.table("users").select("full_name").eq("user_id", int(user_id)).limit(1).execute()
+    ))
+    name = name_result.data[0]["full_name"] if name_result.data else "Unknown"
+    asyncio.run(_db(
+        lambda: database._supabase.table("feedback").insert({
+            "user_id": int(user_id), "name": name, "msg": msg
+        }).execute()
+    ))
+    return jsonify({"success": True})
+
+
+@app.route("/api/contact", methods=["POST"])
+def api_contact_admin():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    username = data.get("username", "Unknown")
+    message = data.get("message", "")
+    if not user_id or not message:
+        return jsonify({"error": "user_id and message required"}), 400
+    name_result = asyncio.run(_db(
+        lambda: database._supabase.table("users").select("full_name").eq("user_id", int(user_id)).limit(1).execute()
+    ))
+    name = name_result.data[0]["full_name"] if name_result.data else username
+    admin_id = asyncio.run(get_admin_user_id())
+    if admin_id:
+        try:
+            asyncio.run(_db(
+                lambda: database._supabase.table("notifications").insert({
+                    "user_id": int(user_id), "title": "Contact Admin",
+                    "body": message
+                }).execute()
+            ))
+        except:
+            pass
+    return jsonify({"success": True})
+
 
 @app.route("/")
 def home():
