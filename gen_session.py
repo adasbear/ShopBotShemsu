@@ -7,8 +7,7 @@ PHONE = sys.argv[3] if len(sys.argv) > 3 else input("Phone (+251...): ")
 
 async def main():
     from pyrogram import Client
-    from pyrogram.session import StringSession
-    client = Client(StringSession(), api_id=API_ID, api_hash=API_HASH, phone_number=PHONE)
+    client = Client("gen_session", api_id=API_ID, api_hash=API_HASH, phone_number=PHONE, in_memory=True)
     await client.start()
     session_str = await client.export_session_string()
     print("\n" + "=" * 60)

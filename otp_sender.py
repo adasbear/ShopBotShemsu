@@ -10,15 +10,12 @@ async def get_client():
     if _client:
         return _client
     from pyrogram import Client
-    from pyrogram.session import StringSession
-    session = StringSession(PYRO_SESSION_STRING) if PYRO_SESSION_STRING else StringSession()
-    _client = Client(
-        session,
-        api_id=PYRO_API_ID,
-        api_hash=PYRO_API_HASH,
-        phone_number=PYRO_PHONE if not PYRO_SESSION_STRING else None,
-        in_memory=True
-    )
+    kwargs = dict(api_id=PYRO_API_ID, api_hash=PYRO_API_HASH, in_memory=True)
+    if PYRO_SESSION_STRING:
+        kwargs["session_string"] = PYRO_SESSION_STRING
+    else:
+        kwargs["phone_number"] = PYRO_PHONE
+    _client = Client("shemsu_otp", **kwargs)
     await _client.start()
     if not PYRO_SESSION_STRING:
         exported = await _client.export_session_string()
