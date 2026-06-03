@@ -1,7 +1,5 @@
 import asyncio
 import logging
-from pyrogram import Client
-from pyrogram.session import StringSession
 
 from config import PYRO_API_ID, PYRO_API_HASH, PYRO_PHONE, PYRO_SESSION_STRING
 
@@ -11,6 +9,8 @@ async def get_client():
     global _client
     if _client:
         return _client
+    from pyrogram import Client
+    from pyrogram.session import StringSession
     session = StringSession(PYRO_SESSION_STRING) if PYRO_SESSION_STRING else StringSession()
     _client = Client(
         session,
