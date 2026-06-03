@@ -318,15 +318,14 @@ def api_request_otp():
     if not username:
         return jsonify({"error": "Username required"}), 400
 
-    result = asyncio.run(_db(
+    user_result = asyncio.run(_db(
         lambda: database._supabase.table("users").select("user_id, full_name, banned")
         .eq("username", username).limit(1).execute()
     ))
-    if not result.data:
-        return jsonify({"error": "Username not found"}), 404
-    user = result.data[0]
-    if user.get("banned"):
+    user = user_result.data[0] if user_result.data else None
+    if user and user.get("banned"):
         return jsonify({"error": "You are banned"}), 403
+    user_id = user["user_id"] if user else None
 
     recent = asyncio.run(_db(
         lambda: database._supabase.table("login_otps")
@@ -347,18 +346,44 @@ def api_request_otp():
     expires = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
     asyncio.run(_db(
         lambda: database._supabase.table("login_otps").insert({
-            "username": username, "user_id": user["user_id"],
+            "username": username, "user_id": user_id,
             "otp": otp, "expires_at": expires
         }).execute()
     ))
 
-    try:
-        asyncio.run(send_otp(username, otp))
-    except Exception as e:
-        logging.error(f"Failed to send OTP via Pyrogram: {e}")
-        return jsonify({"error": "Failed to send OTP"}), 500
+    sent = False
 
-    return jsonify({"success": True})
+    # Try bot first (for existing users who have messaged the bot)
+    if user_id:
+        try:
+            import requests
+            r = requests.post(
+                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                json={
+                    "chat_id": user_id,
+                    "text": f"<b>Shemsu Shop Login Code</b>\n\n{otp}\n\nExpires in 5 minutes.",
+                    "parse_mode": "HTML"
+                },
+                timeout=10
+            )
+            if r.ok:
+                sent = True
+                logging.info(f"OTP sent to user_id={user_id} via bot")
+        except Exception as e:
+            logging.warning(f"Bot send failed for user_id={user_id}: {e}")
+
+    # Fallback: try Pyrogram (for new users or if bot fails)
+    if not sent:
+        try:
+            asyncio.run(send_otp(username, otp))
+            sent = True
+        except Exception as e:
+            logging.error(f"Pyrogram send failed for @{username}: {e}")
+
+    if not sent:
+        return jsonify({"error": "Could not deliver OTP"}), 500
+
+    return jsonify({"success": True, "delivery": "bot" if user_id and sent else "pyrogram"})
 
 
 @app.route("/api/auth/verify-otp", methods=["POST"])
@@ -388,17 +413,39 @@ def api_verify_otp():
         .update({"used": True}).eq("id", record["id"]).execute()
     ))
 
+    user_id = record["user_id"]
+
+    # New user: resolve user_id via Pyrogram and create users row
+    if not user_id:
+        try:
+            async def _resolve_new_user():
+                from otp_sender import get_client
+                client = await get_client()
+                resolved = await client.get_users(username)
+                return resolved.id
+            user_id = asyncio.run(_resolve_new_user())
+            asyncio.run(_db(
+                lambda: database._supabase.table("users").upsert({
+                    "user_id": user_id, "username": username,
+                    "full_name": username, "banned": False
+                }).execute()
+            ))
+            logging.info(f"Created users row for new user @{username} (user_id={user_id})")
+        except Exception as e:
+            logging.error(f"Failed to resolve user_id for @{username}: {e}")
+            return jsonify({"error": "Could not verify identity"}), 500
+
     import uuid
     token = str(uuid.uuid4())
     expires = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
     asyncio.run(_db(
         lambda: database._supabase.table("sessions").insert({
-            "token": token, "user_id": record["user_id"],
+            "token": token, "user_id": user_id,
             "username": username, "expires_at": expires
         }).execute()
     ))
 
-    return jsonify({"success": True, "session_token": token})
+    return jsonify({"success": True, "session_token": token, "is_new_user": record["user_id"] is None})
 
 
 @app.route("/api/auth/session", methods=["GET"])
