@@ -219,6 +219,31 @@ async def admin_show_individual(update: Update, context: ContextTypes.DEFAULT_TY
         )
     return ConversationHandler.END
 
+async def admin_no_item_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    from database import get_todays_grouped_orders, get_menu
+    groups = await get_todays_grouped_orders()
+    if not groups:
+        await update.message.reply_text("No orders today.", reply_markup=get_admin_orders_keyboard())
+        return ConversationHandler.END
+    menu = await get_menu()
+    msg = f"<b>Today's Orders ({len(groups)})</b>\n\nSelect one to mark item not found:"
+    await update.message.reply_text(msg, parse_mode=ParseMode.HTML)
+    for g in groups:
+        lines = [f"{i['item']} x{i['qty']}" for i in g["items"]]
+        total = sum(menu.get(i["item"], 0) * i["qty"] for i in g["items"])
+        text = f"<b>{g['order_group']}</b>\n" + "\n".join(lines) + f"\nTotal: Birr {total:.2f}\nStatus: {g['status']}"
+        from keyboards import no_item_select_keyboard
+        await context.bot.send_message(
+            update.effective_user.id,
+            text,
+            reply_markup=no_item_select_keyboard(g["order_group"]),
+            parse_mode=ParseMode.HTML
+        )
+    return ConversationHandler.END
+
+
 async def admin_mark_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _check(update):
         return ConversationHandler.END
@@ -694,6 +719,31 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
                 parse_mode=ParseMode.HTML
             )
             context.user_data["expect_decline_reason"] = True
+        return ConversationHandler.END
+
+    if data.startswith("noitem_"):
+        order_group = data.split("_", 1)[1]
+        from database import get_order_items
+        items = await get_order_items(order_group)
+        user_id = items[0].get("user_id") if items else None
+        if not user_id:
+            await query.edit_message_text("Could not find user for this order.")
+            return ConversationHandler.END
+        context.user_data["noitem_order_group"] = order_group
+        context.user_data["noitem_user_id"] = user_id
+        context.user_data["noitem_original_text"] = query.message.text_html or query.message.text
+        context.user_data["noitem_msg_chat_id"] = query.message.chat_id
+        context.user_data["noitem_msg_id"] = query.message.message_id
+        await query.edit_message_text(
+            context.user_data["noitem_original_text"] + "\n\n⏳ <b>Waiting for your message to the user...</b>",
+            parse_mode=ParseMode.HTML
+        )
+        await context.bot.send_message(
+            update.effective_user.id,
+            "Type the message to send to the user about the missing item (money will be returned):",
+            parse_mode=ParseMode.HTML
+        )
+        context.user_data["expect_noitem_msg"] = True
         return ConversationHandler.END
 
     if data.startswith("ord_ready_"):

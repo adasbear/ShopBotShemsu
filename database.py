@@ -196,7 +196,7 @@ async def get_user_grouped_orders(user_id, limit=5):
 
 async def get_order_items(order_group):
     result = await _db(lambda: _supabase.table("orders")
-        .select("id, item, qty, status, timestamp")
+        .select("id, item, qty, status, timestamp, user_id")
         .eq("order_group", order_group)
         .execute())
     return result.data
@@ -247,6 +247,30 @@ async def get_all_feedback():
     return result.data
 
 # --- Debt Allow List ---
+
+async def get_todays_grouped_orders():
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    result = await _db(lambda: _supabase.table("orders")
+        .select("id, item, qty, status, order_group, user_id, timestamp")
+        .gte("timestamp", today)
+        .order("timestamp", desc=True)
+        .execute())
+    groups = {}
+    for r in result.data:
+        g = r["order_group"]
+        if not g:
+            continue
+        if g not in groups:
+            groups[g] = {
+                "order_group": g,
+                "user_id": r["user_id"],
+                "status": r["status"],
+                "timestamp": r["timestamp"],
+                "items": []
+            }
+        groups[g]["items"].append({"item": r["item"], "qty": r["qty"]})
+    return list(groups.values())
+
 
 async def add_to_debt_allow_list(username, added_by):
     clean = username.lstrip("@")

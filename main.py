@@ -27,7 +27,8 @@ from handlers.admin import (
     admin_add_sub_item_start, admin_add_sub_item_name, admin_add_sub_item_price,
     admin_back_to_portal, admin_inline_callback,
     admin_debt_menu, admin_show_allow_list,
-    admin_show_all_debts_handler, admin_payment_menu
+    admin_show_all_debts_handler, admin_payment_menu,
+    admin_no_item_start
 )
 from handlers.manage_order import view_my_orders, handle_manage_order, handle_order_action, handle_edit_item, handle_edit_qty
 from handlers.feedback import start_feedback, save_feedback_handler
@@ -131,6 +132,7 @@ conv = ConversationHandler(
         MessageHandler(filters.Regex("^Summary$"), admin_show_summary),
         MessageHandler(filters.Regex("^Mark Delivered$"), admin_show_individual),
         MessageHandler(filters.Regex("^Mark All Arrived$"), admin_mark_all),
+        MessageHandler(filters.Regex("^No Item 📦$"), admin_no_item_start),
         MessageHandler(filters.Regex("^Back to Portal$"), admin_back_to_portal),
         MessageHandler(filters.Regex("^My Debt$"), view_my_debt),
         MessageHandler(filters.Regex("^Payment Accounts$"), admin_payment_menu),
@@ -268,12 +270,57 @@ async def _handle_decline_reason(update: Update, context: ContextTypes.DEFAULT_T
         parse_mode=ParseMode.HTML
     )
 
+async def _handle_noitem_msg(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.user_data.get("expect_noitem_msg"):
+        return
+    msg = update.message.text.strip()
+    if not msg:
+        await update.message.reply_text("Message cannot be empty.")
+        return
+    from database import save_order_decline_reason, update_order_status
+    order_group = context.user_data.get("noitem_order_group")
+    user_id = context.user_data.get("noitem_user_id")
+    original_text = context.user_data.get("noitem_original_text", "")
+    chat_id = context.user_data.get("noitem_msg_chat_id")
+    msg_id = context.user_data.get("noitem_msg_id")
+    full_msg = f"{msg}\n\n⚠️ Your money will be returned shortly."
+    await save_order_decline_reason(order_group, full_msg)
+    await update_order_status(order_group, "Cancelled")
+    if user_id:
+        try:
+            await context.bot.send_message(
+                user_id,
+                f"<b>Item Not Available</b>\n\n{full_msg}\n\nContact @{ADMIN_USERNAME} if you have questions.",
+                parse_mode=ParseMode.HTML
+            )
+        except:
+            pass
+    if chat_id and msg_id:
+        try:
+            await context.bot.edit_message_text(
+                chat_id=chat_id,
+                message_id=msg_id,
+                text=original_text + f"\n\n❌ <b>NO ITEM</b>\nMessage: {msg}",
+                parse_mode=ParseMode.HTML
+            )
+        except:
+            pass
+    context.user_data["expect_noitem_msg"] = False
+    for k in ["noitem_order_group", "noitem_user_id", "noitem_original_text", "noitem_msg_chat_id", "noitem_msg_id"]:
+        context.user_data.pop(k, None)
+    await update.message.reply_text(
+        f"Message sent to user. Order cancelled.\nYour message: {msg}",
+        parse_mode=ParseMode.HTML
+    )
+
 async def _text_dispatcher(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Route text messages to the correct handler based on context flags."""
     if context.user_data.get("expect_debt_pay_confirmation"):
         await handle_debt_pay_confirmation(update, context)
     elif context.user_data.get("expect_decline_reason"):
         await _handle_decline_reason(update, context)
+    elif context.user_data.get("expect_noitem_msg"):
+        await _handle_noitem_msg(update, context)
     elif context.user_data.get("expect_allow_username"):
         await _handle_allow_username(update, context)
     elif context.user_data.get("expect_payment_input"):
@@ -281,7 +328,7 @@ async def _text_dispatcher(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _text_dispatcher))
 application.add_handler(CallbackQueryHandler(handle_debt_pay_callback, pattern="^debt_pay_"))
-application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_"))
+application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_|^noitem_"))
 
 async def _start_polling():
     await application.bot.delete_webhook()

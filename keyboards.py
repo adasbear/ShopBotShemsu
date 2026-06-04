@@ -84,7 +84,7 @@ def get_admin_keyboard():
 def get_admin_orders_keyboard():
     buttons = [
         ["New Orders", "Accepted", "Ready"],
-        ["Today's Profit"],
+        ["Today's Profit", "No Item 📦"],
         ["Back to Portal"]
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
@@ -170,6 +170,17 @@ async def admin_allow_list_inline_keyboard():
     kb.append([InlineKeyboardButton("Add Username ➕", callback_data="admin_add_allow")])
     kb.append([InlineKeyboardButton("⬅ Back", callback_data="admin_back_debt")])
     return InlineKeyboardMarkup(kb)
+
+def no_item_select_keyboard(order_group):
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("No Item 📦", callback_data=f"noitem_{order_group}")]
+    ])
+
+def no_item_send_keyboard(order_group):
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("Send Message", callback_data=f"noitem_send_{order_group}")]
+    ])
+
 
 async def admin_debts_inline_keyboard(filter_status=None):
     from database import get_all_debts
