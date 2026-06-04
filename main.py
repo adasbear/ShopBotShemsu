@@ -514,7 +514,7 @@ def api_get_menu():
     query = database._supabase.table("menu").select("name, price, parent")
     if parent:
         query = query.eq("parent", parent)
-    query = query.order("parent", nulls_first=True).order("name")
+    query = query.order("parent", nullsfirst=True).order("name")
     result = asyncio.run(_db(lambda: query.execute()))
     # Enrich with synthetic id and available for Android app compatibility
     enriched = []
