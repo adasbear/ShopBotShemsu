@@ -510,23 +510,26 @@ def api_update_profile():
 
 @app.route("/api/menu", methods=["GET"])
 def api_get_menu():
-    parent = request.args.get("parent")
-    query = database._supabase.table("menu").select("name, price, parent")
-    if parent:
-        query = query.eq("parent", parent)
-    query = query.order("parent", nullsfirst=True).order("name")
-    result = asyncio.run(_db(lambda: query.execute()))
-    # Enrich with synthetic id and available for Android app compatibility
-    enriched = []
-    for idx, item in enumerate(result.data):
-        enriched.append({
-            "id": idx + 1,
-            "name": item["name"],
-            "price": float(item["price"]),
-            "parent": item.get("parent"),
-            "available": True
-        })
-    return jsonify(enriched)
+    try:
+        parent = request.args.get("parent")
+        query = database._supabase.table("menu").select("name, price, parent")
+        if parent:
+            query = query.eq("parent", parent)
+        query = query.order("parent", nullsfirst=True).order("name")
+        result = asyncio.run(_db(lambda: query.execute()))
+        enriched = []
+        for idx, item in enumerate(result.data):
+            enriched.append({
+                "id": idx + 1,
+                "name": item["name"],
+                "price": float(item["price"]),
+                "parent": item.get("parent"),
+                "available": True
+            })
+        return jsonify(enriched)
+    except Exception as e:
+        logging.error(f"api_get_menu error: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/payment-accounts", methods=["GET"])
