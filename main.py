@@ -267,10 +267,18 @@ async def _handle_decline_reason(update: Update, context: ContextTypes.DEFAULT_T
         parse_mode=ParseMode.HTML
     )
 
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_debt_pay_confirmation))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_decline_reason))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_allow_username))
-application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_payment_input))
+async def _text_dispatcher(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Route text messages to the correct handler based on context flags."""
+    if context.user_data.get("expect_debt_pay_confirmation"):
+        await handle_debt_pay_confirmation(update, context)
+    elif context.user_data.get("expect_decline_reason"):
+        await _handle_decline_reason(update, context)
+    elif context.user_data.get("expect_allow_username"):
+        await _handle_allow_username(update, context)
+    elif context.user_data.get("expect_payment_input"):
+        await _handle_payment_input(update, context)
+
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _text_dispatcher))
 application.add_handler(CallbackQueryHandler(handle_debt_pay_callback, pattern="^debt_pay_"))
 application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_"))
 
