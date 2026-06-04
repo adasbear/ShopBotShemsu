@@ -10,6 +10,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     print("DATABASE_URL not found in .env file.")
+    print()
+    print("To run migration manually, go to Supabase Dashboard > SQL Editor")
+    print("and run the SQL in schema.sql (or run_add_tables.sql for new tables).")
     exit(1)
 
 async def run_migration():

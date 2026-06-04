@@ -511,21 +511,22 @@ def api_update_profile():
 @app.route("/api/menu", methods=["GET"])
 def api_get_menu():
     parent = request.args.get("parent")
+    query = database._supabase.table("menu").select("name, price, parent")
     if parent:
-        result = asyncio.run(_db(
-            lambda: database._supabase.table("menu")
-            .select("id, name, price, parent, available")
-            .eq("parent", parent).eq("available", True)
-            .order("name").execute()
-        ))
-    else:
-        result = asyncio.run(_db(
-            lambda: database._supabase.table("menu")
-            .select("id, name, price, parent, available")
-            .eq("available", True)
-            .order("parent", nulls_first=True).order("name").execute()
-        ))
-    return jsonify(result.data)
+        query = query.eq("parent", parent)
+    query = query.order("parent", nulls_first=True).order("name")
+    result = asyncio.run(_db(lambda: query.execute()))
+    # Enrich with synthetic id and available for Android app compatibility
+    enriched = []
+    for idx, item in enumerate(result.data):
+        enriched.append({
+            "id": idx + 1,
+            "name": item["name"],
+            "price": float(item["price"]),
+            "parent": item.get("parent"),
+            "available": True
+        })
+    return jsonify(enriched)
 
 
 @app.route("/api/payment-accounts", methods=["GET"])
@@ -561,6 +562,15 @@ def api_get_debts():
         .order("created_at", desc=True)
         .limit(50).execute()
     ))
+    # Android app expects a plain JSON array
+    return jsonify(result.data)
+
+
+@app.route("/api/debts/active-total", methods=["GET"])
+def api_get_debts_active_total():
+    username = (request.args.get("username") or "").lstrip("@")
+    if not username:
+        return jsonify({"active_total": 0.0})
     active = asyncio.run(_db(
         lambda: database._supabase.table("debts")
         .select("amount")
@@ -568,7 +578,22 @@ def api_get_debts():
         .eq("status", "active").execute()
     ))
     active_total = sum(r["amount"] for r in active.data)
-    return jsonify({"active_total": active_total, "records": result.data})
+    return jsonify({"active_total": active_total})
+
+
+@app.route("/api/debts/pay", methods=["POST"])
+def api_pay_debt():
+    data = request.get_json()
+    username = (data.get("username") or "").lstrip("@")
+    user_id = data.get("user_id")
+    amount = data.get("amount")
+    payment_account_id = data.get("payment_account_id")
+    confirmation = data.get("confirmation", "")
+    if not username or not user_id or not amount:
+        return jsonify({"success": False, "error": "username, user_id, amount required"}), 400
+    payment_info = f"account_id={payment_account_id}, confirmation={confirmation}"
+    asyncio.run(_db(lambda: database.save_debt_payment(username, int(user_id), float(amount), payment_info)))
+    return jsonify({"success": True})
 
 
 @app.route("/api/orders", methods=["GET"])
@@ -620,6 +645,62 @@ def api_get_order_group(order_group):
         "status": items.data[0]["status"] if items.data else None,
         "created_at": items.data[0]["timestamp"] if items.data else None
     })
+
+
+@app.route("/api/orders", methods=["POST"])
+def api_place_order():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    username = data.get("username")
+    full_name = data.get("full_name")
+    items = data.get("items", [])
+    payment_method = data.get("payment_method", "")
+    payment_account_id = data.get("payment_account_id")
+    confirmation = data.get("confirmation")
+    comment = data.get("comment")
+    if not user_id or not items:
+        return jsonify({"success": False, "error": "user_id and items required"}), 400
+    order_group = f"APP-{datetime.now(timezone.utc).strftime('%y%m%d')}-{random.randint(1000,9999)}"
+    for item in items:
+        asyncio.run(_db(lambda: database.save_order(
+            int(user_id), item["item"], item["qty"], order_group, "Pending"
+        )))
+    if comment:
+        asyncio.run(_db(lambda: database.save_order_comment(order_group, comment)))
+    if payment_method and payment_account_id and confirmation:
+        payment_info = f"{payment_method}:{payment_account_id}:{confirmation}"
+        asyncio.run(_db(lambda: database.save_order_payment(order_group, payment_info)))
+    # Notify admin
+    admin_id = asyncio.run(get_admin_user_id())
+    if admin_id:
+        try:
+            order_summary = "; ".join(f"{i['item']} x{i['qty']}" for i in items)
+            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                "user_id": int(admin_id), "title": "New App Order",
+                "body": f"From {full_name or username}: {order_summary}"
+            }).execute()))
+        except Exception:
+            pass
+    menu_data = asyncio.run(_db(
+        lambda: database._supabase.table("menu").select("name, price").execute()
+    ))
+    prices = {r["name"]: r["price"] for r in menu_data.data}
+    total = sum(prices.get(i["item"], 0) * i["qty"] for i in items)
+    return jsonify({
+        "success": True,
+        "order_group": order_group,
+        "total": total,
+        "payment_method": payment_method,
+        "status": "Pending"
+    })
+
+
+@app.route("/api/orders/<order_group>", methods=["DELETE"])
+def api_cancel_order(order_group):
+    if not order_group:
+        return jsonify({"success": False, "error": "order_group required"}), 400
+    asyncio.run(_db(lambda: database.cancel_order_group(order_group)))
+    return jsonify({"success": True})
 
 
 @app.route("/api/notifications", methods=["GET"])
