@@ -172,7 +172,7 @@ async def admin_allow_list_inline_keyboard():
     return InlineKeyboardMarkup(kb)
 
 async def admin_lock_menu_inline_keyboard():
-    from database import get_all_menu_items, get_all_daily_stocks, is_item_available_today
+    from database import get_all_menu_items, get_all_daily_stocks
     items = await get_all_menu_items()
     stocks = {s["name"]: s for s in await get_all_daily_stocks()}
     kb = []
