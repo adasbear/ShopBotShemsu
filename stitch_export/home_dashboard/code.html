@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sshop Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&amp;family=Space+Mono:wght@700&amp;family=Plus+Jakarta+Sans:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "kelp-green": "#8BC34A",
+                    "on-tertiary-fixed": "#1b1d0e",
+                    "on-secondary-fixed-variant": "#4f4800",
+                    "on-primary-fixed": "#410003",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#e4e4cc",
+                    "surface-container-highest": "#f9dcd9",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#ffb3ac",
+                    "error-container": "#ffdad6",
+                    "primary": "#af101a",
+                    "on-surface-variant": "#5b403d",
+                    "tertiary": "#575946",
+                    "inverse-surface": "#3e2c2a",
+                    "on-background": "#271816",
+                    "secondary": "#695f00",
+                    "surface-container": "#ffe9e7",
+                    "tertiary-container": "#70715d",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#474836",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#ba1a20",
+                    "secondary-fixed-dim": "#dbc90a",
+                    "primary-container": "#d32f2f",
+                    "surface-container-low": "#fff0ef",
+                    "primary-fixed": "#ffdad6",
+                    "secondary-fixed": "#f9e534",
+                    "inverse-on-surface": "#ffedeb",
+                    "background": "#fff8f7",
+                    "ocean-blue": "#03A9F4",
+                    "outline-variant": "#e4beba",
+                    "on-primary-container": "#fff2f0",
+                    "surface": "#fff8f7",
+                    "tertiary-fixed-dim": "#c8c8b0",
+                    "on-secondary-fixed": "#201c00",
+                    "surface-bright": "#fff8f7",
+                    "ink-black": "#1A1A1A",
+                    "outline": "#8f6f6c",
+                    "on-primary-fixed-variant": "#930010",
+                    "primary-fixed-dim": "#ffb3ac",
+                    "surface-dim": "#f1d3d0",
+                    "paper-shadow": "#E6E6CC",
+                    "secondary-container": "#f9e534",
+                    "surface-container-high": "#ffe2de",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#706500",
+                    "surface-variant": "#f9dcd9",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#f6f6dd",
+                    "on-surface": "#271816"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "card-gap": "12px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "40px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Bricolage Grotesque"],
+                    "label-mono": ["Space Mono"],
+                    "headline-lg": ["Bricolage Grotesque"],
+                    "headline-lg-mobile": ["Bricolage Grotesque"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .paper-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/handmade-paper.png");
+        }
+        .wiggle-hover:hover {
+            animation: wiggle 0.3s ease-in-out infinite;
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-1deg); }
+            50% { transform: rotate(1deg); }
+        }
+        .scribble-highlight {
+            position: relative;
+            z-index: 1;
+        }
+        .scribble-highlight::after {
+            content: '';
+            position: absolute;
+            left: -5px;
+            bottom: 2px;
+            width: 110%;
+            height: 40%;
+            background: #FFEB3B;
+            z-index: -1;
+            opacity: 0.6;
+            transform: skew(-15deg) rotate(-2deg);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background paper-texture min-h-screen pb-24 md:pb-0 md:pl-64">
+<!-- Top AppBar (Desktop Only Logic) -->
+<header class="bg-background dark:bg-ink-black border-b-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex justify-between items-center w-full px-margin-desktop py-4 max-w-[1200px] mx-auto sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<h1 class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</h1>
+</div>
+<nav class="hidden md:flex gap-8">
+<a class="text-primary font-bold border-b-2 border-primary font-label-mono text-label-mono uppercase" href="#">Sales</a>
+<a class="text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform font-label-mono text-label-mono uppercase" href="#">About</a>
+<a class="text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform font-label-mono text-label-mono uppercase" href="#">Location</a>
+<a class="text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform font-label-mono text-label-mono uppercase" href="#">Prices</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary p-2 border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5">notifications</button>
+<button class="material-symbols-outlined text-primary p-2 border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5">shopping_cart</button>
+<div class="w-10 h-10 rounded-full border-2 border-ink-black overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-secondary-fixed">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCujoTipIR2A4XdmjMKn8PZa_MDHKI8NpMfA1-cP0BICX1dcVx6R9CfTWznZ9DTED-Z0U--zVH1DUPg_Z46Jbl_QQEtRkczAACXLbYPQflSXKYqvUnMogYvFxq2gCAcVPyjgo4aaqKb_4oTNZ2-NPG9VV047wJS9jUuDZBiyF9ltNVZ8ix7gI58zCAV6W44vFr6yUw1H_HsLrldp4kms4ZzyU-dZInWDDGgzQJWTWgSPKFFiaVlzPEzWOkR-M6yVUG9bfHEu73Cpls"/>
+</div>
+</div>
+</header>
+<!-- Side Navigation (Desktop Only) -->
+<aside class="fixed left-0 top-0 flex flex-col p-gutter gap-4 h-full h-screen w-64 border-r-4 border-ink-black bg-background shadow-[4px_0px_0px_0px_rgba(0,0,0,1)] hidden md:flex z-50">
+<div class="mb-8">
+<h2 class="font-headline-lg text-headline-lg text-primary">Sshop</h2>
+<div class="mt-4 flex items-center gap-3 p-2 bg-surface-container border-2 border-ink-black -rotate-1">
+<div class="w-12 h-12 bg-secondary rounded-full border-2 border-ink-black flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary">person</span>
+</div>
+<div>
+<p class="font-label-mono text-label-mono">Sshop Member</p>
+<p class="text-[10px] font-bold">Ready for a patty?</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-3">
+<a class="bg-secondary text-on-secondary font-bold border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3 p-3 transition-transform translate-x-0.5" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono text-label-mono">Home</span>
+</a>
+<a class="text-ink-black hover:bg-paper-shadow flex items-center gap-3 p-3 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-mono text-label-mono">Menu</span>
+</a>
+<a class="text-ink-black hover:bg-paper-shadow flex items-center gap-3 p-3 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-label-mono text-label-mono">My Orders</span>
+</a>
+<a class="text-ink-black hover:bg-paper-shadow flex items-center gap-3 p-3 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-mono text-label-mono">My Debt</span>
+</a>
+<a class="text-ink-black hover:bg-paper-shadow flex items-center gap-3 p-3 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-mono text-label-mono">Help</span>
+</a>
+</nav>
+<button class="mt-auto bg-primary text-on-primary font-headline-lg-mobile text-headline-lg-mobile p-4 border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all rotate-2">
+            Order Now
+        </button>
+</aside>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1 scale-95" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono text-label-mono uppercase">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">restaurant_menu</span>
+<span class="font-label-mono text-label-mono uppercase">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-mono text-label-mono uppercase">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-mono text-label-mono uppercase">Profile</span>
+</a>
+</nav>
+<!-- Main Content Canvas -->
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+<!-- Welcome Section -->
+<section class="mb-10">
+<div class="inline-block bg-secondary-container p-4 border-4 border-ink-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] -rotate-1">
+<h2 class="font-headline-xl text-headline-xl text-on-secondary-container">Hi Sponge 👋</h2>
+<p class="font-body-lg text-body-lg text-ink-black mt-2">Ready to secure the secret formula today?</p>
+</div>
+</section>
+<!-- Debt Banner (Wanted Poster Aesthetic) -->
+<section class="mb-12">
+<div class="relative overflow-hidden bg-[#F4E4BC] p-8 border-4 border-ink-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center paper-texture">
+<div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%); background-size: 10px 10px;"></div>
+<div class="relative z-10">
+<h3 class="font-headline-xl text-headline-xl text-primary tracking-widest uppercase mb-2">WANTED</h3>
+<p class="font-label-mono text-label-mono text-ink-black mb-4 underline decoration-2">FOR UNPAID KRABBY PATTIES</p>
+<div class="flex flex-col md:flex-row items-center justify-center gap-6 mt-6">
+<div class="text-6xl font-headline-xl text-ink-black bg-secondary-fixed px-6 py-2 border-2 border-ink-black -rotate-2">
+                            $49.99
+                        </div>
+<div class="flex flex-col gap-2">
+<p class="font-body-lg text-body-lg text-ink-black italic">"Mr. Krabs is waiting for his money!"</p>
+<button class="bg-primary text-on-primary px-8 py-3 font-headline-lg-mobile text-headline-lg-mobile border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all hover:bg-red-700">
+                                PAY NOW
+                            </button>
+</div>
+</div>
+</div>
+<!-- Grungy details -->
+<div class="absolute -top-4 -right-4 w-12 h-12 bg-primary rotate-45 border-4 border-ink-black"></div>
+<div class="absolute -bottom-4 -left-4 w-12 h-12 bg-secondary rotate-12 border-4 border-ink-black"></div>
+</div>
+</section>
+<!-- Quick Actions Bento Grid -->
+<section class="mb-12">
+<h3 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg mb-6 scribble-highlight inline-block">Directives</h3>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Action 1: Order Now -->
+<button class="group flex flex-col items-center justify-center p-6 bg-surface-container-high border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 -rotate-1">
+<div class="w-20 h-20 mb-4 rounded-full bg-secondary-container border-4 border-ink-black flex items-center justify-center group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-4xl text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">Order Now</span>
+</button>
+<!-- Action 2: My Orders -->
+<button class="group flex flex-col items-center justify-center p-6 bg-surface-container-low border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 rotate-1">
+<div class="w-20 h-20 mb-4 rounded-full bg-kelp-green border-4 border-ink-black flex items-center justify-center group-hover:-rotate-12 transition-transform">
+<span class="material-symbols-outlined text-4xl text-white" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">My Orders</span>
+</button>
+<!-- Action 3: My Debt -->
+<button class="group flex flex-col items-center justify-center p-6 bg-surface-variant border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 -rotate-2">
+<div class="w-20 h-20 mb-4 rounded-full bg-primary-container border-4 border-ink-black flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl text-white" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">My Debt</span>
+</button>
+<!-- Action 4: Help -->
+<button class="group flex flex-col items-center justify-center p-6 bg-tertiary-fixed border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 rotate-2">
+<div class="w-20 h-20 mb-4 rounded-full bg-ocean-blue border-4 border-ink-black flex items-center justify-center group-hover:rotate-180 transition-transform duration-500">
+<span class="material-symbols-outlined text-4xl text-white" style="font-variation-settings: 'FILL' 1;">help</span>
+</div>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">Help</span>
+</button>
+</div>
+</section>
+<!-- Illustration Section / Featured Item -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white border-4 border-ink-black p-8 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rotate-1 relative">
+<div class="absolute -top-6 -left-6 bg-secondary-container px-4 py-2 border-2 border-ink-black rotate-12 z-20">
+<span class="font-label-mono text-label-mono">LIMITED OFFER</span>
+</div>
+<div class="space-y-6">
+<h3 class="font-headline-xl text-headline-xl leading-tight">THE JELLY PATTY EXPERIENCE</h3>
+<p class="font-body-lg text-body-lg">Caught fresh from Jellyfish Fields! It's got the zing, the sting, and everything in between.</p>
+<div class="flex items-center gap-4">
+<span class="text-4xl font-headline-xl text-primary">$11.99</span>
+<span class="text-xl font-headline-lg line-through opacity-50">$15.99</span>
+</div>
+<button class="bg-kelp-green text-white px-8 py-4 border-4 border-ink-black font-headline-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none hover:bg-green-600 transition-all">
+                    SNAG ONE!
+                </button>
+</div>
+<div class="relative flex justify-center items-center h-64 md:h-96">
+<img class="w-full h-full object-contain border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-3 hover:rotate-0 transition-transform bg-surface-container" data-alt="A juicy, oversized cartoon-style burger with neon pink glowing jelly oozing from the sides, placed on a weathered parchment background. The burger is stacked high with vibrant green sea-lettuce and thick red tomatoes. The lighting is high-energy and saturated, with bold black ink outlines defining every edge of the food, echoing the nautical Krusty Krab aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLZUmubJQD5SPIrNPTk8fT0l9qpuZz80wtY1WPZ4tY_f-oGGGtGEQG0X17_zMbby0EZ1j-LJpddVIP1FGwbq3gImk1BIN_6eTcDMlRw5svJSYrxhxMltJSGvBywIyT32fa1HWNCKnX5G5vr1aludwoZ2muE2h_XJJ1OCi3I0Y_7ZprLvAJUYzodKvH9WZoIAJP2tyMjvtIEiVeyP_7R7L5NhbXW5dURbinxiah-lXN55x7dzQRwxjecggtWBf--YLBGDQkcqPDcHU"/>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (Optional logic: home screen only) -->
+<button class="fixed bottom-24 right-6 md:bottom-8 md:right-8 w-16 h-16 bg-primary rounded-full border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-white z-50 hover:scale-110 active:translate-x-1 active:translate-y-1 transition-all">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">add_shopping_cart</span>
+</button>
+</body></html>

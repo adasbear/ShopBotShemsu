@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sshop Profile - Pattyburgers</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@800&amp;family=Space+Mono:wght@700&amp;family=Plus+Jakarta+Sans:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "kelp-green": "#8BC34A",
+                "on-tertiary-fixed": "#1b1d0e",
+                "on-secondary-fixed-variant": "#4f4800",
+                "on-primary-fixed": "#410003",
+                "on-secondary": "#ffffff",
+                "tertiary-fixed": "#e4e4cc",
+                "surface-container-highest": "#f9dcd9",
+                "on-primary": "#ffffff",
+                "inverse-primary": "#ffb3ac",
+                "error-container": "#ffdad6",
+                "primary": "#af101a",
+                "on-surface-variant": "#5b403d",
+                "tertiary": "#575946",
+                "inverse-surface": "#3e2c2a",
+                "on-background": "#271816",
+                "secondary": "#695f00",
+                "surface-container": "#ffe9e7",
+                "tertiary-container": "#70715d",
+                "on-error": "#ffffff",
+                "on-tertiary-fixed-variant": "#474836",
+                "surface-container-lowest": "#ffffff",
+                "surface-tint": "#ba1a20",
+                "secondary-fixed-dim": "#dbc90a",
+                "primary-container": "#d32f2f",
+                "surface-container-low": "#fff0ef",
+                "primary-fixed": "#ffdad6",
+                "secondary-fixed": "#f9e534",
+                "inverse-on-surface": "#ffedeb",
+                "background": "#fff8f7",
+                "ocean-blue": "#03A9F4",
+                "outline-variant": "#e4beba",
+                "on-primary-container": "#fff2f0",
+                "surface": "#fff8f7",
+                "tertiary-fixed-dim": "#c8c8b0",
+                "on-secondary-fixed": "#201c00",
+                "surface-bright": "#fff8f7",
+                "ink-black": "#1A1A1A",
+                "outline": "#8f6f6c",
+                "on-primary-fixed-variant": "#930010",
+                "primary-fixed-dim": "#ffb3ac",
+                "surface-dim": "#f1d3d0",
+                "paper-shadow": "#E6E6CC",
+                "secondary-container": "#f9e534",
+                "surface-container-high": "#ffe2de",
+                "on-tertiary": "#ffffff",
+                "error": "#ba1a1a",
+                "on-secondary-container": "#706500",
+                "surface-variant": "#f9dcd9",
+                "on-error-container": "#93000a",
+                "on-tertiary-container": "#f6f6dd",
+                "on-surface": "#271816"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "gutter": "16px",
+                "card-gap": "12px",
+                "margin-mobile": "20px",
+                "margin-desktop": "40px",
+                "unit": "4px"
+            },
+            "fontFamily": {
+                "headline-xl": ["Bricolage Grotesque"],
+                "label-mono": ["Space Mono"],
+                "headline-lg": ["Bricolage Grotesque"],
+                "headline-lg-mobile": ["Bricolage Grotesque"],
+                "body-lg": ["Plus Jakarta Sans"],
+                "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .paper-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/handmade-paper.png");
+        }
+        .sketchy-border {
+            border: 3px solid #1A1A1A;
+            box-shadow: 4px 4px 0px 0px #1A1A1A;
+        }
+        .active-press:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #1A1A1A;
+        }
+    </style>
+</head>
+<body class="bg-background paper-texture text-on-surface min-h-screen pb-24 md:pb-0 md:pl-64">
+<!-- SideNavBar (Desktop) -->
+<nav class="fixed left-0 top-0 flex flex-col p-gutter gap-4 h-full h-screen w-64 border-r-4 border-ink-black hidden md:block bg-background shadow-[4px_0px_0px_0px_rgba(0,0,0,1)] z-50">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</h1>
+</div>
+<div class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 p-3 text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span> Home
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span> Menu
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span> My Orders
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span> My Debt
+            </a>
+<a class="bg-secondary text-on-secondary font-bold border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3 p-3 translate-x-0.5 duration-75 font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span> Profile
+            </a>
+</div>
+<button class="mt-auto bg-primary text-on-primary p-4 border-3 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active-press font-headline-lg text-headline-lg-mobile uppercase rotate-1">
+            Order Now
+        </button>
+</nav>
+<!-- TopAppBar (Mobile/Desktop) -->
+<header class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-[1200px] mx-auto bg-background border-b-4 border-ink-black sticky top-0 z-40 mb-8">
+<div class="md:hidden">
+<h1 class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</h1>
+</div>
+<div class="hidden md:flex gap-8">
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Sales</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">About</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Location</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined p-2 border-2 border-ink-black rounded-xl cursor-pointer hover:bg-paper-shadow" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined p-2 border-2 border-ink-black rounded-xl cursor-pointer hover:bg-paper-shadow" data-icon="shopping_cart">shopping_cart</span>
+<img alt="User profile avatar" class="w-10 h-10 rounded-full border-2 border-ink-black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaSlCa3P-9mUjZRprUYtwPYy00B2l-d7UgDirZqkPmZk-fhrq8HaD9lmqRQ3lWMnHfdSnsoQh8xzNU0SrUXFJ0tWKFTrQxlywTQKZMWpsJRz7hZdiQl1zZHId5PrWb-ogMSKNV_gpGTGYXpFP4g36WPBkiVOjFLzsgv8WufnsvhdhsQNduzrMKYD_tHrdYfNzSNHc90HfUdHOj2LrJBMFvfnUiK29BC5as0Ah2QxzE7wkclrbqjp8M_jA_wpmSx-819yXYBHuNWp4"/>
+</div>
+</header>
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop space-y-8">
+<!-- Profile Header Card -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-8 bg-surface-container border-4 border-ink-black p-8 relative overflow-hidden rotate-[-0.5deg] shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
+<!-- Scribble effect bg -->
+<div class="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none">
+<img class="w-full h-full object-cover" src="https://www.transparenttextures.com/patterns/asfalt-dark.png"/>
+</div>
+<div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+<div class="relative">
+<img alt="User big avatar" class="w-32 h-32 md:w-48 md:h-48 rounded-xl border-4 border-ink-black shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] rotate-3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqXjqpBiZ2UgIrC1NN_xlpd8gXhnHvM6N03SDTxQbGV1DsZF7jQ8PCTqHYcSu5EW8xbO-XqCRwlyd1TrpmcRUEtySnTOx97y3m11hNGjyNweORv4uVmixDieFWtoVKZTvqJWtI3FHfbnZzJS6XM3AnL48zDqNeo1-hMLceoqvufWA9-D7Lt_ZO6nb8NmLMoLIcUP-IsUA7aKIAP1lE9kF_c7PxajZCdUKOGy1nmp8riucjvkQbOYDxCiC6nFuU6XS2LnDLI8vFuDI"/>
+<button class="absolute -bottom-2 -right-2 bg-kelp-green p-2 border-3 border-ink-black rounded-full active-press shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
+<span class="material-symbols-outlined text-white" data-icon="edit">edit</span>
+</button>
+</div>
+<div class="flex-grow space-y-4 text-center md:text-left">
+<div class="inline-block bg-secondary-fixed text-on-secondary-fixed border-2 border-ink-black px-4 py-1 rotate-1 font-label-mono text-label-mono mb-2">
+                            GOLD PATRON
+                        </div>
+<div class="space-y-1">
+<div class="flex items-center justify-center md:justify-start gap-2">
+<h2 class="font-headline-xl text-headline-xl text-ink-black">Bubble Buddy</h2>
+<span class="material-symbols-outlined text-ocean-blue" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-label-mono text-body-lg text-primary">@fresh_patty_lover_99</p>
+</div>
+<div class="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
+<div class="bg-paper-shadow border-2 border-ink-black px-4 py-2 rotate-[-1deg]">
+<p class="font-label-mono text-[10px] uppercase text-ink-black opacity-60">Orders</p>
+<p class="font-headline-lg text-headline-lg-mobile">152</p>
+</div>
+<div class="bg-paper-shadow border-2 border-ink-black px-4 py-2 rotate-[2deg]">
+<p class="font-label-mono text-[10px] uppercase text-ink-black opacity-60">Reviews</p>
+<p class="font-headline-lg text-headline-lg-mobile">48</p>
+</div>
+<div class="bg-paper-shadow border-2 border-ink-black px-4 py-2">
+<p class="font-label-mono text-[10px] uppercase text-ink-black opacity-60">Debt</p>
+<p class="font-headline-lg text-headline-lg-mobile text-error">$0.00</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bento Card: Wanted Poster Aesthetic -->
+<div class="md:col-span-4 bg-[#fdf2d0] border-4 border-ink-black p-6 flex flex-col items-center justify-center text-center rotate-[1deg] shadow-[6px_6px_0px_0px_rgba(26,26,26,1)]">
+<h3 class="font-headline-lg text-headline-lg text-primary uppercase mb-4 tracking-widest">Wanted</h3>
+<div class="border-2 border-dashed border-ink-black p-4 mb-4">
+<img alt="Promo graphic" class="w-24 h-24 grayscale brightness-50 contrast-125" data-alt="A vintage, high-contrast, black and white gritty poster illustration showing a stylized burger silhouette in the style of 1920s newspaper comics. The art is heavily textured with paper grain and halftone dots, featuring bold, expressive brushstrokes and a sense of nostalgic, playful mystery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDw7g9s14VdoaBhAe-wpzFmdXuPxFD1BLYylpZ-sWujrVoMU3P-ktgKQpndVoFftUBon0QBFNG1g07C7OVIaN_e2TC-buzDIdBdvLN08yacMaAbfLWKj1PZSdBnscIwYCP0CCFhT-Eyq8c9nOH_vpe708ODIl45CQWVU52T119cY0bqUqF9xq6SGDJyoidSiBJmAQE5HZnYSYS_VWW_MqnSb9JbzqdcVFdVW2ICExLAHL7IEFDZLE3u5A2S305F7XBQyb7ye6L3KIc"/>
+</div>
+<p class="font-label-mono text-label-mono uppercase">For excessive Patty Consumption</p>
+<div class="mt-4 bg-primary text-white px-4 py-1 font-headline-lg text-headline-lg-mobile -rotate-2">
+                    REWARD: 1 FREE KELP SHAKE
+                </div>
+</div>
+</section>
+<!-- Profile Services List -->
+<section class="pb-12">
+<h3 class="font-headline-lg text-headline-lg text-ink-black mb-6 flex items-center gap-2">
+<span class="w-8 h-2 bg-secondary block"></span>
+                Settings &amp; Services
+            </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-card-gap">
+<!-- Notification Card -->
+<div class="bg-white border-3 border-ink-black p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors group cursor-pointer active-press">
+<div class="flex items-center gap-4">
+<div class="bg-ocean-blue/20 p-3 rounded-xl border-2 border-ink-black rotate-[-2deg]">
+<span class="material-symbols-outlined text-ocean-blue" data-icon="notifications">notifications</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg-mobile">Notifications</p>
+<p class="font-body-md text-ink-black/60">Manage your alerts and pings</p>
+</div>
+</div>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Contact Admin Card -->
+<div class="bg-white border-3 border-ink-black p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors group cursor-pointer active-press">
+<div class="flex items-center gap-4">
+<div class="bg-kelp-green/20 p-3 rounded-xl border-2 border-ink-black rotate-[3deg]">
+<span class="material-symbols-outlined text-kelp-green" data-icon="support_agent">support_agent</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg-mobile">Contact Admin</p>
+<p class="font-body-md text-ink-black/60">Speak to Mr. Krabs' office</p>
+</div>
+</div>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Help Card -->
+<div class="bg-white border-3 border-ink-black p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors group cursor-pointer active-press">
+<div class="flex items-center gap-4">
+<div class="bg-primary/10 p-3 rounded-xl border-2 border-ink-black rotate-[-1deg]">
+<span class="material-symbols-outlined text-primary" data-icon="help">help</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg-mobile">Help Center</p>
+<p class="font-body-md text-ink-black/60">Lost in the sauce? Find answers</p>
+</div>
+</div>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Feedback Card -->
+<div class="bg-white border-3 border-ink-black p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors group cursor-pointer active-press">
+<div class="flex items-center gap-4">
+<div class="bg-secondary/20 p-3 rounded-xl border-2 border-ink-black rotate-[2deg]">
+<span class="material-symbols-outlined text-secondary" data-icon="rate_review">rate_review</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg-mobile">Send Feedback</p>
+<p class="font-body-md text-ink-black/60">Tell us about your experience</p>
+</div>
+</div>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Logout Card -->
+<div class="bg-surface-container-low border-3 border-ink-black p-4 flex items-center justify-between hover:bg-error-container transition-colors group cursor-pointer active-press md:col-span-2">
+<div class="flex items-center gap-4">
+<div class="bg-error/10 p-3 rounded-xl border-2 border-ink-black">
+<span class="material-symbols-outlined text-error" data-icon="logout">logout</span>
+</div>
+<div>
+<p class="font-headline-lg text-headline-lg-mobile text-error">Logout</p>
+<p class="font-body-md text-ink-black/60">See you next time, sailor!</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-error" data-icon="logout">logout</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<div class="flex flex-col items-center justify-center text-ink-black p-2 font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="home">home</span> Home
+        </div>
+<div class="flex flex-col items-center justify-center text-ink-black p-2 font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="restaurant_menu">restaurant_menu</span> Menu
+        </div>
+<div class="flex flex-col items-center justify-center text-ink-black p-2 font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span> Orders
+        </div>
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1 scale-95 duration-100 font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="person">person</span> Profile
+        </div>
+</nav>
+<script>
+        // Simple micro-interactions
+        document.querySelectorAll('.active-press').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'translate(2px, 2px)';
+                el.style.boxShadow = '2px 2px 0px 0px #1A1A1A';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = '';
+                el.style.boxShadow = '';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = '';
+                el.style.boxShadow = '';
+            });
+        });
+    </script>
+</body></html>

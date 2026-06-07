@@ -791,6 +791,15 @@ def api_place_order():
     if payment_method and payment_account_id and confirmation:
         payment_info = f"{payment_method}:{payment_account_id}:{confirmation}"
         asyncio.run(database.save_order_payment(order_group, payment_info))
+    # Check referral and credit referrer
+    ref = asyncio.run(_db(
+        lambda: database._supabase.table("referrals")
+        .select("referrer_id").eq("referred_id", int(user_id)).limit(1).execute()
+    ))
+    if ref.data:
+        referrer_id = ref.data[0]["referrer_id"]
+        items_summary = "; ".join(f"{i['item']} x{i['qty']}" for i in items)
+        asyncio.run(database.record_referral_earning(referrer_id, int(user_id), order_group, items_summary))
     # Notify admin
     admin_id = asyncio.run(get_admin_user_id())
     if admin_id:
@@ -865,6 +874,28 @@ def api_submit_feedback():
         }).execute()
     ))
     return jsonify({"success": True})
+
+
+@app.route("/api/referrals/stats", methods=["GET"])
+def api_referral_stats():
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"error": "user_id required"}), 400
+    user_id = int(user_id)
+    if user_id != 5407307505:
+        return jsonify({"error": "not authorized"}), 403
+    count = asyncio.run(database.get_referral_count(user_id))
+    points = asyncio.run(database.get_referral_points(user_id))
+    earnings = asyncio.run(database.get_referral_earnings(user_id))
+    return jsonify({
+        "count": count,
+        "points": points,
+        "earnings": [
+            {"items": e["items"], "earned_at": e["earned_at"],
+             "referred": e.get("referred", {})}
+            for e in earnings
+        ]
+    })
 
 
 @app.route("/api/contact", methods=["POST"])

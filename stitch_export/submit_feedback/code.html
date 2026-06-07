@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sshop | Leave a Review</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&amp;family=Space+Mono:wght@700&amp;family=Plus+Jakarta+Sans:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "kelp-green": "#8BC34A",
+                    "on-tertiary-fixed": "#1b1d0e",
+                    "on-secondary-fixed-variant": "#4f4800",
+                    "on-primary-fixed": "#410003",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#e4e4cc",
+                    "surface-container-highest": "#f9dcd9",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#ffb3ac",
+                    "error-container": "#ffdad6",
+                    "primary": "#af101a",
+                    "on-surface-variant": "#5b403d",
+                    "tertiary": "#575946",
+                    "inverse-surface": "#3e2c2a",
+                    "on-background": "#271816",
+                    "secondary": "#695f00",
+                    "surface-container": "#ffe9e7",
+                    "tertiary-container": "#70715d",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#474836",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#ba1a20",
+                    "secondary-fixed-dim": "#dbc90a",
+                    "primary-container": "#d32f2f",
+                    "surface-container-low": "#fff0ef",
+                    "primary-fixed": "#ffdad6",
+                    "secondary-fixed": "#f9e534",
+                    "inverse-on-surface": "#ffedeb",
+                    "background": "#fff8f7",
+                    "ocean-blue": "#03A9F4",
+                    "outline-variant": "#e4beba",
+                    "on-primary-container": "#fff2f0",
+                    "surface": "#fff8f7",
+                    "tertiary-fixed-dim": "#c8c8b0",
+                    "on-secondary-fixed": "#201c00",
+                    "surface-bright": "#fff8f7",
+                    "ink-black": "#1A1A1A",
+                    "outline": "#8f6f6c",
+                    "on-primary-fixed-variant": "#930010",
+                    "primary-fixed-dim": "#ffb3ac",
+                    "surface-dim": "#f1d3d0",
+                    "paper-shadow": "#E6E6CC",
+                    "secondary-container": "#f9e534",
+                    "surface-container-high": "#ffe2de",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#706500",
+                    "surface-variant": "#f9dcd9",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#f6f6dd",
+                    "on-surface": "#271816"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "card-gap": "12px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "40px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Bricolage Grotesque"],
+                    "label-mono": ["Space Mono"],
+                    "headline-lg": ["Bricolage Grotesque"],
+                    "headline-lg-mobile": ["Bricolage Grotesque"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #fff8f7;
+            background-image: radial-gradient(#e4beba 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .paper-stack::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: -4px;
+            bottom: -4px;
+            background: #1A1A1A;
+            z-index: -1;
+        }
+        .scribble-highlight {
+            position: relative;
+            z-index: 1;
+        }
+        .scribble-highlight::after {
+            content: '';
+            position: absolute;
+            left: -5%;
+            bottom: 5px;
+            width: 110%;
+            height: 12px;
+            background: #f9e534;
+            z-index: -1;
+            opacity: 0.7;
+            transform: rotate(-1deg);
+        }
+        .rough-border {
+            border: 3px solid #1A1A1A;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background min-h-screen pb-24 md:pb-0 md:pl-64">
+<!-- Top Navigation (Desktop & Web) -->
+<nav class="bg-background border-b-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex justify-between items-center w-full px-margin-desktop py-4 max-w-[1200px] mx-auto z-40 sticky top-0 md:relative">
+<div class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</div>
+<div class="hidden md:flex gap-8">
+<a class="text-ink-black font-label-mono text-label-mono hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Sales</a>
+<a class="text-ink-black font-label-mono text-label-mono hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">About</a>
+<a class="text-ink-black font-label-mono text-label-mono hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Location</a>
+<a class="text-ink-black font-label-mono text-label-mono hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Prices</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform">notifications</span>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:scale-110 transition-transform">shopping_cart</span>
+<div class="w-10 h-10 rough-border rounded-xl bg-secondary overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZ9yidKxaxfpr1FVQu51wb6FvT57CH13qswvT4yxNBjZMpUkG661xIAqA38XwvabQmUAaK1s9rxt4lFjd-tBKL8c0DFrE-gXS5CbMclXsOY6yURaQzSjEGolk21h66RiwNHZrnmj8w4JavlQo3AjtgscM9-HVQ3GRLrY_hSocUUk42Q5btKVZAVQJRZZoujokrnI_m_epGjUEHeUidHu4-6zEwMKBrGmCbfG4FS9aelyhZhvK_7Y3DKkefy14sBtIwsJAzUnMiylA"/>
+</div>
+</div>
+</nav>
+<!-- Side Navigation (Desktop) -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r-4 border-ink-black bg-background shadow-[4px_0px_0px_0px_rgba(0,0,0,1)] hidden md:flex flex-col p-gutter gap-4 z-50">
+<div class="mb-8 p-4 bg-paper-shadow rough-border rotate-1">
+<div class="font-headline-lg text-headline-lg text-primary">Sshop</div>
+<div class="text-xs font-label-mono uppercase tracking-widest text-ink-black">Burger Emporium</div>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform rounded-lg" href="#">
+<span class="material-symbols-outlined">home</span> Home
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform rounded-lg" href="#">
+<span class="material-symbols-outlined">restaurant</span> Menu
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform rounded-lg" href="#">
+<span class="material-symbols-outlined">list_alt</span> My Orders
+            </a>
+<a class="bg-secondary text-on-secondary font-bold rough-border shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-x-0.5 flex items-center gap-3 p-3 font-label-mono text-label-mono rounded-lg" href="#">
+<span class="material-symbols-outlined">reviews</span> Feedback
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span> Help
+            </a>
+</div>
+<div class="mt-auto p-4 bg-surface-container rough-border -rotate-1">
+<div class="font-label-mono text-[10px] text-ink-black mb-1">CURRENT STATUS</div>
+<div class="font-bold text-primary">Ready for a patty?</div>
+<button class="mt-3 w-full bg-primary text-white py-2 rough-border shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all font-label-mono text-xs">ORDER NOW</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop py-12">
+<!-- Header Section -->
+<header class="mb-12 text-center">
+<div class="inline-block p-2 bg-secondary-container rough-border -rotate-2 mb-4">
+<span class="font-label-mono text-label-mono text-on-secondary-container">WE VALUE YOUR TASTE BUDS!</span>
+</div>
+<h1 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl text-ink-black mb-4">
+                HOW WAS THE <span class="scribble-highlight">PATTY?</span>
+</h1>
+<p class="font-body-lg text-on-surface-variant max-w-lg mx-auto">
+                Did our Secret Formula hit the spot, or do we need to walk the plank? Leave your honest feedback below!
+            </p>
+</header>
+<!-- Feedback Form Card -->
+<section class="bg-background rough-border shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 md:p-12 mb-12 relative overflow-hidden">
+<!-- Decorative Element -->
+<div class="absolute -right-12 -top-12 opacity-10 pointer-events-none">
+<span class="material-symbols-outlined text-[200px]" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+<form class="relative z-10 space-y-10" id="feedbackForm">
+<!-- Star Rating -->
+<div class="space-y-4">
+<label class="block font-label-mono text-label-mono text-ink-black uppercase tracking-wider">Rate your experience</label>
+<div class="flex gap-2" id="starContainer">
+<button class="star-btn group" data-rating="1" type="button">
+<span class="material-symbols-outlined text-4xl text-ink-black hover:scale-125 transition-transform group-[.active]:filled-icon group-[.active]:text-secondary-fixed-dim">star</span>
+</button>
+<button class="star-btn group" data-rating="2" type="button">
+<span class="material-symbols-outlined text-4xl text-ink-black hover:scale-125 transition-transform group-[.active]:filled-icon group-[.active]:text-secondary-fixed-dim">star</span>
+</button>
+<button class="star-btn group" data-rating="3" type="button">
+<span class="material-symbols-outlined text-4xl text-ink-black hover:scale-125 transition-transform group-[.active]:filled-icon group-[.active]:text-secondary-fixed-dim">star</span>
+</button>
+<button class="star-btn group" data-rating="4" type="button">
+<span class="material-symbols-outlined text-4xl text-ink-black hover:scale-125 transition-transform group-[.active]:filled-icon group-[.active]:text-secondary-fixed-dim">star</span>
+</button>
+<button class="star-btn group" data-rating="5" type="button">
+<span class="material-symbols-outlined text-4xl text-ink-black hover:scale-125 transition-transform group-[.active]:filled-icon group-[.active]:text-secondary-fixed-dim">star</span>
+</button>
+</div>
+<p class="font-label-mono text-xs text-primary italic invisible" id="ratingLabel">Perfect Krabby Satisfaction!</p>
+</div>
+<!-- Comment Area -->
+<div class="space-y-4">
+<label class="block font-label-mono text-label-mono text-ink-black uppercase tracking-wider" for="comment">Spill the kelp shakes (Comments)</label>
+<div class="relative">
+<textarea class="w-full bg-paper-shadow rough-border p-4 font-body-md focus:ring-0 focus:border-primary placeholder:text-outline-variant resize-none rotate-1" id="comment" name="comment" placeholder="Type your thoughts here..." rows="5"></textarea>
+<div class="absolute -bottom-2 -right-2 w-full h-full bg-ink-black -z-10 rounded"></div>
+</div>
+</div>
+<!-- Tags / Quick Feedback Chips -->
+<div class="space-y-4">
+<label class="block font-label-mono text-label-mono text-ink-black uppercase tracking-wider">Quick Tags</label>
+<div class="flex flex-wrap gap-3">
+<button class="tag-chip px-4 py-2 rough-border bg-white font-label-mono text-xs hover:bg-secondary-fixed transition-colors" type="button">Juicy Patty</button>
+<button class="tag-chip px-4 py-2 rough-border bg-white font-label-mono text-xs hover:bg-secondary-fixed transition-colors" type="button">Fast Delivery</button>
+<button class="tag-chip px-4 py-2 rough-border bg-white font-label-mono text-xs hover:bg-secondary-fixed transition-colors" type="button">Salty Fries</button>
+<button class="tag-chip px-4 py-2 rough-border bg-white font-label-mono text-xs hover:bg-secondary-fixed transition-colors" type="button">Legendary Sauce</button>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="pt-6">
+<button class="w-full md:w-auto px-12 py-4 bg-primary text-on-primary font-headline-lg text-headline-lg-mobile md:text-headline-lg rough-border shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-4 group" type="submit">
+                        SUBMIT REVIEW
+                        <span class="material-symbols-outlined group-hover:rotate-12 transition-transform">send</span>
+</button>
+</div>
+</form>
+</section>
+<!-- Gallery / Visual Proof -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+<div class="bg-white rough-border p-4 -rotate-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+<img alt="Juicy Burger" class="w-full h-48 object-cover rough-border mb-3" data-alt="A high-quality, vibrant food photograph of a gourmet double cheeseburger dripping with melted yellow cheese and fresh green lettuce. The burger is set against a warm, sandy beige background with dramatic, hard-edged black shadows, echoing a playful cartoon aesthetic. The lighting is bright and cheerful, emphasizing the rich textures of the sesame seed bun and juicy beef patties." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtdSmVPyt2b5TOKa-CnsYQ7ce2gI5mEPu3n5I72hjGdt5oH1XtloYcYqohfY_ZUuJFNqLSFh1S16IJMBvfei5IQBurN93akbZg3lHllh5qzpbvN2siPxldSlJmpaR2QHdKhwRItUll7KYZbDpR4UbeVGhDDQlrEq9sqzZhJdOZLp_TjdfMfNCfCBT1-hZEvRhRxaQbg5iMy5UHEINTmI53TVBEMfd1WRJnWhyIELuhaWWrWTEcqDQGW0H5PDGWuPfHGOtt9ivja7M"/>
+<p class="font-label-mono text-[10px] text-center text-ink-black uppercase">Recent Customer Photo: "The Best Yet!"</p>
+</div>
+<div class="bg-white rough-border p-4 rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+<img alt="Kelp Shake" class="w-full h-48 object-cover rough-border mb-3" data-alt="A whimsical, stylized image of a refreshing green kelp-themed shake served in a bubbly, round glass with a straw. The background is a clean ocean-blue gradient with thick black outlines around every object, creating a 90s comic book look. Bright yellow accents and sketchy hand-drawn textures are visible on the glass surface, suggesting an icy cold temperature." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvSmq8GCR9XhghDqqMR8SV8-2UDxz1uRlQyHWDRu7alOYZo-woxO27FXquDiJ7UH6bLUaAIuoILcgWo_rr8jGhHf6qCim-cVRYSjiKAJrL1FXbUFvCB6I4BB_avabKysVwpk04P8vYopX6Ol4DORgOPGzIgTAcVlMW6L87cG3hMcZ05hUIrE_vwhSBrW8sEVxPNO6WJmdYBesoZUwCZ6DvFhOrh2szD4yLptc_QxKPXJvaitgms3CK7n328BquxWeO4pgcH9VbndQ"/>
+<p class="font-label-mono text-[10px] text-center text-ink-black uppercase">Thirst Quenched: Kelp Shake Magic</p>
+</div>
+</section>
+<!-- Debt/Wanted Banner (Easter Egg) -->
+<section class="bg-[#F4E4BC] rough-border p-8 border-dashed text-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: url('https://www.transparenttextures.com/patterns/cardboard-flat.png');"></div>
+<h2 class="font-headline-xl text-primary mb-2">WANTED: YOUR IDEAS</h2>
+<p class="font-label-mono text-ink-black text-xs uppercase tracking-tighter mb-4">REWARD: ETERNAL GRATITUDE &amp; MAYBE A FRY</p>
+<div class="flex justify-center">
+<div class="w-16 h-1 rough-border bg-ink-black"></div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<a class="flex flex-col items-center justify-center text-ink-black p-2" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2" href="#">
+<span class="material-symbols-outlined">restaurant_menu</span>
+<span class="font-label-mono text-[10px]">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-mono text-[10px]">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1" href="#">
+<span class="material-symbols-outlined filled-icon">person</span>
+<span class="font-label-mono text-[10px]">Profile</span>
+</a>
+</nav>
+<script>
+        // Star Rating Logic
+        const stars = document.querySelectorAll('.star-btn');
+        const ratingLabel = document.getElementById('ratingLabel');
+        const labels = ["Barnacle Bad", "Needs Salt", "Pretty Good", "Barnacle Great", "Krabby Perfection!"];
+
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                stars.forEach((s, i) => {
+                    if (i <= index) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+                ratingLabel.textContent = labels[index];
+                ratingLabel.classList.remove('invisible');
+            });
+
+            star.addEventListener('mouseenter', () => {
+                stars.forEach((s, i) => {
+                    if (i <= index) s.querySelector('span').classList.add('text-secondary');
+                });
+            });
+
+            star.addEventListener('mouseleave', () => {
+                stars.forEach(s => s.querySelector('span').classList.remove('text-secondary'));
+            });
+        });
+
+        // Tag Chip Toggle Logic
+        const chips = document.querySelectorAll('.tag-chip');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chip.classList.toggle('bg-secondary-fixed');
+                chip.classList.toggle('bg-white');
+                chip.classList.toggle('-rotate-2');
+                chip.classList.toggle('scale-105');
+            });
+        });
+
+        // Simple Form Intercept
+        document.getElementById('feedbackForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'SENDING... <span class="material-symbols-outlined animate-spin">refresh</span>';
+            btn.classList.add('bg-kelp-green');
+            
+            setTimeout(() => {
+                btn.innerHTML = 'SENT! <span class="material-symbols-outlined">check_circle</span>';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-kelp-green');
+                    e.target.reset();
+                    stars.forEach(s => s.classList.remove('active'));
+                    ratingLabel.classList.add('invisible');
+                }, 2000);
+            }, 1500);
+        });
+    </script>
+</body></html>

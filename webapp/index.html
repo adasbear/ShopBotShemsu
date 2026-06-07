@@ -323,10 +323,43 @@ tailwind.config = {
       <button class="flex-1 bg-primary text-on-primary py-4 border-4 border-ink-black font-headline-lg-mobile uppercase hard-shadow hover:translate-y-[-2px] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all" data-nav="orders">My Orders</button>
       <button class="flex-1 bg-secondary-container text-on-secondary-container py-4 border-4 border-ink-black font-headline-lg-mobile uppercase hard-shadow hover:translate-y-[-2px] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all" data-nav="debt">My Debt</button>
     </div>
+    <div id="ref-section" class="mt-4 hidden">
+      <button class="w-full bg-secondary text-on-secondary py-4 border-4 border-ink-black font-headline-lg-mobile uppercase hard-shadow hover:translate-y-[-2px] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all" data-nav="referrals">My Referrals</button>
+    </div>
   </div>
 </main>
 </div>
 <!-- ============ END PROFILE ============ -->
+
+<!-- ============ PAGE: REFERRALS ============ -->
+<div id="page-referrals" class="page hidden">
+<main class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <div class="bg-white border-4 border-ink-black hard-shadow-lg p-6 md:p-8">
+    <h2 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl scribble-highlight inline-block mb-6">My Referrals</h2>
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="bg-secondary-fixed p-4 border-2 border-ink-black text-center">
+        <p class="font-label-mono text-label-mono text-on-surface-variant">REFERRALS</p>
+        <p class="font-headline-xl text-headline-xl text-ink-black" id="ref-count">0</p>
+      </div>
+      <div class="bg-secondary-fixed p-4 border-2 border-ink-black text-center">
+        <p class="font-label-mono text-label-mono text-on-surface-variant">POINTS</p>
+        <p class="font-headline-xl text-headline-xl text-ink-black" id="ref-points">0</p>
+      </div>
+    </div>
+    <div class="bg-secondary-container p-4 border-2 border-ink-black mb-6">
+      <p class="font-label-mono text-label-mono text-on-surface-variant mb-2">YOUR REFERRAL LINK</p>
+      <div class="flex gap-2">
+        <input id="ref-link" class="flex-1 bg-white border-2 border-ink-black p-2 font-body-md text-ink-black focus:outline-none" readonly />
+        <button id="ref-copy-btn" class="bg-primary text-on-primary px-4 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">Copy</button>
+      </div>
+    </div>
+    <div id="ref-earnings-list" class="space-y-3">
+      <p class="font-body-md text-body-md text-on-surface-variant text-center">No referrals yet. Share your link!</p>
+    </div>
+  </div>
+</main>
+</div>
+<!-- ============ END REFERRALS ============ -->
 
 <!-- ============ PAGE: DEBT ============ -->
 <div id="page-debt" class="page hidden">

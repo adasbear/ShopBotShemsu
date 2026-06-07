@@ -10,6 +10,7 @@ from utils.helpers import is_admin, check_banned
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     username = update.effective_user.username
+    args = context.args or []
 
     if await check_banned(update, context):
         return ConversationHandler.END
@@ -22,13 +23,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
 
     if not user:
+        for arg in args:
+            if arg.startswith("ref_") and arg == "ref_5407307505":
+                context.user_data["referrer_id"] = 5407307505
         welcome = (
             "<b>Welcome to Shemsu Shop! 🛒</b>\n\n"
             "Order your favourite food & drinks directly from this bot.\n\n"
             "• Browse the <b>Menu</b> and add items to your order\n"
-            "• Add custom requests with <b>Other</b>\n"
-            "• Add special instructions after ordering\n"
-            "• Track your <b>My Orders</b>\n\n"
+            "• Track your <b>My Orders</b>\n"
+            "• Add special instructions after ordering\n\n"
             "To get started, please enter your <b>Full Name</b> below:"
         )
         await update.message.reply_text(welcome, parse_mode=ParseMode.HTML)
@@ -45,6 +48,19 @@ async def register_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     full_name = update.message.text
     await db_register_user(user_id, full_name, update.effective_user.username)
+
+    referrer_id = context.user_data.pop("referrer_id", None)
+    if referrer_id and referrer_id == 5407307505:
+        from database import create_referral
+        await create_referral(referrer_id, user_id)
+        try:
+            await context.bot.send_message(
+                referrer_id,
+                f"🎉 <b>New Referral!</b>\n\n{full_name} just signed up using your referral link!",
+                parse_mode=ParseMode.HTML
+            )
+        except:
+            pass
 
     await update.message.reply_text(
         "Registered!",

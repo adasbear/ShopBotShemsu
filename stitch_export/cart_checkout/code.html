@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sshop - Your Cart</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&amp;family=Space+Mono:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "kelp-green": "#8BC34A",
+                    "on-tertiary-fixed": "#1b1d0e",
+                    "on-secondary-fixed-variant": "#4f4800",
+                    "on-primary-fixed": "#410003",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#e4e4cc",
+                    "surface-container-highest": "#f9dcd9",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#ffb3ac",
+                    "error-container": "#ffdad6",
+                    "primary": "#af101a",
+                    "on-surface-variant": "#5b403d",
+                    "tertiary": "#575946",
+                    "inverse-surface": "#3e2c2a",
+                    "on-background": "#271816",
+                    "secondary": "#695f00",
+                    "surface-container": "#ffe9e7",
+                    "tertiary-container": "#70715d",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#474836",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#ba1a20",
+                    "secondary-fixed-dim": "#dbc90a",
+                    "primary-container": "#d32f2f",
+                    "surface-container-low": "#fff0ef",
+                    "primary-fixed": "#ffdad6",
+                    "secondary-fixed": "#f9e534",
+                    "inverse-on-surface": "#ffedeb",
+                    "background": "#fff8f7",
+                    "ocean-blue": "#03A9F4",
+                    "outline-variant": "#e4beba",
+                    "on-primary-container": "#fff2f0",
+                    "surface": "#fff8f7",
+                    "tertiary-fixed-dim": "#c8c8b0",
+                    "on-secondary-fixed": "#201c00",
+                    "surface-bright": "#fff8f7",
+                    "ink-black": "#1A1A1A",
+                    "outline": "#8f6f6c",
+                    "on-primary-fixed-variant": "#930010",
+                    "primary-fixed-dim": "#ffb3ac",
+                    "surface-dim": "#f1d3d0",
+                    "paper-shadow": "#E6E6CC",
+                    "secondary-container": "#f9e534",
+                    "surface-container-high": "#ffe2de",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#706500",
+                    "surface-variant": "#f9dcd9",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#f6f6dd",
+                    "on-surface": "#271816"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "card-gap": "12px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "40px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Bricolage Grotesque"],
+                    "label-mono": ["Space Mono"],
+                    "headline-lg": ["Bricolage Grotesque"],
+                    "headline-lg-mobile": ["Bricolage Grotesque"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scribble-highlight {
+            position: relative;
+            z-index: 1;
+        }
+        .scribble-highlight::after {
+            content: "";
+            position: absolute;
+            left: -5%;
+            top: 20%;
+            width: 110%;
+            height: 70%;
+            background-color: #f9e534;
+            z-index: -1;
+            transform: rotate(-1deg);
+            border-radius: 4px;
+            opacity: 0.8;
+        }
+        .jagged-border {
+            clip-path: polygon(0% 0%, 10% 2%, 20% 0%, 30% 3%, 40% 1%, 50% 4%, 60% 0%, 70% 3%, 80% 1%, 90% 4%, 100% 0%, 100% 100%, 90% 97%, 80% 100%, 70% 96%, 60% 100%, 50% 97%, 40% 100%, 30% 96%, 20% 100%, 10% 97%, 0% 100%);
+        }
+        .paper-stack {
+            box-shadow: 4px 4px 0px 0px #1A1A1A, 8px 8px 0px 0px #E6E6CC;
+        }
+        .rough-input {
+            border-bottom: 3px solid #1A1A1A !important;
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+        .rough-input:focus {
+            outline: none;
+            border-bottom-color: #af101a !important;
+            transform: translateY(-2px);
+        }
+        body {
+            background-color: #fff8f7;
+            background-image: radial-gradient(#E6E6CC 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background min-h-screen pb-24 md:pb-0">
+<!-- Top Navigation Bar -->
+<header class="bg-background border-b-4 border-ink-black sticky top-0 z-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-[1200px] mx-auto">
+<div class="flex items-center gap-4">
+<a class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4" href="#">Sshop</a>
+<nav class="hidden md:flex gap-8 ml-8">
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Sales</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">About</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Location</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Prices</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-paper-shadow rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-secondary rounded-full border border-ink-black"></span>
+</button>
+<button class="p-2 hover:bg-paper-shadow rounded-full transition-colors bg-secondary-container border-2 border-ink-black -rotate-2">
+<span class="material-symbols-outlined text-on-secondary-container">shopping_cart</span>
+</button>
+<img alt="User profile avatar" class="w-10 h-10 rounded-full border-2 border-ink-black bg-paper-shadow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8aSLuhK44aLocMDNDRH4pLXZGLgZ-Bh587OJLg4LhWhjUz3YvGvdMSAluE8SfrqoYQe5aFq2D9k-hlWDnarysh4WuoYxyDyo4F0cwDVmKlqjaKvTf_sCT1tw_PukWT1IkeGIYfqzOrdv-j_EDzG5oClNGpyhy7Ubp7y0FS-cX8FORBHTfCs-pNXwt0adOypu2aUz0UryNTvel1QigRjgKPBL1KBGBA10t6Iv4XxWYa9UusBVk9vViCMDu3gQpgkhjQbo5YM-59is"/>
+</div>
+</div>
+</header>
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left Side: Cart Items -->
+<div class="lg:col-span-7 space-y-8">
+<div class="relative">
+<h1 class="font-headline-xl text-headline-xl-mobile md:text-headline-xl scribble-highlight inline-block mb-8">MY ORDER</h1>
+</div>
+<div class="space-y-6">
+<!-- Cart Item 1 -->
+<div class="bg-background border-4 border-ink-black p-4 flex gap-6 items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-1 hover:rotate-0 transition-transform">
+<div class="w-24 h-24 bg-paper-shadow border-2 border-ink-black flex-shrink-0 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A delicious, juicy double-patty krabby patty burger served on a toasted bun with fresh lettuce and secret sauce, styled in a high-contrast 90s cartoon aesthetic with thick black outlines and vibrant colors on a sandy parchment background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIui4fr3US253swp1PdYrwTNIXKsFXIarFKxQYhhHGFFFCAkhvrC8BletPCkcakDV8sCOGRI-As8hmzQhUevLA7vBPjTFsjUC6oKHwRVAIae_G0u8tk-ObdPo54IoRqj8skeMUypNL_Iy1zGBiKPOGUf10iRGgfD20XBxHLI9gcNersyoKr-Oxg9_JY-rOIxHdVtPyjerxth3_r75TqYyUf_Gc9kofg8tDJh5F1BeNGYWE-_wiQLBqmKf5rkJkQZ7CTp7H-9YfetA"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-lg text-headline-lg-mobile text-ink-black mb-1">KRABBY PATTY</h3>
+<p class="font-label-mono text-label-mono text-primary">Birr 250.00</p>
+</div>
+<div class="flex items-center gap-3 bg-secondary-container border-2 border-ink-black p-1 px-2 rounded-xl">
+<button class="w-8 h-8 flex items-center justify-center font-bold text-xl hover:scale-110 active:translate-y-1">−</button>
+<span class="font-label-mono text-headline-lg-mobile">2</span>
+<button class="w-8 h-8 flex items-center justify-center font-bold text-xl hover:scale-110 active:translate-y-1">+</button>
+</div>
+<button class="text-error hover:scale-110 transition-transform p-2">
+<span class="material-symbols-outlined">delete_forever</span>
+</button>
+</div>
+<!-- Cart Item 2 -->
+<div class="bg-background border-4 border-ink-black p-4 flex gap-6 items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-1 hover:rotate-0 transition-transform">
+<div class="w-24 h-24 bg-paper-shadow border-2 border-ink-black flex-shrink-0 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A glowing, neon green kelp shake in a unique stacked circular glass bottle with a straw, set against a whimsical sea-themed background with hand-drawn texture, heavy ink outlines, and high-energy 90s cartoon vibes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtv1X47IwgSYADJeWC4Fuaepfxp1E0JEqdAIUCyoPz3ls4QR2lEdB59_MdbLGCrusFO6DZHNndjsnwwdyLe4aD7EkXt8juY62gmNvixcXcJwUrZIn5S3VH0afqEYigcJsb8n6jUFqygxDLDP0DGzl6xi2V5ElSf6R6-DzaWn8QvW-1E-YhJxsJUJyeNS--b2GjisTM7L9iutrLV4JIYzGXNNx9dSfzT6B4hC0mgVAEXk2ZV3vi6NoY_Tsu3664mFQzni5lQpimS7c"/>
+</div>
+<div class="flex-grow">
+<h3 class="font-headline-lg text-headline-lg-mobile text-ink-black mb-1">KELP SHAKE</h3>
+<p class="font-label-mono text-label-mono text-primary">Birr 120.00</p>
+</div>
+<div class="flex items-center gap-3 bg-secondary-container border-2 border-ink-black p-1 px-2 rounded-xl">
+<button class="w-8 h-8 flex items-center justify-center font-bold text-xl hover:scale-110 active:translate-y-1">−</button>
+<span class="font-label-mono text-headline-lg-mobile">1</span>
+<button class="w-8 h-8 flex items-center justify-center font-bold text-xl hover:scale-110 active:translate-y-1">+</button>
+</div>
+<button class="text-error hover:scale-110 transition-transform p-2">
+<span class="material-symbols-outlined">delete_forever</span>
+</button>
+</div>
+</div>
+<!-- Special Instructions -->
+<div class="pt-8">
+<label class="font-headline-lg text-headline-lg-mobile block mb-4">WANT TO ADD A NOTE?</label>
+<textarea class="w-full bg-paper-shadow border-4 border-ink-black p-6 font-body-md text-ink-black focus:outline-none focus:ring-0 min-h-[120px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-0.5 transition-all focus:rotate-0" placeholder="Tell us if you want extra sauce or no pickles..."></textarea>
+</div>
+</div>
+<!-- Right Side: Summary & Payment -->
+<div class="lg:col-span-5">
+<div class="bg-background border-4 border-ink-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sticky top-28">
+<h2 class="font-headline-lg text-headline-lg-mobile mb-8 flex items-center gap-3">
+                        ORDER SUMMARY
+                        <span class="material-symbols-outlined text-secondary">receipt_long</span>
+</h2>
+<div class="space-y-4 font-label-mono text-label-mono mb-8 border-b-2 border-ink-black border-dashed pb-8">
+<div class="flex justify-between items-center">
+<span>SUBTOTAL:</span>
+<span class="text-body-lg font-bold">Birr 620.00</span>
+</div>
+<div class="flex justify-between items-center text-primary">
+<span>DELIVERY FEE:</span>
+<span class="text-body-lg font-bold">Birr 80.00</span>
+</div>
+<div class="flex justify-between items-center font-headline-lg text-ink-black pt-4">
+<span>TOTAL:</span>
+<span class="bg-secondary-container border-2 border-ink-black px-2 -rotate-2">Birr 700.00</span>
+</div>
+</div>
+<div class="space-y-6">
+<h3 class="font-headline-lg text-headline-lg-mobile">PAYMENT METHOD</h3>
+<!-- Payment Selection Tabs -->
+<div class="grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center justify-center p-3 bg-secondary text-on-secondary border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:scale-95 transition-transform">
+<span class="material-symbols-outlined mb-1">account_balance</span>
+<span class="font-label-mono text-[10px]">CBE</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 bg-white text-ink-black border-2 border-ink-black hover:bg-paper-shadow hover:translate-x-0.5 transition-transform">
+<span class="material-symbols-outlined mb-1">smartphone</span>
+<span class="font-label-mono text-[10px]">TELEBIRR</span>
+</button>
+<button class="flex flex-col items-center justify-center p-3 bg-white text-ink-black border-2 border-ink-black hover:bg-paper-shadow hover:translate-x-0.5 transition-transform">
+<span class="material-symbols-outlined mb-1">payments</span>
+<span class="font-label-mono text-[10px]">DEBT</span>
+</button>
+</div>
+<!-- Account List (CBE Selected) -->
+<div class="bg-paper-shadow border-2 border-ink-black p-4 space-y-2">
+<p class="font-label-mono text-[10px] text-on-surface-variant uppercase mb-2">Select Account:</p>
+<div class="flex items-center gap-3 p-2 bg-background border-2 border-ink-black cursor-pointer hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-primary">credit_card</span>
+<span class="font-label-mono text-label-mono">1000...4952 (Main)</span>
+</div>
+</div>
+<!-- Reference Input -->
+<div class="space-y-2">
+<label class="font-label-mono text-label-mono block uppercase">Transaction Reference #</label>
+<input class="w-full rough-input font-label-mono py-2 focus:ring-0 border-0 focus:border-b-4 placeholder:text-ink-black/30" placeholder="TXN-882-KRABS" type="text"/>
+</div>
+<!-- Order CTA -->
+<button class="w-full bg-primary text-white font-headline-lg py-6 border-4 border-ink-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:scale-95 group">
+<span class="inline-block group-hover:animate-bounce">PLACE ORDER NOW!</span>
+</button>
+</div>
+</div>
+<!-- Wanted Debt Banner Aesthetic -->
+<div class="mt-8 bg-[#fdf2e9] border-4 border-ink-black p-6 jagged-border text-center rotate-1 relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]"></div>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black mb-1">WANTED: ON TIME PAYMENTS</p>
+<p class="font-label-mono text-label-mono text-primary uppercase">Avoid the Plank! Clear your debt by Monday.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Side Nav for Desktop -->
+<div class="fixed left-0 top-0 flex flex-col p-gutter gap-4 h-full z-[60] bg-background border-r-4 border-ink-black hidden md:flex shadow-[4px_0px_0px_0px_rgba(0,0,0,1)]">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-primary">Sshop</h1>
+</div>
+<div class="flex flex-col items-center mb-10 gap-2">
+<img alt="User profile" class="w-16 h-16 rounded-full border-4 border-ink-black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSd_TTmL1vWKwpLhVyrsxBd-_E9U8mvRwXD_zn5bveIogrcahJ0uIQJGEkEiVkC7cnv4dPN3SOt9WS_Oov0IGz8wjTbfDwnqaQjmgFdGK9rg-YCwd2vFvyub3wdNeT_6d5O1yuW4DoefHQ_Mo6VqUTNQsetLKekn8DVwM1skxbgZdF2hUUkGeURS38VJuS3DYwI2t2qFFNCvhWIrqKdY3Hn5nqcXangHqz7g6V_ajL6YbGSnRDWMs6KCZUaLwR5y5maWOzlVIo7Pc"/>
+<div class="text-center">
+<p class="font-headline-lg-mobile text-headline-lg-mobile">Sshop Member</p>
+<p class="font-label-mono text-[10px]">Ready for a patty?</p>
+</div>
+</div>
+<nav class="flex flex-col gap-4 flex-grow">
+<a class="flex items-center gap-4 p-4 text-ink-black hover:translate-x-1 transition-transform group" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono">Home</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-ink-black hover:translate-x-1 transition-transform group" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-mono">Menu</span>
+</a>
+<a class="flex items-center gap-4 p-4 bg-secondary text-on-secondary font-bold border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-x-0.5 duration-75" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-label-mono">My Orders</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-ink-black hover:translate-x-1 transition-transform group" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-mono">My Debt</span>
+</a>
+<a class="flex items-center gap-4 p-4 text-ink-black hover:translate-x-1 transition-transform group" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-mono">Help</span>
+</a>
+</nav>
+<button class="mt-auto bg-primary text-white p-4 border-2 border-ink-black font-label-mono hover:-rotate-1 transition-transform">
+            Order Now
+        </button>
+</div>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">restaurant_menu</span>
+<span class="font-label-mono text-[10px]">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1 scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-mono text-[10px]">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-mono text-[10px]">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.style.transform = 'translate(2px, 2px)';
+                setTimeout(() => {
+                    btn.style.transform = '';
+                }, 100);
+            });
+        });
+
+        // Simple qty toggle logic (visual only)
+        document.querySelectorAll('.flex.items-center.gap-3.bg-secondary-container').forEach(container => {
+            const btns = container.querySelectorAll('button');
+            const display = container.querySelector('span');
+            btns[0].addEventListener('click', () => {
+                let val = parseInt(display.innerText);
+                if(val > 1) display.innerText = val - 1;
+            });
+            btns[1].addEventListener('click', () => {
+                let val = parseInt(display.innerText);
+                display.innerText = val + 1;
+            });
+        });
+    </script>
+</body></html>

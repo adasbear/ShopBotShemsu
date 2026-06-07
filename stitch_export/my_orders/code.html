@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Orders - Sshop</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&amp;family=Space+Mono:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "kelp-green": "#8BC34A",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "on-secondary-fixed-variant": "#4f4800",
+                        "on-primary-fixed": "#410003",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#e4e4cc",
+                        "surface-container-highest": "#f9dcd9",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb3ac",
+                        "error-container": "#ffdad6",
+                        "primary": "#af101a",
+                        "on-surface-variant": "#5b403d",
+                        "tertiary": "#575946",
+                        "inverse-surface": "#3e2c2a",
+                        "on-background": "#271816",
+                        "secondary": "#695f00",
+                        "surface-container": "#ffe9e7",
+                        "tertiary-container": "#70715d",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#ba1a20",
+                        "secondary-fixed-dim": "#dbc90a",
+                        "primary-container": "#d32f2f",
+                        "surface-container-low": "#fff0ef",
+                        "primary-fixed": "#ffdad6",
+                        "secondary-fixed": "#f9e534",
+                        "inverse-on-surface": "#ffedeb",
+                        "background": "#fff8f7",
+                        "ocean-blue": "#03A9F4",
+                        "outline-variant": "#e4beba",
+                        "on-primary-container": "#fff2f0",
+                        "surface": "#fff8f7",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-secondary-fixed": "#201c00",
+                        "surface-bright": "#fff8f7",
+                        "ink-black": "#1A1A1A",
+                        "outline": "#8f6f6c",
+                        "on-primary-fixed-variant": "#930010",
+                        "primary-fixed-dim": "#ffb3ac",
+                        "surface-dim": "#f1d3d0",
+                        "paper-shadow": "#E6E6CC",
+                        "secondary-container": "#f9e534",
+                        "surface-container-high": "#ffe2de",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#706500",
+                        "surface-variant": "#f9dcd9",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#f6f6dd",
+                        "on-surface": "#271816"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-gap": "12px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "40px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Bricolage Grotesque"],
+                        "label-mono": ["Space Mono"],
+                        "headline-lg": ["Bricolage Grotesque"],
+                        "headline-lg-mobile": ["Bricolage Grotesque"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scribble-bg {
+            background-image: radial-gradient(#000 10%, transparent 11%), radial-gradient(#000 10%, transparent 11%);
+            background-size: 8px 8px;
+            background-position: 0 0, 4px 4px;
+            opacity: 0.05;
+        }
+        .paper-texture {
+            background-color: #fff8f7;
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+        }
+        .hard-shadow {
+            box-shadow: 4px 4px 0px 0px #1A1A1A;
+        }
+        .hard-shadow-sm {
+            box-shadow: 2px 2px 0px 0px #1A1A1A;
+        }
+        .active-tab-scribble {
+            position: relative;
+        }
+        .active-tab-scribble::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: #f9e534;
+            z-index: -1;
+            transform: rotate(-1deg);
+        }
+        @media (max-width: 768px) {
+            .mobile-order-grid {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body class="paper-texture text-on-surface min-h-screen pb-24 md:pb-0 md:pl-64">
+<!-- Side Navigation (Web) -->
+<nav class="fixed left-0 top-0 flex flex-col p-gutter gap-4 h-full h-screen w-64 border-r-4 border-ink-black hidden md:block bg-background dark:bg-ink-black shadow-[4px_0px_0px_0px_rgba(0,0,0,1)] z-50">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</h1>
+<div class="mt-4 flex items-center gap-3 p-2 border-2 border-ink-black bg-surface-container-low rounded-xl">
+<img alt="User profile" class="w-10 h-10 border-2 border-ink-black rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBmZfoJzB9BpCVJ2QCjDJm7dJVb_GbIDMXo-4QqnB8Aj3vq3gLfWGHO3oaR7ekPHJ5jbYLKwjjInlXzic-k073wUJz7zda2CVXwA470n5mqUxxCCTKEbKxLYFit-YlNc6cGgsOa41ACcHBF6Dfn41jWGV0IFHF7szeciYK5_wTMEFUUOsEVNTm9ftIaiV-DUeR9ZlNIjoOIPHRurYEglEDG5apOvz5C-nzRMv444fidYUauVmB9MVvCInn37RoQBWSgju1E0M6IUs"/>
+<div>
+<p class="font-label-mono text-label-mono">Sshop Member</p>
+<p class="text-[10px] font-bold">Ready for a patty?</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono text-label-mono">Home</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span class="font-label-mono text-label-mono">Menu</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-xl bg-secondary text-on-secondary font-bold border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-x-0.5 duration-75" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-label-mono text-label-mono">My Orders</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-mono text-label-mono">My Debt</span>
+</a>
+<a class="flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-mono text-label-mono">Help</span>
+</a>
+</div>
+<button class="mt-auto bg-primary text-on-primary font-headline-lg p-4 border-4 border-ink-black hard-shadow hover:translate-y-[-2px] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all">
+            Order Now
+        </button>
+</nav>
+<!-- Top App Bar (Mobile & Web Head) -->
+<header class="sticky top-0 z-40 bg-background border-b-4 border-ink-black px-margin-mobile py-4 md:px-margin-desktop flex justify-between items-center max-w-[1200px] mx-auto">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary underline decoration-secondary decoration-4">My Orders</h2>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 border-2 border-ink-black rounded-lg bg-surface-container hard-shadow-sm hover:translate-y-[-1px] active:translate-y-[1px]">notifications</button>
+<button class="material-symbols-outlined p-2 border-2 border-ink-black rounded-lg bg-surface-container hard-shadow-sm hover:translate-y-[-1px] active:translate-y-[1px]">shopping_cart</button>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="max-w-[1200px] mx-auto p-margin-mobile md:p-margin-desktop">
+<!-- Tabs -->
+<div class="flex gap-8 mb-8 border-b-4 border-ink-black">
+<button class="pb-2 font-headline-lg-mobile text-headline-lg-mobile active-tab-scribble text-ink-black">
+                Active
+            </button>
+<button class="pb-2 font-headline-lg-mobile text-headline-lg-mobile text-tertiary opacity-50 hover:opacity-100 transition-opacity">
+                History
+            </button>
+</div>
+<!-- Orders List -->
+<div class="flex flex-col gap-6">
+<!-- Active Order 1 -->
+<div class="relative bg-white border-4 border-ink-black hard-shadow p-6 rotate-[-0.5deg] group hover:rotate-0 transition-transform">
+<div class="flex flex-col md:flex-row justify-between md:items-start gap-4 mb-4">
+<div>
+<p class="font-label-mono text-label-mono text-tertiary mb-1">REF: #KK-9921-X</p>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile">The Krusty Combo</h3>
+</div>
+<div class="flex flex-col items-end gap-2">
+<!-- Pending Status Pill -->
+<span class="bg-secondary-container text-on-secondary-container px-4 py-1 border-2 border-ink-black rounded-full font-label-mono text-label-mono rotate-1">PENDING</span>
+<p class="font-label-mono text-label-mono">Today, 12:45 PM</p>
+</div>
+</div>
+<div class="border-t-2 border-dashed border-ink-black pt-4 flex flex-col md:flex-row items-center gap-6">
+<div class="relative w-24 h-24 shrink-0 border-2 border-ink-black rotate-2 overflow-hidden bg-paper-shadow">
+<img class="w-full h-full object-cover" data-alt="A juicy, oversized burger with layers of melted yellow cheese, fresh green lettuce, and bright red tomatoes, set against a whimsical and vibrant coastal background with hand-drawn cartoon aesthetics. The lighting is bright and sunny, emphasizing the high-energy, nostalgic 90s cartoon style with thick black outlines and bold saturated colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNKIUVUxg9bAx6Q42Fkhzuh8lT1m8fg3D8KfN2UzBeWwu1g3ARq8qqaekZCbB_P4xpb4PorfKuZiFJb6E3CrxfcRn0CGxU-xluTwxbtVOTADyzbR0IeKGgKVWyiIfb1C5hRKtHOvDxDK4Kq5PYEqopH7GSKTI-xZmvHzRneO7H3Naq8WyFFrzqE0Qd90orWmrLMZb0CZhiCo9_r-dnlDslH4iYQouspbGlpQyNqQ-IXgOiLPYO6xPLGk5XVJc76yFMECWPjRObD4Y"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md mb-2">2x Krabby Patty, 1x Kelp Shake (Large), 1x Seafoam Fries</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-kelp-green" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+<span class="font-label-mono text-label-mono">Kitchen is prepping your feast!</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-mono text-label-mono text-tertiary uppercase text-[10px]">Total Amount</p>
+<p class="font-headline-lg text-headline-lg text-primary">845.00 <span class="text-sm">ETB</span></p>
+</div>
+</div>
+<button class="mt-6 w-full py-3 bg-surface-container border-2 border-ink-black font-bold hover:bg-paper-shadow transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">visibility</span>
+                    Track Order
+                </button>
+</div>
+<!-- Active Order 2 (Accepted) -->
+<div class="relative bg-white border-4 border-ink-black hard-shadow p-6 rotate-[0.8deg] group hover:rotate-0 transition-transform">
+<div class="flex flex-col md:flex-row justify-between md:items-start gap-4 mb-4">
+<div>
+<p class="font-label-mono text-label-mono text-tertiary mb-1">REF: #KK-8832-Y</p>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile">Afternoon Snack</h3>
+</div>
+<div class="flex flex-col items-end gap-2">
+<!-- Accepted Status Pill -->
+<span class="bg-kelp-green text-white px-4 py-1 border-2 border-ink-black rounded-full font-label-mono text-label-mono -rotate-1">ACCEPTED</span>
+<p class="font-label-mono text-label-mono">Today, 11:20 AM</p>
+</div>
+</div>
+<div class="border-t-2 border-dashed border-ink-black pt-4 flex flex-col md:flex-row items-center gap-6">
+<div class="relative w-24 h-24 shrink-0 border-2 border-ink-black -rotate-3 overflow-hidden bg-paper-shadow">
+<img class="w-full h-full object-cover" data-alt="A glowing, neon-green kelp shake in a unique bubble-shaped bottle with a straw, placed on a weathered wooden table. The surrounding environment is a quirky underwater restaurant with nautical decorations and hand-drawn textures. The style is bold and expressive, featuring heavy ink black outlines and a warm, inviting light-mode color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgW9rRQSrkrYpFkpXMiU_JCuQ-aLnjFW66xfKvqgeczTBqcB11ir9v7kV-9PWFHrDK18ybSe2R-baKgwqFuyjoBEN-4spPlA7q_N20YUIDSVhPGtbYpeYK76uJTgkoozDjVD0sfw_ACy0qStpgc_QnfrkusFYpvygnAh--gVFr-1hGo0YYiFQtlDNdFnnfT5VK9ktQua-ICVcUzEnX9RMZfa5TFRq9coui-899eLmV2jv_csY4Owq-xr6pju71Zux9DUUtmu35ilQ"/>
+</div>
+<div class="flex-grow">
+<p class="font-body-md text-body-md mb-2">3x Kelp Shake (Regular), 1x Barnacle Loaf</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-ocean-blue" style="font-variation-settings: 'FILL' 1;">delivery_dining</span>
+<span class="font-label-mono text-label-mono">Out for delivery with Squilliam</span>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-mono text-label-mono text-tertiary uppercase text-[10px]">Total Amount</p>
+<p class="font-headline-lg text-headline-lg text-primary">312.50 <span class="text-sm">ETB</span></p>
+</div>
+</div>
+<button class="mt-6 w-full py-3 bg-ocean-blue text-white border-2 border-ink-black font-bold hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 hard-shadow-sm active:translate-y-[2px] active:shadow-none">
+<span class="material-symbols-outlined">map</span>
+                    View on Map
+                </button>
+</div>
+<!-- History Section Hint -->
+<div class="mt-8 p-8 border-4 border-ink-black border-dotted bg-surface-container-low flex flex-col items-center justify-center text-center opacity-70">
+<span class="material-symbols-outlined text-4xl mb-2">history</span>
+<p class="font-label-mono text-label-mono mb-4">You have 14 past orders hidden in the vault.</p>
+<button class="bg-white px-6 py-2 border-2 border-ink-black font-bold hard-shadow-sm hover:translate-y-[-2px] active:translate-y-[1px]">Switch to History</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">restaurant_menu</span>
+<span class="font-label-mono text-[10px]">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1 scale-95 duration-100" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-mono text-[10px]">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-mono text-[10px]">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interactions
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'translate(2px, 2px)';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = '';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = '';
+            });
+        });
+
+        // Toggle Tabs (Logic simulation)
+        const tabs = document.querySelectorAll('.font-headline-lg-mobile');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => {
+                    t.classList.remove('active-tab-scribble', 'text-ink-black');
+                    t.classList.add('text-tertiary', 'opacity-50');
+                });
+                tab.classList.add('active-tab-scribble', 'text-ink-black');
+                tab.classList.remove('text-tertiary', 'opacity-50');
+            });
+        });
+    </script>
+</body></html>

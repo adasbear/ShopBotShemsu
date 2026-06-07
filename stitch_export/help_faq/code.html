@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sshop Help - Secret Patty Support</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&amp;family=Space+Mono:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "kelp-green": "#8BC34A",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "on-secondary-fixed-variant": "#4f4800",
+                        "on-primary-fixed": "#410003",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#e4e4cc",
+                        "surface-container-highest": "#f9dcd9",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb3ac",
+                        "error-container": "#ffdad6",
+                        "primary": "#af101a",
+                        "on-surface-variant": "#5b403d",
+                        "tertiary": "#575946",
+                        "inverse-surface": "#3e2c2a",
+                        "on-background": "#271816",
+                        "secondary": "#695f00",
+                        "surface-container": "#ffe9e7",
+                        "tertiary-container": "#70715d",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#ba1a20",
+                        "secondary-fixed-dim": "#dbc90a",
+                        "primary-container": "#d32f2f",
+                        "surface-container-low": "#fff0ef",
+                        "primary-fixed": "#ffdad6",
+                        "secondary-fixed": "#f9e534",
+                        "inverse-on-surface": "#ffedeb",
+                        "background": "#fff8f7",
+                        "ocean-blue": "#03A9F4",
+                        "outline-variant": "#e4beba",
+                        "on-primary-container": "#fff2f0",
+                        "surface": "#fff8f7",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-secondary-fixed": "#201c00",
+                        "surface-bright": "#fff8f7",
+                        "ink-black": "#1A1A1A",
+                        "outline": "#8f6f6c",
+                        "on-primary-fixed-variant": "#930010",
+                        "primary-fixed-dim": "#ffb3ac",
+                        "surface-dim": "#f1d3d0",
+                        "paper-shadow": "#E6E6CC",
+                        "secondary-container": "#f9e534",
+                        "surface-container-high": "#ffe2de",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#706500",
+                        "surface-variant": "#f9dcd9",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#f6f6dd",
+                        "on-surface": "#271816"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-gap": "12px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "40px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Bricolage Grotesque"],
+                        "label-mono": ["Space Mono"],
+                        "headline-lg": ["Bricolage Grotesque"],
+                        "headline-lg-mobile": ["Bricolage Grotesque"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["48px", { "lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800" }],
+                        "label-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "36px", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .paper-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+        }
+        .accordion-item.active .accordion-content {
+            max-height: 1000px;
+            transition: max-height 0.5s ease-in;
+        }
+        .wiggle:hover {
+            animation: wiggle 0.3s ease-in-out infinite;
+        }
+        @keyframes wiggle {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(1deg); }
+            75% { transform: rotate(-1deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background paper-texture min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-ink-black border-b-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-[1200px] mx-auto">
+<div class="font-headline-lg text-headline-lg text-primary dark:text-primary-fixed underline decoration-secondary decoration-4">Sshop</div>
+<nav class="hidden md:flex gap-8">
+<a class="text-ink-black dark:text-surface-container-low font-label-mono text-label-mono hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Sales</a>
+<a class="text-ink-black dark:text-surface-container-low font-label-mono text-label-mono hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">About</a>
+<a class="text-ink-black dark:text-surface-container-low font-label-mono text-label-mono hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Location</a>
+<a class="text-ink-black dark:text-surface-container-low font-label-mono text-label-mono hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Prices</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:scale-110 transition-transform" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-primary hover:scale-110 transition-transform" data-icon="shopping_cart">shopping_cart</button>
+<img alt="User profile avatar" class="w-10 h-10 border-2 border-ink-black rounded-full bg-secondary-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE_2dN6XLtd3UxXLR-erVscRfhDpIbQPLYFh4nKs71bowkxOfwKRpHHUVF1rBD8oxaM_TB9T3V1Nr34c7zl02B0Ph5YBLgk3-hcn4u6GPRRTGcSjXkmyLm-fdwBMiMUBtfjrnOezpch0XWR7fYuoQTv7HbgvTGNEXm2dRttQVFxF-o79-taU14YR1L1luthXGuuA76cgiYgLGZIef2nvR5UduIvx84x3HoKMFAJKFRY0siTyGPeZTrtYZdGwi4qO5i1v_dnP34mV4"/>
+</div>
+</div>
+</header>
+<div class="flex max-w-[1200px] mx-auto min-h-[calc(100vh-80px)]">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 flex flex-col p-gutter gap-4 h-full h-screen w-64 border-r-4 border-ink-black hidden md:block bg-background dark:bg-ink-black shadow-[4px_0px_0px_0px_rgba(0,0,0,1)] z-40">
+<div class="mt-20 flex flex-col items-center p-4 border-2 border-dashed border-ink-black rounded-xl mb-4">
+<img alt="User profile" class="w-16 h-16 border-2 border-ink-black rounded-xl mb-2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx-mo57UK5VKJmnw1xdfUaXlJZn7n2a8SFUHPmU4j4bIW2ToECzfk-LE8G5md9QlmkM9BS2B11sRezeqhltg5Tfalir3FKnuwi6VbeUphHWVun7u-gjyWktEuRRDjYr3cVnEgK1rMJG61FWNa4zxhhGNJIvMcbNG8qkOp4Li7ebDbb9EwtUbzNSrS_tuYXAIVGeRFix_ZpKbvYlEHFhmQ2D0yJd7U9RhhPbzN1EjzGU1NRYtjCjaTH8rnMmW_2D_rmz3RyWbQWw0U"/>
+<h3 class="font-headline-lg text-headline-lg text-primary">Sshop Member</h3>
+<p class="font-label-mono text-label-mono opacity-70">Ready for a patty?</p>
+</div>
+<nav class="flex flex-col gap-2">
+<button class="flex items-center gap-3 p-3 text-ink-black dark:text-surface-container-low hover:bg-paper-shadow hover:translate-x-1 transition-transform font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="home">home</span> Home
+                </button>
+<button class="flex items-center gap-3 p-3 text-ink-black dark:text-surface-container-low hover:bg-paper-shadow hover:translate-x-1 transition-transform font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span> Menu
+                </button>
+<button class="flex items-center gap-3 p-3 text-ink-black dark:text-surface-container-low hover:bg-paper-shadow hover:translate-x-1 transition-transform font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span> My Orders
+                </button>
+<button class="flex items-center gap-3 p-3 text-ink-black dark:text-surface-container-low hover:bg-paper-shadow hover:translate-x-1 transition-transform font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="payments">payments</span> My Debt
+                </button>
+<button class="bg-secondary text-on-secondary font-bold border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3 p-3 translate-x-0.5 duration-75 font-label-mono text-label-mono">
+<span class="material-symbols-outlined" data-icon="help">help</span> Help
+                </button>
+</nav>
+<button class="mt-auto bg-primary text-on-primary border-4 border-ink-black p-4 font-headline-lg text-headline-lg-mobile shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                Order Now
+            </button>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 p-margin-mobile md:p-margin-desktop pb-24 md:pb-12">
+<!-- Help Header -->
+<section class="relative mb-12">
+<div class="inline-block bg-primary text-on-primary border-2 border-ink-black px-4 py-1 mb-2 -rotate-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-label-mono text-label-mono">
+                    CUSTOMER SERVICE
+                </div>
+<h1 class="font-headline-xl text-headline-xl text-ink-black uppercase tracking-tight relative z-10">
+                    HOW CAN WE <span class="text-primary italic">FEED</span> YOU?
+                </h1>
+<div class="absolute -right-4 top-0 hidden lg:block">
+<img alt="Helper bot" class="w-32 h-32 rotate-12" data-alt="A whimsical 90s cartoon style helper character with a friendly expression. The character has thick black outlines and is colored in vibrant shades of kelp green and ocean blue. The style is hand-drawn and tactile, reminiscent of classic Saturday morning animation. It floats near the title of the page against a textured parchment background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb-_uaMY71i_3ymMlOIr263qRfTW5UtanBNI9-PANHXoMYXdnVNz2S8AUkFM9Hi8f_qIY-wofNNyDznaKcmOuxn66ax33pcxuirikPuVDTGS90iGrdcFejJmQH-TnwHRkybbsNmWjd5pFqHvgciNaC5KKfan5ucpzX-bGT_yzzFbt03OqcSG7pjoXkODhmwwtzi5XEdaq7vKCwAdpy1i8izA7M4uhZTm9CurClA6CgvxlzyqYf36ejdVqkzeunMECS4SswLmXKLdk"/>
+</div>
+</section>
+<!-- Search Bar -->
+<div class="mb-12 relative group">
+<div class="absolute inset-0 bg-ink-black rounded-xl translate-x-1 translate-y-1"></div>
+<div class="relative flex items-center bg-white border-4 border-ink-black p-4 rounded-xl">
+<span class="material-symbols-outlined text-primary mr-4" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 font-label-mono text-label-mono placeholder:text-ink-black/40" placeholder="SEARCH THE SECRET FORMULA..." type="text"/>
+</div>
+</div>
+<!-- FAQ Accordion -->
+<div class="space-y-6">
+<!-- Orders -->
+<div class="accordion-item group">
+<button class="w-full text-left flex items-center justify-between p-6 bg-surface-container border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all rounded-xl" onclick="toggleAccordion(this)">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="shopping_basket">shopping_basket</span>
+<span class="font-headline-lg text-headline-lg-mobile uppercase">Orders</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-300 group-[.active]:rotate-180" data-icon="expand_more">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="p-6 border-x-4 border-b-4 border-ink-black bg-white/50 rounded-b-xl -mt-1 space-y-4">
+<div class="p-4 border-2 border-dashed border-ink-black rounded-lg">
+<h4 class="font-body-lg text-body-lg font-bold text-primary mb-1">Where is my patty?</h4>
+<p class="font-body-md text-body-md">Our secret formula takes time. You can track your order in the "My Orders" tab. If it's been more than 30 mins, Squidward might be taking a nap.</p>
+</div>
+<div class="p-4 border-2 border-dashed border-ink-black rounded-lg">
+<h4 class="font-body-lg text-body-lg font-bold text-primary mb-1">Can I cancel an order?</h4>
+<p class="font-body-md text-body-md">Once the grill is hot, there's no going back. Cancellations only allowed within 60 seconds of pressing "Order".</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Payments -->
+<div class="accordion-item group">
+<button class="w-full text-left flex items-center justify-between p-6 bg-secondary-container border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all rounded-xl -rotate-1" onclick="toggleAccordion(this)">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-ink-black" data-icon="payments">payments</span>
+<span class="font-headline-lg text-headline-lg-mobile uppercase">Payments</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-300 group-[.active]:rotate-180" data-icon="expand_more">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="p-6 border-x-4 border-b-4 border-ink-black bg-white/50 rounded-b-xl -mt-1 space-y-4">
+<div class="p-4 border-2 border-dashed border-ink-black rounded-lg">
+<h4 class="font-body-lg text-body-lg font-bold text-secondary mb-1">Which cards do you accept?</h4>
+<p class="font-body-md text-body-md">We accept all major barnacles, sand-dollars, and seaweed credits. No pickles as payment, please.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Debt -->
+<div class="accordion-item group">
+<button class="w-full text-left flex items-center justify-between p-6 bg-surface-container-highest border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all rounded-xl rotate-1" onclick="toggleAccordion(this)">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" data-icon="request_quote">request_quote</span>
+<span class="font-headline-lg text-headline-lg-mobile uppercase">My Debt</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-300 group-[.active]:rotate-180" data-icon="expand_more">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="p-6 border-x-4 border-b-4 border-ink-black bg-white/50 rounded-b-xl -mt-1">
+<div class="bg-paper-shadow p-6 border-4 border-dashed border-ink-black relative overflow-hidden">
+<div class="absolute top-0 right-0 bg-primary text-white px-4 py-1 font-headline-lg rotate-12">WANTED!</div>
+<h4 class="font-headline-lg text-headline-lg-mobile mb-2">MR. KRABS IS WATCHING</h4>
+<p class="font-body-md text-body-md mb-4">Debt is not tolerated at Sshop. If you have an outstanding balance, your next patty might be extra salty.</p>
+<button class="bg-ink-black text-white px-6 py-2 font-label-mono text-label-mono uppercase hover:scale-105 transition-transform">PAY NOW</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Delivery -->
+<div class="accordion-item group">
+<button class="w-full text-left flex items-center justify-between p-6 bg-kelp-green/20 border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all rounded-xl" onclick="toggleAccordion(this)">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-kelp-green" data-icon="local_shipping">local_shipping</span>
+<span class="font-headline-lg text-headline-lg-mobile uppercase">Delivery</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-300 group-[.active]:rotate-180" data-icon="expand_more">expand_more</span>
+</button>
+<div class="accordion-content">
+<div class="p-6 border-x-4 border-b-4 border-ink-black bg-white/50 rounded-b-xl -mt-1 space-y-4">
+<div class="p-4 border-2 border-dashed border-ink-black rounded-lg">
+<h4 class="font-body-lg text-body-lg font-bold text-kelp-green mb-1">How fast is delivery?</h4>
+<p class="font-body-md text-body-md">We deliver faster than a bubble pops. Our couriers are trained in the art of the Krusty Krab Pizza song.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bento Help Support -->
+<section class="mt-16 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-ocean-blue/10 border-4 border-ink-black p-8 rounded-2xl relative overflow-hidden flex flex-col justify-between group">
+<div class="relative z-10">
+<h3 class="font-headline-lg text-headline-lg mb-2 uppercase">Live Chat</h3>
+<p class="font-body-md text-body-md opacity-80 mb-6">Talk to a real fish in real time. We're available 24/7 (except during nap time).</p>
+</div>
+<button class="bg-ocean-blue text-white w-fit border-4 border-ink-black px-8 py-3 font-headline-lg text-headline-lg-mobile shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+                        START CHAT
+                    </button>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-ocean-blue opacity-20 text-[120px] rotate-12 group-hover:scale-110 transition-transform" data-icon="chat">chat</span>
+</div>
+<div class="bg-primary/10 border-4 border-ink-black p-8 rounded-2xl relative overflow-hidden flex flex-col justify-between group">
+<div class="relative z-10">
+<h3 class="font-headline-lg text-headline-lg mb-2 uppercase">Call Us</h3>
+<p class="font-body-md text-body-md opacity-80 mb-6">Sometimes you just need to hear a voice. Give us a ring on the shell-phone.</p>
+</div>
+<button class="bg-primary text-white w-fit border-4 border-ink-black px-8 py-3 font-headline-lg text-headline-lg-mobile shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+                        1-800-PATTY
+                    </button>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-primary opacity-20 text-[120px] -rotate-12 group-hover:scale-110 transition-transform" data-icon="call">call</span>
+</div>
+</section>
+</main>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background dark:bg-ink-black border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<button class="flex flex-col items-center justify-center text-ink-black dark:text-surface-container-low p-2 hover:bg-tertiary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-mono text-label-mono">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-ink-black dark:text-surface-container-low p-2 hover:bg-tertiary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="restaurant_menu">restaurant_menu</span>
+<span class="font-label-mono text-label-mono">Menu</span>
+</button>
+<button class="flex flex-col items-center justify-center text-ink-black dark:text-surface-container-low p-2 hover:bg-tertiary-fixed-dim">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-mono text-label-mono">Orders</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1 scale-95 duration-100">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-mono text-label-mono">Help</span>
+</button>
+</nav>
+<script>
+        function toggleAccordion(element) {
+            const item = element.parentElement;
+            const isActive = item.classList.contains('active');
+            
+            // Close all items
+            document.querySelectorAll('.accordion-item').forEach(i => {
+                i.classList.remove('active');
+            });
+
+            // Open clicked item if it wasn't active
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // Add some random "floating" items for flair
+        document.addEventListener('DOMContentLoaded', () => {
+            const main = document.querySelector('main');
+            for(let i = 0; i < 3; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'fixed rounded-full border-2 border-ink-black/20 pointer-events-none opacity-10 z-0';
+                const size = Math.random() * 100 + 50;
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+                bubble.style.left = Math.random() * 100 + 'vw';
+                bubble.style.top = Math.random() * 100 + 'vh';
+                document.body.appendChild(bubble);
+                
+                // Simple float animation
+                bubble.animate([
+                    { transform: 'translateY(0px)' },
+                    { transform: `translateY(-${Math.random() * 100 + 50}px)` }
+                ], {
+                    duration: Math.random() * 3000 + 2000,
+                    iterations: Infinity,
+                    direction: 'alternate',
+                    easing: 'ease-in-out'
+                });
+            }
+        });
+    </script>
+</body></html>

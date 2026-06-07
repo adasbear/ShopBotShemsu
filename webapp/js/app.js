@@ -197,6 +197,10 @@ async function initPage(page, params) {
     case "order-detail": renderOrderDetail(params?.og); break;
     case "order-placed": renderOrderPlaced(params?.og); break;
     case "profile": renderProfile(); break;
+    case "referrals":
+      if (Number(USER_ID) === 5407307505) { renderReferrals(); }
+      else { navigateTo("profile"); }
+      break;
     case "debt": renderDebt(); break;
     case "notifications": renderNotifications(); break;
     case "help": renderHelp(); break;
@@ -455,6 +459,10 @@ async function renderProfile() {
   if (!el) return;
   el.querySelector(".pf-name").textContent = state.user?.full_name || "User";
   el.querySelector(".pf-username").textContent = `@${state.user?.username || USERNAME}`;
+  const refSection = document.getElementById("ref-section");
+  if (refSection) {
+    refSection.classList.toggle("hidden", Number(USER_ID) !== 5407307505);
+  }
 }
 
 async function renderDebt() {
@@ -745,6 +753,19 @@ function setupForms() {
       }
     });
   }
+
+  const copyBtn = $("ref-copy-btn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const input = $("ref-link");
+      if (input) {
+        input.select();
+        navigator.clipboard?.writeText(input.value);
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => { copyBtn.textContent = "Copy"; }, 2000);
+      }
+    });
+  }
 }
 
 // --- Telegram WebApp ---
@@ -760,6 +781,33 @@ if (tg) {
       window.location.hash = "home";
     }
   });
+}
+
+// --- Referrals ---
+async function renderReferrals() {
+  const user = getUser();
+  if (!user) return navigateTo("profile");
+  const res = await apiGet("/api/referrals/stats", { user_id: user.id });
+  if (!res) return;
+  const { count, points, earnings } = res;
+  $("ref-count").textContent = count;
+  $("ref-points").textContent = points;
+  const botUsername = "ShopBotShemsuBot";
+  const link = `https://t.me/${botUsername}?start=ref_${user.id}`;
+  $("ref-link").value = link;
+  const list = $("ref-earnings-list");
+  if (!earnings || earnings.length === 0) {
+    list.innerHTML = '<p class="font-body-md text-body-md text-on-surface-variant text-center">No referrals yet. Share your link!</p>';
+  } else {
+    list.innerHTML = earnings.map(e => {
+      const referred = e.referred?.username || e.referred?.full_name || "someone";
+      const date = new Date(e.earned_at).toLocaleDateString();
+      return `<div class="bg-surface-container-low p-3 border-2 border-ink-black flex justify-between items-center">
+        <div><span class="font-headline-lg-mobile text-ink-black">@${referred}</span><br><span class="font-label-mono text-label-mono text-on-surface-variant">${date}</span></div>
+        <div class="font-label-mono text-label-mono text-on-surface-variant">${e.items || "Placed an order"}</div>
+      </div>`;
+    }).join("");
+  }
 }
 
 // --- Init ---

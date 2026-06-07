@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sshop - Order Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&amp;family=Space+Mono:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "kelp-green": "#8BC34A",
+                "on-tertiary-fixed": "#1b1d0e",
+                "on-secondary-fixed-variant": "#4f4800",
+                "on-primary-fixed": "#410003",
+                "on-secondary": "#ffffff",
+                "tertiary-fixed": "#e4e4cc",
+                "surface-container-highest": "#f9dcd9",
+                "on-primary": "#ffffff",
+                "inverse-primary": "#ffb3ac",
+                "error-container": "#ffdad6",
+                "primary": "#af101a",
+                "on-surface-variant": "#5b403d",
+                "tertiary": "#575946",
+                "inverse-surface": "#3e2c2a",
+                "on-background": "#271816",
+                "secondary": "#695f00",
+                "surface-container": "#ffe9e7",
+                "tertiary-container": "#70715d",
+                "on-error": "#ffffff",
+                "on-tertiary-fixed-variant": "#474836",
+                "surface-container-lowest": "#ffffff",
+                "surface-tint": "#ba1a20",
+                "secondary-fixed-dim": "#dbc90a",
+                "primary-container": "#d32f2f",
+                "surface-container-low": "#fff0ef",
+                "primary-fixed": "#ffdad6",
+                "secondary-fixed": "#f9e534",
+                "inverse-on-surface": "#ffedeb",
+                "background": "#fff8f7",
+                "ocean-blue": "#03A9F4",
+                "outline-variant": "#e4beba",
+                "on-primary-container": "#fff2f0",
+                "surface": "#fff8f7",
+                "tertiary-fixed-dim": "#c8c8b0",
+                "on-secondary-fixed": "#201c00",
+                "surface-bright": "#fff8f7",
+                "ink-black": "#1A1A1A",
+                "outline": "#8f6f6c",
+                "on-primary-fixed-variant": "#930010",
+                "primary-fixed-dim": "#ffb3ac",
+                "surface-dim": "#f1d3d0",
+                "paper-shadow": "#E6E6CC",
+                "secondary-container": "#f9e534",
+                "surface-container-high": "#ffe2de",
+                "on-tertiary": "#ffffff",
+                "error": "#ba1a1a",
+                "on-secondary-container": "#706500",
+                "surface-variant": "#f9dcd9",
+                "on-error-container": "#93000a",
+                "on-tertiary-container": "#f6f6dd",
+                "on-surface": "#271816"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "gutter": "16px",
+                "card-gap": "12px",
+                "margin-mobile": "20px",
+                "margin-desktop": "40px",
+                "unit": "4px"
+            },
+            "fontFamily": {
+                "headline-xl": ["Bricolage Grotesque"],
+                "label-mono": ["Space Mono"],
+                "headline-lg": ["Bricolage Grotesque"],
+                "headline-lg-mobile": ["Bricolage Grotesque"],
+                "body-lg": ["Plus Jakarta Sans"],
+                "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .paper-texture {
+        background-image: url("https://www.transparenttextures.com/patterns/handmade-paper.png");
+      }
+      .brutalist-shadow {
+        box-shadow: 6px 6px 0px 0px #1A1A1A;
+      }
+      .brutalist-shadow-sm {
+        box-shadow: 3px 3px 0px 0px #1A1A1A;
+      }
+      .brutalist-shadow-inset {
+        box-shadow: inset 3px 3px 0px 0px rgba(0,0,0,0.1);
+      }
+      .scribble-highlight {
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 18C20 16 80 16 98 14' stroke='%23f9e534' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: bottom;
+      }
+      .jagged-border {
+        clip-path: polygon(0% 0%, 100% 0%, 100% 95%, 98% 100%, 95% 97%, 92% 100%, 88% 96%, 84% 100%, 80% 95%, 75% 100%, 70% 96%, 65% 100%, 60% 95%, 55% 100%, 50% 97%, 45% 100%, 40% 96%, 35% 100%, 30% 95%, 25% 100%, 20% 96%, 15% 100%, 10% 97%, 5% 100%, 0% 95%);
+      }
+    </style>
+</head>
+<body class="bg-background text-on-background paper-texture font-body-md min-h-screen pb-24 md:pb-0">
+<!-- Top Navigation -->
+<header class="bg-background border-b-4 border-ink-black sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-[1200px] mx-auto">
+<div class="flex items-center gap-4">
+<span class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</span>
+</div>
+<nav class="hidden md:flex gap-8 items-center">
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform px-2 py-1" href="#">Sales</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform px-2 py-1" href="#">About</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform px-2 py-1" href="#">Location</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform px-2 py-1" href="#">Prices</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary p-2 border-2 border-ink-black brutalist-shadow-sm bg-white hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all">notifications</button>
+<button class="material-symbols-outlined text-primary p-2 border-2 border-ink-black brutalist-shadow-sm bg-white hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all">shopping_cart</button>
+<div class="w-10 h-10 border-2 border-ink-black brutalist-shadow-sm overflow-hidden rotate-2">
+<img alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoFpeFvFLleJV4Ywj1PrJLv9E9h8XnCD3HlEgXmD9rvx2EIdoAmtfDhE2gs5l0dIAMAbDGFfkFBnxKUKtwXbzxHUBIcG5UYv43zhq713FYcDI0SYWgctMk9OZbhr5P44LbHKq8HDCAr6WE0ssvlmWeUd-zclOFLJt1jawnEnsF-zaNaUNCHjpx7lU9JpK8VRTpBhsNkNSy2p8rTGILTWLBoM0gCUZ7VXh1JiFWeIHZbVLDdPjMiCc8xIGsl4oQY4GVXK8VMjEhA3g"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Side: Order Status & Details -->
+<div class="lg:col-span-8 space-y-8">
+<!-- Order Header -->
+<section class="relative bg-white border-4 border-ink-black p-6 brutalist-shadow -rotate-1">
+<div class="flex justify-between items-start flex-wrap gap-4">
+<div>
+<span class="font-label-mono text-label-mono uppercase bg-secondary-container text-on-secondary-container px-2 py-1 border-2 border-ink-black mb-2 inline-block">Order #KAB-7742</span>
+<h1 class="font-headline-lg text-headline-lg text-ink-black">IT'S COOKING!</h1>
+<p class="font-body-md text-on-surface-variant">Estimated delivery: 25-30 mins</p>
+</div>
+<div class="bg-yellow-400 border-2 border-ink-black brutalist-shadow-sm p-3 -rotate-3">
+<span class="material-symbols-outlined text-4xl block text-ink-black" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+</div>
+</section>
+<!-- Status Timeline -->
+<section class="bg-surface-container border-4 border-ink-black p-6 brutalist-shadow">
+<h2 class="font-headline-lg text-headline-lg mb-8 scribble-highlight inline-block">ORDER JOURNEY</h2>
+<div class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8 md:gap-0 mt-4">
+<!-- Progress Line (Background) -->
+<div class="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-ink-black -translate-y-1/2 z-0"></div>
+<!-- Step 1: Placed -->
+<div class="relative z-10 flex flex-row md:flex-col items-center gap-4 group">
+<div class="w-12 h-12 rounded-full border-4 border-ink-black bg-kelp-green flex items-center justify-center brutalist-shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-white">check</span>
+</div>
+<div class="text-left md:text-center">
+<p class="font-label-mono text-ink-black font-bold">PLACED</p>
+<p class="text-[10px] font-label-mono">12:45 PM</p>
+</div>
+</div>
+<!-- Step 2: Preparing -->
+<div class="relative z-10 flex flex-row md:flex-col items-center gap-4 group">
+<div class="w-16 h-16 rounded-full border-4 border-ink-black bg-secondary-container flex items-center justify-center brutalist-shadow group-hover:-rotate-6 transition-transform relative">
+<span class="material-symbols-outlined text-ink-black text-3xl animate-bounce">restaurant</span>
+<div class="absolute -top-2 -right-2 bg-primary text-white text-[10px] px-2 py-1 border-2 border-ink-black rounded-full rotate-12">NOW</div>
+</div>
+<div class="text-left md:text-center">
+<p class="font-label-mono text-ink-black font-bold">PREPARING</p>
+<p class="text-[10px] font-label-mono">12:48 PM</p>
+</div>
+</div>
+<!-- Step 3: Ready -->
+<div class="relative z-10 flex flex-row md:flex-col items-center gap-4 group opacity-50 grayscale">
+<div class="w-12 h-12 rounded-full border-4 border-ink-black bg-white flex items-center justify-center brutalist-shadow-sm">
+<span class="material-symbols-outlined text-ink-black">takeout_dining</span>
+</div>
+<div class="text-left md:text-center">
+<p class="font-label-mono text-ink-black font-bold">READY</p>
+<p class="text-[10px] font-label-mono">--:--</p>
+</div>
+</div>
+<!-- Step 4: Delivered -->
+<div class="relative z-10 flex flex-row md:flex-col items-center gap-4 group opacity-50 grayscale">
+<div class="w-12 h-12 rounded-full border-4 border-ink-black bg-white flex items-center justify-center brutalist-shadow-sm">
+<span class="material-symbols-outlined text-ink-black">home_pin</span>
+</div>
+<div class="text-left md:text-center">
+<p class="font-label-mono text-ink-black font-bold">DELIVERED</p>
+<p class="text-[10px] font-label-mono">--:--</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Items List -->
+<section class="bg-white border-4 border-ink-black p-6 brutalist-shadow rotate-1">
+<h2 class="font-headline-lg text-headline-lg mb-6 text-primary">YOUR PATTY BAG</h2>
+<div class="space-y-4">
+<!-- Item 1 -->
+<div class="flex items-center gap-4 p-4 border-2 border-ink-black bg-surface-container-low hover:bg-white transition-colors">
+<div class="w-20 h-20 border-2 border-ink-black bg-white flex-shrink-0 -rotate-2">
+<img class="w-full h-full object-cover" data-alt="A delicious, messy double cheeseburger on a slightly toasted bun, featuring thick melted yellow cheese, lettuce, and a secret red sauce. The photography style is vivid and high-contrast, echoing a vibrant 90s cartoon aesthetic with deep saturated colors and sharp outlines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBbdhg84WX7MWnUV1C8BEOFycOvlQFIt8-BK5R-j894ZW95KxZBGOxuh8JVs_jeKo9lIaKHLwYcuvPtCLA7aGlFH1F3FXCvTM1W99wAc3NcXEosiH9RJP81W6MnMTKHJxwDAbWPN0DB-IH-wJGNmvJQD3qabDw7STgyKBe3P4cv-5Lr-dKLmKdoX318Bfe79mHeh-5DWEQf4_4De6w2_OrhH1PRsGQAVdXKjOxj4r36qjT_0gnW1xgFzRtnYd2v7Xiog7JX8sJ7ok"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile">Double Krabby Patty</h3>
+<span class="font-label-mono text-primary font-bold">11.99$</span>
+</div>
+<p class="font-body-md text-on-surface-variant text-sm italic">"Extra pickles, please!"</p>
+<p class="font-label-mono text-sm mt-1">QTY: 1</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center gap-4 p-4 border-2 border-ink-black bg-surface-container-low hover:bg-white transition-colors">
+<div class="w-20 h-20 border-2 border-ink-black bg-white flex-shrink-0 rotate-1">
+<img class="w-full h-full object-cover" data-alt="A glowing neon-green kelp shake in a tall, curvy glass bottle with a thick black outline. The beverage looks fizzy and refreshing, set against a warm sandy beige background. The illustrative style mimics hand-drawn tactile art with slight imperfections and bold strokes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuVbRh-VvZlYBdCkBKJXasioYvbWmZRcgeTZHa7QnYTan1SoAcKYesMvc7TOu3IPePI8hYdNH85GP2CTabDEkXWN6KgHjxCSwYJ0P9hfEcyx95WvfCsKtq-WebFmCwRxbKQsLNtzBkYJdNGu7oSxS0yIvm64sHy6rkj5_XYNwFHIKyh6ZRNCfeiumIt299UBA0NEkev9Szggewkz5mcKcZ-1dLqstJz76K7mE1uXJiI7v6HyFuCA1fxYodAY1ACV8FJT92EFadIhE"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile">Kelp Shake (L)</h3>
+<span class="font-label-mono text-primary font-bold">4.99$</span>
+</div>
+<p class="font-body-md text-on-surface-variant text-sm italic">Cold as the abyss.</p>
+<p class="font-label-mono text-sm mt-1">QTY: 2</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Side: Payment & Info -->
+<aside class="lg:col-span-4 space-y-8">
+<!-- Payment Summary -->
+<section class="bg-secondary-container border-4 border-ink-black p-6 brutalist-shadow">
+<h2 class="font-headline-lg text-headline-lg mb-4 text-ink-black">THE BILL</h2>
+<div class="space-y-2 font-label-mono">
+<div class="flex justify-between">
+<span>Subtotal:</span>
+<span>21.97$</span>
+</div>
+<div class="flex justify-between">
+<span>Sea Tax (10%):</span>
+<span>2.20$</span>
+</div>
+<div class="flex justify-between">
+<span>Delivery:</span>
+<span class="text-kelp-green">FREE</span>
+</div>
+<hr class="border-t-2 border-ink-black my-4 border-dashed"/>
+<div class="flex justify-between text-xl font-bold">
+<span>TOTAL:</span>
+<span class="bg-primary text-white px-2 border-2 border-ink-black">24.17$</span>
+</div>
+</div>
+</section>
+<!-- Special Instructions Card -->
+<section class="bg-white border-4 border-ink-black p-6 brutalist-shadow -rotate-2">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">description</span>
+<h2 class="font-label-mono text-ink-black font-bold uppercase tracking-widest">NOTE FROM PATTY</h2>
+</div>
+<div class="p-4 border-2 border-ink-black bg-paper-shadow brutalist-shadow-inset font-body-md text-sm leading-relaxed">
+                    "Leave it at the bottom of the coral tree. If there's a squirrel nearby, don't look it in the eyes. Thanks!"
+                </div>
+</section>
+<!-- Cancel Order (Only for Pending/Preparing) -->
+<section class="bg-surface-container-highest border-4 border-ink-black p-6 brutalist-shadow jagged-border">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile mb-4">WANT TO ABANDON SHIP?</h3>
+<p class="font-body-md mb-6 text-sm">Cancellations are only possible within the first 5 minutes. You've got 2 minutes left!</p>
+<button class="w-full bg-primary text-white font-headline-lg-mobile py-4 border-2 border-ink-black brutalist-shadow-sm active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">cancel</span>
+                    CANCEL ORDER
+                </button>
+</section>
+<!-- Delivery Map Placeholder -->
+<section class="border-4 border-ink-black h-64 overflow-hidden brutalist-shadow relative group">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="An illustrative top-down stylized map of a colorful underwater neighborhood with bright blue waters, coral formations, and quirky dome-shaped houses. A red delivery bike icon is moving along a dashed yellow path, representing real-time order tracking. The art style is bold, playful, and cartoonish with heavy black outlines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcYyRqKjg0eCmaaBnUjs8Menj7baeD_M_Iv2x_Cmqvz8fttMHztgiFU7WLBAg2BqxAHa4uDMtfOdaP_A4OfO5BBHa2hqdEfHen5KWFu6Grc1b9a43UCp4Z1a0F82KNzS6z3EEw4FWPjmH7RG2BoE88x06XVNdi7Av_fJ98ezgI7k4dtJsn-v5tcWmnYIl2ZGZSk_GYmLquQwoVrJZc0Mu8VL8XbM8htLvi0Q0OJ2ZJwd6Ov2T6QZUkmdbdpFs17ycoiZZotLYbwR4"/>
+<div class="absolute inset-0 bg-ink-black/20 pointer-events-none"></div>
+<div class="absolute bottom-4 left-4 right-4 bg-white border-2 border-ink-black p-2 flex justify-between items-center rotate-1">
+<span class="font-label-mono text-xs">Tracking live...</span>
+<div class="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+</div>
+</section>
+</aside>
+</main>
+<!-- Mobile Navigation -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<a class="flex flex-col items-center justify-center text-ink-black p-2" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2" href="#">
+<span class="material-symbols-outlined">restaurant_menu</span>
+<span class="font-label-mono text-[10px]">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-label-mono text-[10px]">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-mono text-[10px]">Profile</span>
+</a>
+</nav>
+<script>
+        // Atmospheric effects: random rotation for some elements to feel more "sketched"
+        document.querySelectorAll('.brutalist-shadow').forEach(card => {
+            if (!card.classList.contains('rotate-1') && !card.classList.contains('-rotate-1') && !card.classList.contains('-rotate-2')) {
+                const rotation = (Math.random() * 2 - 1).toFixed(1);
+                card.style.transform = `rotate(${rotation}deg)`;
+            }
+        });
+
+        // Simple click interaction for the cancel button
+        const cancelBtn = document.querySelector('button.bg-primary');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                if (confirm("Are you sure you want to let this delicious patty go?")) {
+                    alert("Order cancelled. Mr. Krabs is not happy.");
+                }
+            });
+        }
+    </script>
+</body></html>

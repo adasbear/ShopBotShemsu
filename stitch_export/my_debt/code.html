@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sshop - My Debt</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&amp;family=Space+Mono:wght@400;700&amp;family=Plus+Jakarta+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Use Tailwind Config from Design System -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "kelp-green": "#8BC34A",
+                "on-tertiary-fixed": "#1b1d0e",
+                "on-secondary-fixed-variant": "#4f4800",
+                "on-primary-fixed": "#410003",
+                "on-secondary": "#ffffff",
+                "tertiary-fixed": "#e4e4cc",
+                "surface-container-highest": "#f9dcd9",
+                "on-primary": "#ffffff",
+                "inverse-primary": "#ffb3ac",
+                "error-container": "#ffdad6",
+                "primary": "#af101a",
+                "on-surface-variant": "#5b403d",
+                "tertiary": "#575946",
+                "inverse-surface": "#3e2c2a",
+                "on-background": "#271816",
+                "secondary": "#695f00",
+                "surface-container": "#ffe9e7",
+                "tertiary-container": "#70715d",
+                "on-error": "#ffffff",
+                "on-tertiary-fixed-variant": "#474836",
+                "surface-container-lowest": "#ffffff",
+                "surface-tint": "#ba1a20",
+                "secondary-fixed-dim": "#dbc90a",
+                "primary-container": "#d32f2f",
+                "surface-container-low": "#fff0ef",
+                "primary-fixed": "#ffdad6",
+                "secondary-fixed": "#f9e534",
+                "inverse-on-surface": "#ffedeb",
+                "background": "#fff8f7",
+                "ocean-blue": "#03A9F4",
+                "outline-variant": "#e4beba",
+                "on-primary-container": "#fff2f0",
+                "surface": "#fff8f7",
+                "tertiary-fixed-dim": "#c8c8b0",
+                "on-secondary-fixed": "#201c00",
+                "surface-bright": "#fff8f7",
+                "ink-black": "#1A1A1A",
+                "outline": "#8f6f6c",
+                "on-primary-fixed-variant": "#930010",
+                "primary-fixed-dim": "#ffb3ac",
+                "surface-dim": "#f1d3d0",
+                "paper-shadow": "#E6E6CC",
+                "secondary-container": "#f9e534",
+                "surface-container-high": "#ffe2de",
+                "on-tertiary": "#ffffff",
+                "error": "#ba1a1a",
+                "on-secondary-container": "#706500",
+                "surface-variant": "#f9dcd9",
+                "on-error-container": "#93000a",
+                "on-tertiary-container": "#f6f6dd",
+                "on-surface": "#271816"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "gutter": "16px",
+                "card-gap": "12px",
+                "margin-mobile": "20px",
+                "margin-desktop": "40px",
+                "unit": "4px"
+            },
+            "fontFamily": {
+                "headline-xl": ["Bricolage Grotesque"],
+                "label-mono": ["Space Mono"],
+                "headline-lg": ["Bricolage Grotesque"],
+                "headline-lg-mobile": ["Bricolage Grotesque"],
+                "body-lg": ["Plus Jakarta Sans"],
+                "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-image: radial-gradient(#e4beba 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+        }
+        .paper-texture {
+            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
+        }
+        .jagged-border {
+            clip-path: polygon(0% 0%, 100% 0%, 100% 95%, 98% 100%, 95% 95%, 92% 100%, 89% 95%, 86% 100%, 83% 95%, 80% 100%, 77% 95%, 74% 100%, 71% 95%, 68% 100%, 65% 95%, 62% 100%, 59% 95%, 56% 100%, 53% 95%, 50% 100%, 47% 95%, 44% 100%, 41% 95%, 38% 100%, 35% 95%, 32% 100%, 29% 95%, 26% 100%, 23% 95%, 20% 100%, 17% 95%, 14% 100%, 11% 95%, 8% 100%, 5% 95%, 2% 100%, 0% 95%);
+        }
+        .scribble-highlight {
+            position: relative;
+            z-index: 1;
+        }
+        .scribble-highlight::after {
+            content: '';
+            position: absolute;
+            left: -4px;
+            right: -4px;
+            bottom: 2px;
+            height: 12px;
+            background-color: #f9e534;
+            z-index: -1;
+            transform: rotate(-1deg);
+            opacity: 0.8;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden">
+<!-- Desktop Side Navigation Shell -->
+<nav class="fixed left-0 top-0 h-screen w-64 border-r-4 border-ink-black bg-background p-gutter flex flex-col gap-4 z-[60] hidden md:flex shadow-[4px_0px_0px_0px_rgba(0,0,0,1)]">
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</h1>
+<p class="font-label-mono text-label-mono text-secondary mt-1 uppercase tracking-tighter">Bikini Bottom Finance</p>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span> Home
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span> Menu
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span> My Orders
+            </a>
+<a class="flex items-center gap-3 p-3 bg-secondary text-on-secondary font-bold border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] translate-x-0.5 font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span> My Debt
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span> Help
+            </a>
+</div>
+<div class="mt-auto p-4 border-4 border-ink-black bg-paper-shadow rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 rounded-full border-2 border-ink-black overflow-hidden bg-white">
+<img alt="User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGNz5Ut113QTAtPF-nqKxY5u1SrsNJOeZFtG_jPF5NUPLWUffww9yWUi_REe_S0s9tIhyi0bbyQ8j5m5xu20T0JhudmWSsjLPVpYU2PB-j_LTpDfNiwAgUKMAi61nrn5j_ySTh4NfTW4M4dglIC2owLytOnSX7Ar19EWUWHJJctAP2ZbBnd9dZzDVwAr9XwFxOb-WDMU_I460JKw4Y_tJT0ib-3dZySEPn6Zz36rCaqHg54QwpvvsEdWY6xvjv4XiP5epVNYF6_54"/>
+</div>
+<div>
+<p class="font-bold text-sm leading-none">Sshop Member</p>
+<p class="text-xs opacity-70">Ready for a patty?</p>
+</div>
+</div>
+<button class="w-full py-2 bg-primary text-on-primary font-bold border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all uppercase text-xs">Order Now</button>
+</div>
+</nav>
+<!-- Mobile Top Bar -->
+<header class="md:hidden fixed top-0 left-0 w-full bg-background border-b-4 border-ink-black px-margin-mobile py-4 z-50 flex justify-between items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary underline decoration-secondary decoration-4">Sshop</h1>
+<div class="flex gap-4">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+</div>
+</header>
+<!-- Main Content -->
+<main class="md:ml-64 pt-24 md:pt-12 px-margin-mobile md:px-margin-desktop pb-32 max-w-[1200px] mx-auto">
+<!-- Header Section -->
+<section class="mb-12">
+<h2 class="font-headline-xl text-headline-xl-mobile md:text-headline-xl text-ink-black uppercase tracking-tighter mb-4">
+<span class="scribble-highlight">My Debt</span>
+</h2>
+<p class="font-body-lg text-body-lg max-w-2xl text-on-surface-variant">
+                Don't let Mr. Krabs catch you with an empty wallet! Keep track of your patty-tab and settle up before the next feeding frenzy.
+            </p>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Left Column: Debt Summary & Form -->
+<div class="lg:col-span-7 space-y-gutter">
+<!-- Outstanding Balance "WANTED" Poster Style -->
+<div class="bg-paper-shadow border-4 border-ink-black p-8 relative overflow-hidden rotate-1 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-primary rotate-45 border-4 border-ink-black flex items-end justify-center pb-2">
+<span class="text-white font-bold text-xs -rotate-45">URGENT</span>
+</div>
+<div class="text-center space-y-2">
+<p class="font-label-mono text-label-mono text-secondary uppercase tracking-widest">Outstanding Tab</p>
+<h3 class="font-headline-xl text-primary text-6xl md:text-8xl drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">$124.50</h3>
+<p class="font-body-md text-ink-black italic">"Money, money, money!" — Mr. Krabs</p>
+</div>
+<div class="mt-8 flex items-center justify-center gap-4">
+<div class="flex -space-x-2">
+<div class="w-12 h-12 border-4 border-ink-black bg-white rounded-full flex items-center justify-center overflow-hidden">
+<img alt="Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjaCYEu_VqqrTiXIt7F-HHbJHzNkm5AR28VXDe1sMKDKD9FusOtivGc4YfFeCdgkRsxGo9gkdf86Uryml2UuR-GdE-51Bp5y9DhikmDCTQORZFLDk_UgwOR7O12dj3ytub58wzIxvL4k9mPU86n46kOMtrmrAABRs0jhb3o5Qup1yY4eDqbkUSh_ZVU2gqIOT1WmijTQro_2tbkt-ysdMnIWJZpiy5_-F0AyqX9J-DmK7hTjcLtHhjBcV4eXNSnU42lYN9Pu_ByZ0"/>
+</div>
+</div>
+<div class="h-1 bg-ink-black flex-grow"></div>
+<div class="px-4 py-1 border-2 border-ink-black bg-kelp-green font-bold text-xs uppercase -rotate-2">Trustworthy</div>
+</div>
+</div>
+<!-- Settle Debt Form -->
+<div class="bg-white border-4 border-ink-black p-gutter shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] -rotate-1">
+<div class="flex items-center gap-3 mb-6 border-b-2 border-ink-black pb-2">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile uppercase">Settle Your Tab</h4>
+</div>
+<form class="space-y-6">
+<div class="group">
+<label class="block font-label-mono text-label-mono mb-2 uppercase text-on-surface-variant">Payment Amount ($)</label>
+<input class="w-full bg-background border-0 border-b-4 border-ink-black focus:ring-0 text-headline-lg font-headline-lg p-0 py-2 placeholder:opacity-20 transition-all" placeholder="0.00" step="0.01" type="number"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block font-label-mono text-label-mono mb-2 uppercase text-on-surface-variant">Account</label>
+<select class="w-full bg-background border-4 border-ink-black p-3 font-bold focus:ring-0 focus:border-secondary transition-colors">
+<option>Bikini Bottom Savings</option>
+<option>Rock Bottom Credit</option>
+<option>Jellyfish Jam Wallet</option>
+</select>
+</div>
+<div>
+<label class="block font-label-mono text-label-mono mb-2 uppercase text-on-surface-variant">Reference</label>
+<input class="w-full bg-background border-4 border-ink-black p-3 font-bold focus:ring-0 focus:border-secondary placeholder:font-normal placeholder:opacity-50" placeholder="Note for Mr. Krabs" type="text"/>
+</div>
+</div>
+<button class="w-full py-5 bg-primary text-on-primary text-headline-lg font-headline-lg uppercase border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-1 active:translate-x-1 active:shadow-none transition-all flex items-center justify-center gap-4 group" type="submit">
+                            Pay Now 
+                            <span class="material-symbols-outlined transition-transform group-hover:scale-125" data-icon="send">send</span>
+</button>
+</form>
+</div>
+</div>
+<!-- Right Column: Payment History -->
+<div class="lg:col-span-5">
+<div class="bg-white border-4 border-ink-black p-gutter shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-1 h-full flex flex-col">
+<div class="flex justify-between items-center mb-6 border-b-2 border-ink-black pb-2">
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile uppercase">Audit Log</h4>
+<span class="material-symbols-outlined opacity-30" data-icon="history">history</span>
+</div>
+<div class="space-y-4 flex-grow">
+<!-- History Item 1 -->
+<div class="border-2 border-ink-black p-4 bg-background hover:bg-surface-container transition-colors relative group">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-bold text-lg leading-tight">Tab Partial Payment</p>
+<p class="font-label-mono text-xs opacity-60">Oct 24, 2023 • 14:32</p>
+</div>
+<div class="text-right">
+<p class="font-headline-lg-mobile text-kelp-green">-$25.00</p>
+<div class="mt-1 px-2 py-0.5 border-2 border-ink-black bg-kelp-green text-[10px] font-bold text-white uppercase inline-block">Success</div>
+</div>
+</div>
+<div class="mt-2 text-xs italic opacity-70">"Saved up from cleaning the grill."</div>
+</div>
+<!-- History Item 2 (Pending) -->
+<div class="border-2 border-ink-black p-4 bg-background hover:bg-surface-container transition-colors relative">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-bold text-lg leading-tight">Jelly Patty Feast</p>
+<p class="font-label-mono text-xs opacity-60">Oct 22, 2023 • 19:15</p>
+</div>
+<div class="text-right">
+<p class="font-headline-lg-mobile text-primary">+$42.50</p>
+<div class="mt-1 px-2 py-0.5 border-2 border-ink-black bg-secondary-fixed text-[10px] font-bold text-ink-black uppercase inline-block">Pending</div>
+</div>
+</div>
+</div>
+<!-- History Item 3 -->
+<div class="border-2 border-ink-black p-4 bg-background hover:bg-surface-container transition-colors relative">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-bold text-lg leading-tight">Refund: Soggy Kelp Shake</p>
+<p class="font-label-mono text-xs opacity-60">Oct 20, 2023 • 11:05</p>
+</div>
+<div class="text-right">
+<p class="font-headline-lg-mobile text-kelp-green">-$4.99</p>
+<div class="mt-1 px-2 py-0.5 border-2 border-ink-black bg-kelp-green text-[10px] font-bold text-white uppercase inline-block">Reversed</div>
+</div>
+</div>
+</div>
+<!-- History Item 4 -->
+<div class="border-2 border-ink-black p-4 bg-background hover:bg-surface-container transition-colors relative">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-bold text-lg leading-tight">Order #BK-9982</p>
+<p class="font-label-mono text-xs opacity-60">Oct 18, 2023 • 12:44</p>
+</div>
+<div class="text-right">
+<p class="font-headline-lg-mobile text-primary">+$111.99</p>
+<div class="mt-1 px-2 py-0.5 border-2 border-ink-black bg-kelp-green text-[10px] font-bold text-white uppercase inline-block">Success</div>
+</div>
+</div>
+</div>
+</div>
+<button class="mt-8 w-full py-2 border-2 border-ink-black font-label-mono text-xs uppercase hover:bg-paper-shadow transition-colors">Download Full Ledger</button>
+</div>
+</div>
+</div>
+<!-- Fun Illustration Section -->
+<section class="mt-20 relative h-64 md:h-96">
+<div class="absolute inset-0 bg-secondary opacity-10 rounded-xl -rotate-1"></div>
+<div class="flex flex-col md:flex-row items-center justify-around h-full p-gutter gap-8">
+<div class="max-w-xs text-center md:text-left z-10">
+<h5 class="font-headline-lg text-primary mb-2">DON'T BE A SQUIDWARD!</h5>
+<p class="font-body-md opacity-80">Settling your debt increases your loyalty score and unlocks exclusive secret ingredients!</p>
+</div>
+<div class="relative w-48 h-48 md:w-64 md:h-64 rotate-3 group transition-transform hover:rotate-0">
+<img alt="Financial Treasure Chest" class="w-full h-full object-contain drop-shadow-[8px_8px_0px_rgba(0,0,0,0.3)]" data-alt="A whimsical, illustrative cartoon treasure chest styled like a hamburger, overflowing with shiny gold coins and dollar bills. The art style features heavy black outlines and vibrant reds and yellows, reminiscent of early 2000s nautical-themed animated sitcoms. The chest sits on a sandy beach background under bright, sunny lighting, creating a cheerful yet chaotic financial bounty scene." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzy9Hk84EM5Iyoe-7f2dJ4fwMzC8b3dZKbIqIjm5v-rZP6yBWuPdrTCgLVe01UQrcjPc9A4raI2Y83O_VXFsz5JRm6ydBf-JlSuzlVM-LdEOQWxecC0WIMAUzLRdVHdLILC6_Oo5rKXa7517UM2aKVnPxu8Fs5DE5VGKOjP1doNyNbyQMkIFuXg0chD96SwyI2iPhPx11CaDHmt1xpZcMOpJTTUnbF8B1xXd3vC4al6DN8tnKV3q12AiehUSq--LUetaM1fnzdaKw"/>
+</div>
+</div>
+</section>
+</main>
+<!-- Mobile Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-background border-t-4 border-ink-black px-margin-mobile py-2 md:hidden flex justify-around items-center shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-mono text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant_menu">restaurant_menu</span>
+<span class="font-label-mono text-[10px]">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-mono text-[10px]">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1 active:scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-mono text-[10px]">Debt</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-mono text-[10px]">Profile</span>
+</a>
+</nav>
+<!-- Interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simple hover effect for history items
+            const historyItems = document.querySelectorAll('.group');
+            historyItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    item.style.transform = 'translateY(-2px) translateX(-2px)';
+                    item.style.boxShadow = '4px 4px 0px 0px rgba(0,0,0,1)';
+                });
+                item.addEventListener('mouseleave', () => {
+                    item.style.transform = 'none';
+                    item.style.boxShadow = 'none';
+                });
+            });
+
+            // Form submission visual feedback
+            const form = document.querySelector('form');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button');
+                const originalContent = btn.innerHTML;
+                btn.innerHTML = 'Processing...';
+                btn.classList.add('bg-kelp-green');
+                
+                setTimeout(() => {
+                    btn.innerHTML = 'Success!';
+                    setTimeout(() => {
+                        btn.innerHTML = originalContent;
+                        btn.classList.remove('bg-kelp-green');
+                    }, 2000);
+                }, 1500);
+            });
+        });
+    </script>
+</body></html>

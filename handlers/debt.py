@@ -206,8 +206,10 @@ async def _notify_admin_debt(context, username):
     admin_id = await get_admin_user_id()
     if not admin_id:
         return
+    from database import record_referral_earning, _db
     comment = context.user_data.get("order_comment")
     order_name = context.user_data.get("order_name", username)
+    user_id = context.user_data.get("user_id")
     text = (
         f"<b>DEBT ORDER FROM: {order_name} (@{username})</b>\n\n"
         f"{chr(10).join(context.user_data['order_items'])}\n\n"
@@ -215,6 +217,17 @@ async def _notify_admin_debt(context, username):
     )
     if comment:
         text += f"\n\n<b>Comment:</b> {comment}"
+    if user_id:
+        ref = await _db(lambda: _supabase.table("referrals")
+            .select("referrer_id").eq("referred_id", user_id).limit(1).execute())
+        if ref.data:
+            referrer_id = ref.data[0]["referrer_id"]
+            ref_user = await _db(lambda: _supabase.table("users")
+                .select("username").eq("user_id", referrer_id).limit(1).execute())
+            ref_username = ref_user.data[0]["username"] if ref_user.data else str(referrer_id)
+            text += f"\n\n👤 <b>Referred by:</b> @{ref_username}"
+            items_summary = "; ".join(context.user_data.get("order_items", []))
+            await record_referral_earning(referrer_id, user_id, context.user_data["order_group"], items_summary)
     await context.bot.send_message(
         chat_id=admin_id,
         text=text,

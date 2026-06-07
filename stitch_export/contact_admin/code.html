@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contact Admin - Sshop</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@800&amp;family=Plus+Jakarta+Sans:wght@400;500&amp;family=Space+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "kelp-green": "#8BC34A",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "on-secondary-fixed-variant": "#4f4800",
+                        "on-primary-fixed": "#410003",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#e4e4cc",
+                        "surface-container-highest": "#f9dcd9",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb3ac",
+                        "error-container": "#ffdad6",
+                        "primary": "#af101a",
+                        "on-surface-variant": "#5b403d",
+                        "tertiary": "#575946",
+                        "inverse-surface": "#3e2c2a",
+                        "on-background": "#271816",
+                        "secondary": "#695f00",
+                        "surface-container": "#ffe9e7",
+                        "tertiary-container": "#70715d",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#ba1a20",
+                        "secondary-fixed-dim": "#dbc90a",
+                        "primary-container": "#d32f2f",
+                        "surface-container-low": "#fff0ef",
+                        "primary-fixed": "#ffdad6",
+                        "secondary-fixed": "#f9e534",
+                        "inverse-on-surface": "#ffedeb",
+                        "background": "#fff8f7",
+                        "ocean-blue": "#03A9F4",
+                        "outline-variant": "#e4beba",
+                        "on-primary-container": "#fff2f0",
+                        "surface": "#fff8f7",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-secondary-fixed": "#201c00",
+                        "surface-bright": "#fff8f7",
+                        "ink-black": "#1A1A1A",
+                        "outline": "#8f6f6c",
+                        "on-primary-fixed-variant": "#930010",
+                        "primary-fixed-dim": "#ffb3ac",
+                        "surface-dim": "#f1d3d0",
+                        "paper-shadow": "#E6E6CC",
+                        "secondary-container": "#f9e534",
+                        "surface-container-high": "#ffe2de",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#706500",
+                        "surface-variant": "#f9dcd9",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#f6f6dd",
+                        "on-surface": "#271816"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-gap": "12px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "40px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Bricolage Grotesque"],
+                        "label-mono": ["Space Mono"],
+                        "headline-lg": ["Bricolage Grotesque"],
+                        "headline-lg-mobile": ["Bricolage Grotesque"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .paper-texture {
+            background-image: url("https://www.transparenttextures.com/patterns/natural-paper.png");
+        }
+        .hand-drawn-border {
+            border-style: solid;
+            border-width: 3px;
+            border-color: #1A1A1A;
+            box-shadow: 4px 4px 0px 0px rgba(26, 26, 26, 1);
+        }
+        .hand-drawn-input {
+            border-bottom: 3px solid #1A1A1A;
+            background: transparent;
+        }
+        .active-interaction:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px 0px rgba(26, 26, 26, 1);
+        }
+    </style>
+</head>
+<body class="bg-background paper-texture min-h-screen text-on-surface selection:bg-secondary-container">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-ink-black border-b-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-[1200px] mx-auto">
+<div class="flex items-center gap-4">
+<a class="font-headline-lg text-headline-lg text-primary dark:text-primary-fixed underline decoration-secondary decoration-4" href="#">Sshop</a>
+</div>
+<nav class="hidden md:flex gap-8">
+<a class="font-label-mono text-label-mono text-ink-black dark:text-surface-container-low hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Sales</a>
+<a class="font-label-mono text-label-mono text-ink-black dark:text-surface-container-low hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">About</a>
+<a class="font-label-mono text-label-mono text-ink-black dark:text-surface-container-low hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Location</a>
+<a class="font-label-mono text-label-mono text-ink-black dark:text-surface-container-low hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Prices</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-paper-shadow active:translate-x-0.5 active:translate-y-0.5 duration-75">
+<span class="material-symbols-outlined text-primary" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-paper-shadow active:translate-x-0.5 active:translate-y-0.5 duration-75">
+<span class="material-symbols-outlined text-primary" data-icon="shopping_cart">shopping_cart</span>
+</button>
+<div class="w-10 h-10 rounded-full border-2 border-ink-black overflow-hidden bg-secondary-container">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCukQKkVgvdLljls_JOEbfQ2fW2gPu5CmgXktpiOIWYlwazzgFm8Y2F8DHbYBosHvBbYGj2HUqw_dLdWSiB-tlE6q-3fT-rxs4BNnfeL4VzNKK391MqBG2yHQ3uGr8fwgxfSisNnfpQPOLLywahAMqkqh39GBIrrcaQmWMw1n5vnfj6edCsXWyJM06vNWJvI49mLomhG0GWuk6_GXsndBjN-1yHcAD0NVsRtwsnPmDniT0KCcaSfjw_nFYcT06gzCCwnfRxqJyvXFM"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-20 flex flex-col md:flex-row gap-12">
+<!-- Side Navigation (Web) -->
+<aside class="hidden md:flex flex-col gap-4 w-64 shrink-0">
+<div class="bg-background border-r-4 border-ink-black p-gutter h-full shadow-[4px_0px_0px_0px_rgba(0,0,0,1)]">
+<div class="mb-8 p-4 bg-surface-container border-2 border-ink-black -rotate-1">
+<p class="font-label-mono text-label-mono text-secondary">Sshop Member</p>
+<h3 class="font-headline-lg text-headline-lg text-primary">Admin Help</h3>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 font-label-mono text-label-mono text-ink-black hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span> Home
+                    </a>
+<a class="flex items-center gap-3 p-3 font-label-mono text-label-mono text-ink-black hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span> Menu
+                    </a>
+<a class="flex items-center gap-3 p-3 font-label-mono text-label-mono text-ink-black hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span> My Orders
+                    </a>
+<a class="flex items-center gap-3 p-3 font-label-mono text-label-mono bg-secondary text-on-secondary font-bold border-2 border-ink-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-1" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span> Help
+                    </a>
+</nav>
+<div class="mt-12">
+<button class="w-full bg-primary text-on-primary border-2 border-ink-black p-4 font-headline-lg text-[18px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                        Order Now
+                    </button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area: Contact Form -->
+<section class="flex-grow flex flex-col items-center justify-center">
+<div class="relative w-full max-w-2xl bg-surface-container p-8 md:p-12 hand-drawn-border rotate-1">
+<!-- Decorative Scrap Paper -->
+<div class="absolute -top-6 -right-4 bg-secondary-container border-2 border-ink-black px-4 py-1 -rotate-2 font-label-mono text-label-mono shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    URGENT?
+                </div>
+<header class="mb-10">
+<h1 class="font-headline-xl text-headline-xl text-primary mb-2">WHATS THE TEA?</h1>
+<div class="h-1 bg-ink-black w-24"></div>
+<p class="font-body-lg text-body-lg mt-4 text-on-surface-variant italic">Drop a note to the big boss. We don't bite (unless you're a patty).</p>
+</header>
+<form class="space-y-12" id="contactForm">
+<!-- Textarea Container -->
+<div class="relative">
+<label class="absolute -top-4 left-4 bg-background border-2 border-ink-black px-2 font-label-mono text-label-mono uppercase tracking-widest z-10" for="message">
+                            Your Message
+                        </label>
+<textarea class="w-full p-6 font-body-md text-body-md bg-transparent border-2 border-ink-black focus:ring-0 focus:border-secondary transition-colors outline-none resize-none placeholder:text-outline-variant" id="message" placeholder="Type here like you're writing on a greasy napkin..." required="" rows="6"></textarea>
+<!-- Paper Clip Decoration -->
+<div class="absolute -top-2 -left-2">
+<span class="material-symbols-outlined text-ink-black text-3xl rotate-45" data-icon="attachment">attachment</span>
+</div>
+</div>
+<!-- Action Area -->
+<div class="flex flex-col md:flex-row items-center justify-between gap-8">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 border-2 border-ink-black rotate-3 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A stylized hand-drawn doodle of a burger character with a playful expression, using a limited color palette of red and yellow on a weathered paper background, matching the 90s cartoon brutalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjyn_epRes9R8OU9k2GLzLQuP6dfGZuoCvOMGXVrSds5x69Bm28eoANqgqib5o12pzi02S-tvEsPMeqxoBektsB4mxUIM_0OUJgzC8zDo8aG3x-xt7e7lwvEuyemS3nKbvKwdzhkysl38d6kyu_CKE6hQ9Gyn5OpgoMbi57mDM-Qww7rxD1p5DiDWc37DoIriSp6v9hJ5yfqNIPJSxEDnWH1oUKNz6k7XZdhOazZxjgpvU2jph1qBOPKIqPz2THKtgdifHSTqzJQg"/>
+</div>
+<p class="font-label-mono text-label-mono text-on-surface max-w-[150px]">All messages are strictly secret formula.</p>
+</div>
+<button class="group relative inline-flex items-center justify-center px-12 py-5 font-headline-lg text-headline-lg bg-primary text-on-primary border-4 border-ink-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all -rotate-1" type="submit">
+                            SEND IT!
+                            <span class="material-symbols-outlined ml-2 group-hover:translate-x-2 transition-transform" data-icon="send">send</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Contextual Graphics -->
+<div class="mt-16 flex flex-wrap justify-center gap-12 opacity-80 pointer-events-none">
+<div class="rotate-6 flex flex-col items-center">
+<span class="material-symbols-outlined text-kelp-green text-6xl" data-icon="bubble_chart">bubble_chart</span>
+<p class="font-label-mono text-[10px] mt-2">ALGAE CERTIFIED</p>
+</div>
+<div class="-rotate-12 flex flex-col items-center">
+<span class="material-symbols-outlined text-ocean-blue text-6xl" data-icon="sailing">sailing</span>
+<p class="font-label-mono text-[10px] mt-2">FRESH DELIVERY</p>
+</div>
+<div class="rotate-3 flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary-container text-6xl" data-icon="payments" style="font-variation-settings: 'FILL' 1;">payments</span>
+<p class="font-label-mono text-[10px] mt-2">CASH ONLY KIDDO</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)] flex justify-around items-center px-margin-mobile py-2">
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-mono text-label-mono">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant_menu">restaurant_menu</span>
+<span class="font-label-mono text-label-mono">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-mono text-label-mono">Orders</span>
+</a>
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1 active:scale-95 duration-100">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-mono text-label-mono">Profile</span>
+</div>
+</nav>
+<script>
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            // Micro-interaction
+            btn.innerHTML = 'SENT! <span class="material-symbols-outlined ml-2" data-icon="done_all">done_all</span>';
+            btn.classList.replace('bg-primary', 'bg-kelp-green');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.replace('bg-kelp-green', 'bg-primary');
+                e.target.reset();
+            }, 3000);
+        });
+
+        // Simple floating animation for some elements
+        const floatingElements = document.querySelectorAll('.rotate-6, .-rotate-12, .rotate-3');
+        floatingElements.forEach((el, index) => {
+            el.style.transition = 'transform 2s ease-in-out';
+            setInterval(() => {
+                const bounce = Math.sin(Date.now() / 1000 + index) * 5;
+                el.style.transform = `translateY(${bounce}px) rotate(${index % 2 === 0 ? 6 : -12}deg)`;
+            }, 50);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sshop | Notifications</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@800&amp;family=Plus+Jakarta+Sans:wght@400;500;700&amp;family=Space+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "kelp-green": "#8BC34A",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "on-secondary-fixed-variant": "#4f4800",
+                        "on-primary-fixed": "#410003",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#e4e4cc",
+                        "surface-container-highest": "#f9dcd9",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb3ac",
+                        "error-container": "#ffdad6",
+                        "primary": "#af101a",
+                        "on-surface-variant": "#5b403d",
+                        "tertiary": "#575946",
+                        "inverse-surface": "#3e2c2a",
+                        "on-background": "#271816",
+                        "secondary": "#695f00",
+                        "surface-container": "#ffe9e7",
+                        "tertiary-container": "#70715d",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#ba1a20",
+                        "secondary-fixed-dim": "#dbc90a",
+                        "primary-container": "#d32f2f",
+                        "surface-container-low": "#fff0ef",
+                        "primary-fixed": "#ffdad6",
+                        "secondary-fixed": "#f9e534",
+                        "inverse-on-surface": "#ffedeb",
+                        "background": "#fff8f7",
+                        "ocean-blue": "#03A9F4",
+                        "outline-variant": "#e4beba",
+                        "on-primary-container": "#fff2f0",
+                        "surface": "#fff8f7",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-secondary-fixed": "#201c00",
+                        "surface-bright": "#fff8f7",
+                        "ink-black": "#1A1A1A",
+                        "outline": "#8f6f6c",
+                        "on-primary-fixed-variant": "#930010",
+                        "primary-fixed-dim": "#ffb3ac",
+                        "surface-dim": "#f1d3d0",
+                        "paper-shadow": "#E6E6CC",
+                        "secondary-container": "#f9e534",
+                        "surface-container-high": "#ffe2de",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#706500",
+                        "surface-variant": "#f9dcd9",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#f6f6dd",
+                        "on-surface": "#271816"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-gap": "12px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "40px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Bricolage Grotesque"],
+                        "label-mono": ["Space Mono"],
+                        "headline-lg": ["Bricolage Grotesque"],
+                        "headline-lg-mobile": ["Bricolage Grotesque"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["48px", {"lineHeight": "52px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "36px", "fontWeight": "800"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "32px", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fff8f7;
+            /* Subtle paper texture effect */
+            background-image: radial-gradient(#1a1a1a 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+            background-attachment: fixed;
+            opacity: 0.98;
+        }
+        .sketch-border {
+            box-shadow: 4px 4px 0px 0px #1A1A1A;
+        }
+        .marker-highlight {
+            background: linear-gradient(120deg, #f9e534 0%, #f9e534 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 0.3em;
+            background-position: 0 88%;
+        }
+        .rotate-slight {
+            transform: rotate(-0.5deg);
+        }
+        .rotate-alt {
+            transform: rotate(0.5deg);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-background border-b-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-[1200px] mx-auto">
+<div class="flex items-center gap-8">
+<a class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4" href="#">Sshop</a>
+<nav class="hidden md:flex gap-6">
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Sales</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">About</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Location</a>
+<a class="font-label-mono text-label-mono text-ink-black hover:bg-paper-shadow hover:-translate-y-0.5 transition-transform" href="#">Prices</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 border-2 border-ink-black hover:bg-paper-shadow transition-transform active:translate-x-0.5 active:translate-y-0.5">
+<span class="material-symbols-outlined text-primary font-bold">notifications</span>
+</button>
+<button class="p-2 border-2 border-ink-black hover:bg-paper-shadow transition-transform active:translate-x-0.5 active:translate-y-0.5">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+<div class="w-10 h-10 border-2 border-ink-black overflow-hidden bg-secondary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMhi5hXcQjmfK3hVakHNI_GdS9J5DZhQXhAoRr0KDcd9_kzSuIFuE03gWIkDKj2_TlaBiq-mVPSN_ZqHXNfWRlYSXqL4JVtKPkQGMxpwK3JVX5MjrS2bS8RkpcoVfrjiJM_7noWyB8JH-NTP1qyWqEE1TofNHgtmAhqiiBYA8LaFS1XQNpxJXlTKl2g-rxswAeVHhZ7eHUMYAxQ_0uyYlHIh94v1alncRBjNTHavBNgpQPdyb9fivz55QAJRK3I_Z5AMghrXs3tXI"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop py-12 pb-32">
+<!-- Page Header -->
+<div class="mb-12 relative">
+<div class="absolute -top-6 -left-4 bg-primary text-on-primary px-4 py-1 font-label-mono text-label-mono border-2 border-ink-black rotate-[-2deg] z-10">
+                SYSTEM FEED
+            </div>
+<h1 class="font-headline-xl text-headline-xl text-ink-black marker-highlight inline-block mb-4">NOTIFICATIONS</h1>
+<p class="font-body-lg text-body-lg text-tertiary">All the news from the burger deep.</p>
+</div>
+<!-- Notification List -->
+<div class="space-y-6">
+<!-- Notification Item 1 (Unread) -->
+<div class="bg-background border-4 border-ink-black p-6 sketch-border relative group hover:-translate-y-1 transition-transform rotate-slight">
+<div class="flex items-start gap-4">
+<div class="mt-1 flex-shrink-0">
+<span class="w-4 h-4 bg-[#FF5722] rounded-full border-2 border-ink-black inline-block animate-pulse"></span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg text-headline-lg text-primary leading-tight">ORDER DELIVERED!</h3>
+<span class="font-label-mono text-label-mono text-ink-black opacity-60">2m ago</span>
+</div>
+<p class="font-body-md text-body-md text-ink-black mb-4">Your Krabby Patty has arrived! Enjoy the secret formula while it's hot. Don't let Plankton see!</p>
+<div class="flex gap-4">
+<button class="bg-secondary text-on-secondary px-4 py-2 border-2 border-ink-black font-label-mono text-label-mono shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 transition-all">VIEW RECEIPT</button>
+<button class="px-4 py-2 border-2 border-ink-black font-label-mono text-label-mono hover:bg-paper-shadow active:translate-x-0.5 active:translate-y-0.5 transition-all">DISMISS</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Item 2 (Unread) -->
+<div class="bg-background border-4 border-ink-black p-6 sketch-border relative group hover:-translate-y-1 transition-transform rotate-alt">
+<div class="flex items-start gap-4">
+<div class="mt-1 flex-shrink-0">
+<span class="w-4 h-4 bg-[#FF5722] rounded-full border-2 border-ink-black inline-block"></span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg text-headline-lg text-ink-black leading-tight">DEBT ALERT</h3>
+<span class="font-label-mono text-label-mono text-ink-black opacity-60">1h ago</span>
+</div>
+<p class="font-body-md text-body-md text-ink-black mb-4 italic">"Money, money, money!" - Mr. Krabs reminds you of your outstanding tab of $4.99 for that extra Kelp Shake.</p>
+<div class="bg-secondary-container border-2 border-ink-black p-3 mb-4 flex items-center justify-between">
+<span class="font-label-mono text-label-mono">AMOUNT DUE: <span class="text-primary font-bold">$4.99</span></span>
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2 border-2 border-ink-black font-label-mono text-label-mono shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 transition-all">PAY NOW</button>
+</div>
+</div>
+</div>
+<!-- Notification Item 3 (Read) -->
+<div class="bg-surface-container-low border-4 border-ink-black p-6 sketch-border opacity-80 rotate-slight">
+<div class="flex items-start gap-4">
+<div class="mt-1 flex-shrink-0 w-4 h-4"></div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg text-headline-lg text-tertiary leading-tight">PROMO: 2-FOR-1</h3>
+<span class="font-label-mono text-label-mono text-ink-black opacity-40">5h ago</span>
+</div>
+<p class="font-body-md text-body-md text-tertiary">Tuesday is Jellyfish Jam Day! Get two Jelly Patties for the price of one. Only at the Goo Lagoon branch.</p>
+</div>
+</div>
+</div>
+<!-- Wanted Poster Decorative Notification -->
+<div class="relative py-8">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t-4 border-dashed border-ink-black"></div>
+</div>
+<div class="relative flex justify-center">
+<span class="bg-background px-4 font-label-mono text-label-mono text-ink-black border-2 border-ink-black">YESTERDAY</span>
+</div>
+</div>
+<!-- Notification Item 4 (Read) -->
+<div class="bg-surface-container-low border-4 border-ink-black p-6 sketch-border opacity-80 rotate-alt">
+<div class="flex items-start gap-4">
+<div class="mt-1 flex-shrink-0 w-4 h-4"></div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg text-headline-lg text-tertiary leading-tight">SYSTEM UPDATE</h3>
+<span class="font-label-mono text-label-mono text-ink-black opacity-40">1d ago</span>
+</div>
+<p class="font-body-md text-body-md text-tertiary">We've polished the grease off the menus! App version 2.4.0 is now live with smoother scrolling and faster checkout.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Decoration -->
+<div class="mt-16 flex flex-col items-center opacity-20 grayscale">
+<span class="material-symbols-outlined text-8xl mb-4">restaurant_menu</span>
+<p class="font-label-mono text-label-mono">NO MORE FISH IN THE NET</p>
+</div>
+</main>
+<!-- SideNavBar (Hidden on Mobile) -->
+<aside class="fixed left-0 top-0 h-screen w-64 border-r-4 border-ink-black bg-background shadow-[4px_0px_0px_0px_rgba(0,0,0,1)] hidden md:flex flex-col p-gutter gap-4 z-40">
+<div class="mb-8 p-4 border-2 border-ink-black bg-paper-shadow rotate-[-1deg] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-12 h-12 border-2 border-ink-black overflow-hidden bg-secondary">
+<img alt="User profile" class="w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHxMTiQV9hrTtf_WyrOwWIYYnHXqLBbCc1QUMyEfY6-x2M-EvtbqeAUIB5V4ApaDf1ErnSyhNujA7u2dEd4tuK6h5NqJa2AykOIIIaWA7fDtvKKZt9BrmkHjZ7UaMBr56KmBUwhE_e9hUCEbipSy2MApLHgMQ091BlaAlxbZp9d470aemFVEA0b8cL8ee5GmhgBrMdSSeX9y5CTw44a05xNYgeiQhtGMhyscGcDCdXaWIkhkQRrD0bPyBF8A4b_48mZPYrrASiNa0"/>
+</div>
+<div>
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile leading-none">Sshop Member</h4>
+<p class="text-xs font-label-mono opacity-70">Ready for a patty?</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform hover:bg-paper-shadow" href="#">
+<span class="material-symbols-outlined">home</span> Home
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform hover:bg-paper-shadow" href="#">
+<span class="material-symbols-outlined">restaurant</span> Menu
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform hover:bg-paper-shadow" href="#">
+<span class="material-symbols-outlined">list_alt</span> My Orders
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform hover:bg-paper-shadow" href="#">
+<span class="material-symbols-outlined">payments</span> My Debt
+            </a>
+<a class="flex items-center gap-3 p-3 text-ink-black font-label-mono text-label-mono hover:translate-x-1 transition-transform hover:bg-paper-shadow" href="#">
+<span class="material-symbols-outlined">help</span> Help
+            </a>
+</nav>
+<div class="mt-auto">
+<button class="w-full bg-primary text-on-primary font-headline-lg-mobile py-4 border-4 border-ink-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 transition-all">
+                Order Now
+            </button>
+</div>
+</aside>
+<!-- BottomNavBar (Mobile Only) -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-mono text-label-mono">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">restaurant_menu</span>
+<span class="font-label-mono text-label-mono">Menu</span>
+</a>
+<a class="flex flex-col items-center justify-center text-ink-black p-2 hover:bg-tertiary-fixed-dim" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-mono text-label-mono">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container border-2 border-ink-black rounded-xl p-2 -rotate-1 scale-95 duration-100" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-mono text-label-mono">Profile</span>
+</a>
+</footer>
+<script>
+        // Simple micro-interaction for dismissing notifications
+        document.querySelectorAll('button').forEach(btn => {
+            if(btn.innerText === 'DISMISS') {
+                btn.addEventListener('click', function() {
+                    const item = this.closest('.sketch-border');
+                    item.style.transition = 'all 0.3s ease';
+                    item.style.opacity = '0';
+                    item.style.transform = 'scale(0.9) translateX(20px)';
+                    setTimeout(() => {
+                        item.remove();
+                    }, 300);
+                });
+            }
+        });
+
+        // Toggle unread indicators logic (simulated)
+        document.querySelectorAll('.sketch-border').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                const dot = this.querySelector('.bg-\\[\\#FF5722\\]');
+                if(dot) {
+                    dot.classList.remove('animate-pulse');
+                }
+            });
+        });
+    </script>
+</body></html>

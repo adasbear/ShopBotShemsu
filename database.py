@@ -477,3 +477,48 @@ async def is_item_available_today(name):
     if stock.get("locked"):
         return False
     return stock["remaining"] > 0
+
+# --- Referral System ---
+
+async def create_referral(referrer_id, referred_id):
+    existing = await _db(lambda: _supabase.table("referrals")
+        .select("id").eq("referred_id", referred_id).limit(1).execute())
+    if existing.data:
+        return
+    await _db(lambda: _supabase.table("referrals").insert({
+        "referrer_id": referrer_id, "referred_id": referred_id
+    }).execute())
+
+async def get_referrer_by_code(code):
+    try:
+        ref_id = int(code.replace("ref_", ""))
+        return ref_id
+    except:
+        return None
+
+async def get_referral_count(referrer_id):
+    result = await _db(lambda: _supabase.table("referrals")
+        .select("id", count="exact").eq("referrer_id", referrer_id).execute())
+    return result.count or 0
+
+async def get_referral_earnings(referrer_id):
+    result = await _db(lambda: _supabase.table("referral_earnings")
+        .select("*, referred:referred_id(username, full_name)")
+        .eq("referrer_id", referrer_id)
+        .order("earned_at", desc=True)
+        .execute())
+    return result.data
+
+async def get_referral_points(referrer_id):
+    result = await _db(lambda: _supabase.table("referral_earnings")
+        .select("id", count="exact").eq("referrer_id", referrer_id).execute())
+    return result.count or 0
+
+async def record_referral_earning(referrer_id, referred_id, order_group, items_summary):
+    await _db(lambda: _supabase.table("referral_earnings").insert({
+        "referrer_id": referrer_id,
+        "referred_id": referred_id,
+        "order_group": order_group,
+        "items": items_summary,
+        "earned_at": datetime.now(timezone.utc).isoformat()
+    }).execute())

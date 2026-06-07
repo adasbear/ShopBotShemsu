@@ -4,7 +4,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
 from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, COMMENT_CHOICE, ORDER_COMMENT, DEBT_CHOICE
-from database import get_menu, save_order, get_user, get_admin_user_id, has_sub_items
+from database import get_menu, save_order, get_user, get_admin_user_id, has_sub_items, _db
 from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard, order_accept_decline_keyboard, comment_choice_keyboard, debt_choice_keyboard
 from utils.helpers import build_order_summary, check_banned
 
@@ -172,12 +172,13 @@ async def handle_order_comment(update: Update, context: ContextTypes.DEFAULT_TYP
     return ConversationHandler.END
 
 async def _notify_admin(context):
-    from database import get_admin_user_id
+    from database import get_admin_user_id, get_referral_count, record_referral_earning
     admin_id = await get_admin_user_id()
     if not admin_id:
         return
     comment = context.user_data.get("order_comment")
     payment = context.user_data.get("payment_info")
+    user_id = context.user_data.get("user_id")
     text = (
         f"<b>NEW ORDER FROM: {context.user_data['order_name']}</b>\n\n"
         f"{chr(10).join(context.user_data['order_items'])}\n\n"
@@ -187,6 +188,17 @@ async def _notify_admin(context):
         text += f"\n\n<b>Payment:</b>\n{payment}"
     if comment:
         text += f"\n\n<b>Comment:</b> {comment}"
+    if user_id:
+        ref = await _db(lambda: _supabase.table("referrals")
+            .select("referrer_id").eq("referred_id", user_id).limit(1).execute())
+        if ref.data:
+            referrer_id = ref.data[0]["referrer_id"]
+            ref_user = await _db(lambda: _supabase.table("users")
+                .select("username").eq("user_id", referrer_id).limit(1).execute())
+            ref_username = ref_user.data[0]["username"] if ref_user.data else str(referrer_id)
+            text += f"\n\n👤 <b>Referred by:</b> @{ref_username}"
+            items_summary = "; ".join(context.user_data.get("order_items", []))
+            await record_referral_earning(referrer_id, user_id, context.user_data["order_group"], items_summary)
     await context.bot.send_message(
         chat_id=admin_id,
         text=text,
