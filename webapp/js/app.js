@@ -785,7 +785,8 @@ if (tg) {
 
 // --- Referrals ---
 async function renderReferrals() {
-  const user = getUser();
+  await loadUser();
+  const user = state.user;
   if (!user) return navigateTo("profile");
   const botUsername = "ShopBotShemsuBot";
   const link = `https://t.me/${botUsername}?start=ref_${user.id}`;
