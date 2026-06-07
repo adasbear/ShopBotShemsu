@@ -334,7 +334,7 @@ function renderCart() {
 
   const total = getCartTotal();
   subtotal.textContent = `${total.toFixed(2)} Birr`;
-  totalEl.textContent = `${(total + (total > 0 ? 80 : 0)).toFixed(2)} Birr`;
+  totalEl.textContent = `${total.toFixed(2)} Birr`;
   countEl.textContent = `${state.cart.reduce((s, i) => s + i.qty, 0)} ITEMS`;
 
   items.querySelectorAll(".qty-minus").forEach((btn) => {
