@@ -5,6 +5,7 @@ import random
 import threading
 from datetime import datetime, timezone, timedelta
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
@@ -43,6 +44,7 @@ logging.basicConfig(
 )
 
 app = Flask(__name__)
+CORS(app)
 
 init_db()
 
