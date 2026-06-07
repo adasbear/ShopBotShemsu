@@ -4,7 +4,7 @@ import logging
 import random
 import threading
 from datetime import datetime, timezone, timedelta
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from telegram import Update
 from telegram.constants import ParseMode
@@ -684,7 +684,7 @@ def api_pay_debt():
     if not username or not user_id or not amount:
         return jsonify({"success": False, "error": "username, user_id, amount required"}), 400
     payment_info = f"account_id={payment_account_id}, confirmation={confirmation}"
-    asyncio.run(_db(lambda: database.save_debt_payment(username, int(user_id), float(amount), payment_info)))
+    asyncio.run(database.save_debt_payment(username, int(user_id), float(amount), payment_info))
     return jsonify({"success": True})
 
 
@@ -754,14 +754,14 @@ def api_place_order():
         return jsonify({"success": False, "error": "user_id and items required"}), 400
     order_group = f"APP-{datetime.now(timezone.utc).strftime('%y%m%d')}-{random.randint(1000,9999)}"
     for item in items:
-        asyncio.run(_db(lambda: database.save_order(
+        asyncio.run(database.save_order(
             int(user_id), item["item"], item["qty"], order_group, "Pending"
-        )))
+        ))
     if comment:
-        asyncio.run(_db(lambda: database.save_order_comment(order_group, comment)))
+        asyncio.run(database.save_order_comment(order_group, comment))
     if payment_method and payment_account_id and confirmation:
         payment_info = f"{payment_method}:{payment_account_id}:{confirmation}"
-        asyncio.run(_db(lambda: database.save_order_payment(order_group, payment_info)))
+        asyncio.run(database.save_order_payment(order_group, payment_info))
     # Notify admin
     admin_id = asyncio.run(get_admin_user_id())
     if admin_id:
@@ -791,7 +791,7 @@ def api_place_order():
 def api_cancel_order(order_group):
     if not order_group:
         return jsonify({"success": False, "error": "order_group required"}), 400
-    asyncio.run(_db(lambda: database.cancel_order_group(order_group)))
+    asyncio.run(database.cancel_order_group(order_group))
     return jsonify({"success": True})
 
 
@@ -871,6 +871,29 @@ def home():
 @app.route("/health")
 def health():
     return "ok"
+
+@app.route("/api/help", methods=["GET"])
+def api_get_help():
+    return jsonify({
+        "topics": [
+            {"id": "order", "title": "How to Order", "content": "1. Tap Menu from the main menu\n2. Browse categories and select items\n3. Enter quantity\n4. Review and confirm your order\n5. Add payment info if required\n\nYour order will be sent to the admin for processing."},
+            {"id": "edit_cancel", "title": "Edit / Cancel Orders", "content": "You can edit or cancel Pending orders before 6PM UTC:\n1. Go to My Orders\n2. Tap the order\n3. Choose Cancel Order\n\nAfter 6PM UTC, orders cannot be modified."},
+            {"id": "debt", "title": "Debt System", "content": "Eligible users can order on debt:\n1. When ordering, select Debt as payment method\n2. The amount is added to your debt balance\n3. Pay later via My Debt section\n\nOnly whitelisted users can use the debt system."},
+            {"id": "payment", "title": "Payment Methods", "content": "We accept bank transfers:\n1. Select your bank from the available accounts\n2. Transfer the exact amount shown\n3. Paste your SMS confirmation or transaction reference\n4. Admin will verify and accept your order"},
+            {"id": "contact", "title": "Contact Admin", "content": f"If you need help, use the Contact Admin form or message @{ADMIN_USERNAME} directly on Telegram.\n\nThe admin will respond as soon as possible."},
+        ]
+    })
+
+# --- Webapp static files ---
+_webapp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "webapp")
+
+@app.route("/app/")
+@app.route("/app/<path:filename>")
+def webapp_static(filename="index.html"):
+    filepath = os.path.join(_webapp_dir, filename)
+    if os.path.isfile(filepath):
+        return send_from_directory(_webapp_dir, filename)
+    return send_from_directory(_webapp_dir, "index.html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))

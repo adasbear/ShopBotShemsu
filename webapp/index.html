@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Sshop - Food Delivery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/style.css"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "kelp-green": "#8BC34A","on-tertiary-fixed": "#1b1d0e","on-secondary-fixed-variant": "#4f4800",
+        "on-primary-fixed": "#410003","on-secondary": "#ffffff","tertiary-fixed": "#e4e4cc",
+        "surface-container-highest": "#f9dcd9","on-primary": "#ffffff","inverse-primary": "#ffb3ac",
+        "error-container": "#ffdad6","primary": "#af101a","on-surface-variant": "#5b403d",
+        "tertiary": "#575946","inverse-surface": "#3e2c2a","on-background": "#271816",
+        "secondary": "#695f00","surface-container": "#ffe9e7","tertiary-container": "#70715d",
+        "on-error": "#ffffff","on-tertiary-fixed-variant": "#474836","surface-container-lowest": "#ffffff",
+        "surface-tint": "#ba1a20","secondary-fixed-dim": "#dbc90a","primary-container": "#d32f2f",
+        "surface-container-low": "#fff0ef","primary-fixed": "#ffdad6","secondary-fixed": "#f9e534",
+        "inverse-on-surface": "#ffedeb","background": "#fff8f7","ocean-blue": "#03A9F4",
+        "outline-variant": "#e4beba","on-primary-container": "#fff2f0","surface": "#fff8f7",
+        "tertiary-fixed-dim": "#c8c8b0","on-secondary-fixed": "#201c00","surface-bright": "#fff8f7",
+        "ink-black": "#1A1A1A","outline": "#8f6f6c","on-primary-fixed-variant": "#930010",
+        "primary-fixed-dim": "#ffb3ac","surface-dim": "#f1d3d0","paper-shadow": "#E6E6CC",
+        "secondary-container": "#f9e534","surface-container-high": "#ffe2de","on-tertiary": "#ffffff",
+        "error": "#ba1a1a","on-secondary-container": "#706500","surface-variant": "#f9dcd9",
+        "on-error-container": "#93000a","on-tertiary-container": "#f6f6dd","on-surface": "#271816"
+      },
+      borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
+      spacing: { gutter: "16px", "card-gap": "12px", "margin-mobile": "20px", "margin-desktop": "40px", unit: "4px" },
+      fontFamily: { "headline-xl": ["Bricolage Grotesque"], "label-mono": ["Space Mono"], "headline-lg": ["Bricolage Grotesque"], "headline-lg-mobile": ["Bricolage Grotesque"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"] },
+      fontSize: { "headline-xl": ["48px", {lineHeight: "52px", letterSpacing: "-0.04em", fontWeight: "800"}], "label-mono": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "700"}], "headline-lg": ["32px", {lineHeight: "36px", fontWeight: "800"}], "headline-lg-mobile": ["28px", {lineHeight: "32px", fontWeight: "800"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "500"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}] }
+    }
+  }
+}
+</script>
+<style>
+.status-badge-pending { background: #f9e534; color: #1A1A1A; }
+.status-badge-accepted { background: #8BC34A; color: #fff; }
+.status-badge-cancelled { background: #D32F2F; color: #fff; }
+.status-badge-active { background: #D32F2F; color: #fff; }
+.status-badge-paid { background: #8BC34A; color: #fff; }
+.nav-active { background: #f9e534; color: #706500; border: 2px solid #1A1A1A; box-shadow: 2px 2px 0px 0px #1A1A1A; }
+.spin { animation: spin 0.3s ease-in-out; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(180deg); } }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24 md:pb-0 md:pl-64 font-body-md">
+<!-- Desktop Sidebar -->
+<aside class="fixed left-0 top-0 z-50 hidden md:flex flex-col p-gutter gap-4 h-full w-64 bg-background border-r-4 border-ink-black shadow-[4px_0px_0px_0px_rgba(0,0,0,1)]">
+  <div class="mb-6 pt-4">
+    <h1 class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</h1>
+    <div class="mt-4 flex items-center gap-3 p-2 border-2 border-ink-black bg-surface-container-low rounded-xl">
+      <div class="w-10 h-10 bg-secondary rounded-full border-2 border-ink-black flex items-center justify-center text-white">
+        <span class="material-symbols-outlined">person</span>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="font-label-mono text-label-mono truncate pf-name-side">Member</p>
+        <p class="text-[10px] font-bold truncate pf-username-side">@user</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex flex-col gap-2 flex-1">
+    <a class="nav-item flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono uppercase" data-nav="home" data-page="home"><span class="material-symbols-outlined">home</span> Home</a>
+    <a class="nav-item flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono uppercase" data-nav="menu" data-page="menu"><span class="material-symbols-outlined">restaurant</span> Menu</a>
+    <a class="nav-item flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono uppercase" data-nav="orders" data-page="orders"><span class="material-symbols-outlined">list_alt</span> My Orders</a>
+    <a class="nav-item flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono uppercase" data-nav="debt" data-page="debt"><span class="material-symbols-outlined">payments</span> My Debt</a>
+    <a class="nav-item flex items-center gap-3 p-3 rounded-xl text-ink-black hover:translate-x-1 transition-transform font-label-mono text-label-mono uppercase" data-nav="help" data-page="help"><span class="material-symbols-outlined">help</span> Help</a>
+  </nav>
+  <button class="w-full bg-primary text-on-primary py-4 border-4 border-ink-black font-headline-lg text-sm uppercase hard-shadow hover:translate-y-[-2px] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all" data-nav="menu">Order Now</button>
+</aside>
+
+<!-- Top AppBar -->
+<header class="bg-background border-b-4 border-ink-black sticky top-0 z-40 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+  <div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-[1200px] mx-auto">
+    <div class="flex items-center gap-4">
+      <h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <button class="material-symbols-outlined text-primary p-2 border-2 border-ink-black hard-shadow-sm active:translate-x-0.5 active:translate-y-0.5" data-nav="notifications">notifications</button>
+      <button class="relative material-symbols-outlined text-primary p-2 border-2 border-ink-black hard-shadow-sm active:translate-x-0.5 active:translate-y-0.5" data-nav="cart">
+        shopping_cart
+        <span class="cart-badge hidden absolute -top-1 -right-1 bg-primary text-on-primary font-label-mono text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-ink-black">0</span>
+      </button>
+      <div class="w-10 h-10 rounded-full border-2 border-ink-black overflow-hidden hard-shadow-sm bg-secondary-fixed flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-secondary-container">person</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Bottom Nav -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile py-2 md:hidden bg-background border-t-4 border-ink-black shadow-[0px_-4px_0px_0px_rgba(0,0,0,1)]">
+  <a class="nav-item flex flex-col items-center justify-center text-ink-black p-2 rounded-xl" data-nav="home" data-page="home">
+    <span class="material-symbols-outlined">home</span>
+    <span class="font-label-mono text-[10px] uppercase">Home</span>
+  </a>
+  <a class="nav-item flex flex-col items-center justify-center text-ink-black p-2 rounded-xl" data-nav="menu" data-page="menu">
+    <span class="material-symbols-outlined">restaurant_menu</span>
+    <span class="font-label-mono text-[10px] uppercase">Menu</span>
+  </a>
+  <a class="nav-item flex flex-col items-center justify-center text-ink-black p-2 rounded-xl" data-nav="orders" data-page="orders">
+    <span class="material-symbols-outlined">receipt_long</span>
+    <span class="font-label-mono text-[10px] uppercase">Orders</span>
+  </a>
+  <a class="nav-item flex flex-col items-center justify-center text-ink-black p-2 rounded-xl" data-nav="profile" data-page="profile">
+    <span class="material-symbols-outlined">person</span>
+    <span class="font-label-mono text-[10px] uppercase">Profile</span>
+  </a>
+</nav>
+
+<!-- ============ PAGE: HOME ============ -->
+<div id="page-home" class="page">
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <section class="mb-10">
+    <div class="inline-block bg-secondary-container p-4 border-4 border-ink-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] -rotate-1">
+      <h2 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl text-on-secondary-container welcome-name">Hi User 👋</h2>
+      <p class="font-body-lg text-body-lg text-ink-black mt-2">Ready to secure the secret formula today?</p>
+    </div>
+  </section>
+  <section class="debt-banner hidden mb-12">
+    <div class="relative overflow-hidden bg-[#F4E4BC] p-6 border-4 border-ink-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center paper-texture">
+      <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style="background-image:repeating-linear-gradient(45deg,#000 0,#000 1px,transparent 0,transparent 50%);background-size:10px 10px"></div>
+      <div class="relative z-10">
+        <h3 class="font-headline-xl text-headline-xl text-primary tracking-widest uppercase mb-2">WANTED</h3>
+        <p class="font-label-mono text-label-mono text-ink-black mb-4 underline decoration-2">FOR UNPAID KRABBY PATTIES</p>
+        <div class="flex items-center justify-center gap-4 mt-4">
+          <div class="text-4xl font-headline-xl text-ink-black bg-secondary-fixed px-4 py-2 border-2 border-ink-black -rotate-2 debt-amount">0 Birr</div>
+          <button class="bg-primary text-on-primary px-6 py-3 font-headline-lg-mobile text-headline-lg-mobile border-4 border-ink-black hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" data-nav="debt">PAY NOW</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="mb-12">
+    <h3 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg mb-6 scribble-highlight inline-block">Quick Actions</h3>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <button class="group flex flex-col items-center justify-center p-6 bg-surface-container-high border-4 border-ink-black hard-shadow-lg hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 -rotate-1" data-nav="menu">
+        <div class="w-16 h-16 md:w-20 md:h-20 mb-4 rounded-full bg-secondary-container border-4 border-ink-black flex items-center justify-center group-hover:rotate-12 transition-transform">
+          <span class="material-symbols-outlined text-3xl md:text-4xl text-on-secondary-container" style="font-variation-settings:'FILL' 1">restaurant</span>
+        </div>
+        <span class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">Order Now</span>
+      </button>
+      <button class="group flex flex-col items-center justify-center p-6 bg-surface-container-low border-4 border-ink-black hard-shadow-lg hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 rotate-1" data-nav="orders">
+        <div class="w-16 h-16 md:w-20 md:h-20 mb-4 rounded-full bg-kelp-green border-4 border-ink-black flex items-center justify-center group-hover:-rotate-12 transition-transform">
+          <span class="material-symbols-outlined text-3xl md:text-4xl text-white" style="font-variation-settings:'FILL' 1">receipt_long</span>
+        </div>
+        <span class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">My Orders</span>
+      </button>
+      <button class="group flex flex-col items-center justify-center p-6 bg-surface-variant border-4 border-ink-black hard-shadow-lg hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 -rotate-2" data-nav="debt">
+        <div class="w-16 h-16 md:w-20 md:h-20 mb-4 rounded-full bg-primary-container border-4 border-ink-black flex items-center justify-center group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-3xl md:text-4xl text-white" style="font-variation-settings:'FILL' 1">payments</span>
+        </div>
+        <span class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">My Debt</span>
+      </button>
+      <button class="group flex flex-col items-center justify-center p-6 bg-tertiary-fixed border-4 border-ink-black hard-shadow-lg hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-y-1 rotate-2" data-nav="help">
+        <div class="w-16 h-16 md:w-20 md:h-20 mb-4 rounded-full bg-ocean-blue border-4 border-ink-black flex items-center justify-center group-hover:rotate-180 transition-transform duration-500">
+          <span class="material-symbols-outlined text-3xl md:text-4xl text-white" style="font-variation-settings:'FILL' 1">help</span>
+        </div>
+        <span class="font-headline-lg-mobile text-headline-lg-mobile text-ink-black">Help</span>
+      </button>
+    </div>
+  </section>
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white border-4 border-ink-black p-6 md:p-8 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rotate-1 relative">
+    <div class="absolute -top-4 -left-4 bg-secondary-container px-3 py-1 border-2 border-ink-black rotate-12 z-20">
+      <span class="font-label-mono text-label-mono text-xs">LIMITED OFFER</span>
+    </div>
+    <div class="space-y-4">
+      <h3 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl leading-tight">THE JELLY PATTY EXPERIENCE</h3>
+      <p class="font-body-lg text-body-lg">Fresh from Jellyfish Fields! The zing, the sting, and everything in between.</p>
+      <div class="flex items-center gap-4">
+        <span class="text-3xl font-headline-xl text-primary">11.99 Birr</span>
+        <span class="text-xl font-headline-lg line-through opacity-50">15.99 Birr</span>
+      </div>
+      <button class="bg-kelp-green text-white px-8 py-4 border-4 border-ink-black font-headline-lg hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none hover:bg-green-600 transition-all" data-nav="menu">ORDER NOW</button>
+    </div>
+    <div class="relative flex justify-center items-center h-48 md:h-72 bg-surface-container border-4 border-ink-black -rotate-2">
+      <span class="material-symbols-outlined text-6xl text-primary">restaurant</span>
+    </div>
+  </section>
+</main>
+<button class="fixed bottom-24 right-4 md:bottom-8 md:right-8 w-14 h-14 bg-primary rounded-full border-4 border-ink-black hard-shadow flex items-center justify-center text-white z-50 hover:scale-110 active:translate-x-1 active:translate-y-1 transition-all" data-nav="cart">
+  <span class="material-symbols-outlined text-3xl" style="font-variation-settings:'FILL' 1">add_shopping_cart</span>
+</button>
+</div>
+<!-- ============ END HOME ============ -->
+
+<!-- ============ PAGE: MENU ============ -->
+<div id="page-menu" class="page hidden">
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <section class="mb-8">
+    <div class="flex flex-col md:flex-row justify-between items-end gap-4">
+      <div>
+        <span class="bg-secondary text-on-secondary font-label-mono text-label-mono px-3 py-1 mb-2 inline-block rough-border -rotate-1">CHOOSE ONE OR SOME</span>
+        <h2 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl leading-tight mt-4">MENU <span class="text-primary underline decoration-ink-black">LIST</span></h2>
+      </div>
+    </div>
+  </section>
+  <section class="mb-8">
+    <div id="menu-categories" class="flex overflow-x-auto gap-4 pb-4 no-scrollbar"></div>
+  </section>
+  <section id="menu-grid" class="grid grid-cols-2 lg:grid-cols-3 gap-gutter md:gap-8"></section>
+</main>
+</div>
+<!-- ============ END MENU ============ -->
+
+<!-- ============ PAGE: CART ============ -->
+<div id="page-cart" class="page hidden">
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="lg:col-span-7 space-y-6">
+      <h1 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl scribble-highlight inline-block mb-6">MY ORDER</h1>
+      <div id="cart-items" class="space-y-4"></div>
+      <div class="pt-4">
+        <label class="font-headline-lg text-headline-lg-mobile block mb-4">ADD A NOTE?</label>
+        <textarea id="cart-comment" class="w-full bg-paper-shadow border-4 border-ink-black p-4 md:p-6 font-body-md text-ink-black focus:outline-none focus:ring-0 min-h-[100px] hard-shadow transition-all focus:rotate-0" placeholder="Extra sauce or no pickles..." style="transform:rotate(0.5deg)"></textarea>
+      </div>
+    </div>
+    <div class="lg:col-span-5">
+      <div class="bg-background border-4 border-ink-black p-6 md:p-8 hard-shadow-lg sticky top-28">
+        <h2 class="font-headline-lg text-headline-lg-mobile mb-6 flex items-center gap-3">ORDER SUMMARY <span class="material-symbols-outlined text-secondary">receipt_long</span></h2>
+        <div class="space-y-3 font-label-mono text-label-mono mb-6 border-b-2 border-ink-black border-dashed pb-6">
+          <div class="flex justify-between items-center"><span>SUBTOTAL:</span><span id="cart-subtotal" class="text-body-lg font-bold">0 Birr</span></div>
+          <div class="flex justify-between items-center text-primary"><span>DELIVERY FEE:</span><span class="text-body-lg font-bold">80.00 Birr</span></div>
+          <div class="flex justify-between items-center font-headline-lg text-ink-black pt-4"><span>TOTAL:</span><span id="cart-total" class="bg-secondary-container border-2 border-ink-black px-2 -rotate-1">0 Birr</span></div>
+          <div id="cart-count" class="text-xs opacity-60">0 ITEMS</div>
+        </div>
+        <div class="space-y-4">
+          <h3 class="font-headline-lg text-headline-lg-mobile">PAYMENT METHOD</h3>
+          <div id="payment-methods" class="grid grid-cols-3 gap-2"></div>
+          <div id="payment-accounts" class="bg-paper-shadow border-2 border-ink-black p-3 space-y-2"></div>
+          <div class="space-y-2">
+            <label class="font-label-mono text-label-mono block uppercase">Transaction Reference</label>
+            <input id="payment-confirmation" class="w-full rough-input font-label-mono py-2 focus:ring-0 border-0 focus:border-b-4 placeholder:text-ink-black/30" placeholder="TXN-..." type="text"/>
+          </div>
+          <button id="place-order-btn" class="w-full bg-primary text-white font-headline-lg py-5 border-4 border-ink-black hard-shadow-lg hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:scale-95">
+            PLACE ORDER!
+          </button>
+          <p id="order-error" class="text-error font-label-mono text-center hidden"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+<!-- ============ END CART ============ -->
+
+<!-- ============ PAGE: ORDER PLACED ============ -->
+<div id="page-order-placed" class="page hidden">
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-20 flex flex-col items-center justify-center text-center">
+  <div class="relative mb-12 animate-float">
+    <div class="w-28 h-28 md:w-40 md:h-40 bg-kelp-green border-[4px] border-ink-black rounded-full flex items-center justify-center hard-shadow-lg rotate-3">
+      <span class="material-symbols-outlined text-white text-[60px] md:text-[100px]" style="font-variation-settings:'wght' 700">check_circle</span>
+    </div>
+  </div>
+  <div class="max-w-xl mx-auto space-y-6">
+    <h1 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl text-ink-black uppercase tracking-tighter">Order Placed!</h1>
+    <div class="bg-surface-container-highest p-6 rough-border hard-shadow-lg rotate-1">
+      <p class="font-body-lg text-body-lg text-on-surface-variant mb-2">Hooray! Your feast is being prepared.</p>
+      <div class="flex items-center justify-center gap-2">
+        <span class="font-label-mono text-label-mono text-ink-black opacity-60 uppercase">Ref:</span>
+        <span class="op-ref font-label-mono text-label-mono text-primary text-lg font-bold">APP-000000</span>
+      </div>
+    </div>
+    <div class="flex flex-col md:flex-row gap-4 justify-center items-center pt-8">
+      <button class="w-full md:w-auto px-10 py-5 bg-primary text-white rough-border brutalist-button font-headline-lg text-headline-lg-mobile flex items-center justify-center gap-3" data-nav="orders">
+        <span class="material-symbols-outlined">receipt_long</span> MY ORDERS
+      </button>
+      <button class="w-full md:w-auto px-10 py-5 bg-secondary-container text-ink-black rough-border brutalist-button font-headline-lg text-headline-lg-mobile flex items-center justify-center gap-3" data-nav="home">
+        <span class="material-symbols-outlined">home</span> BACK HOME
+      </button>
+    </div>
+  </div>
+</main>
+</div>
+<!-- ============ END ORDER PLACED ============ -->
+
+<!-- ============ PAGE: MY ORDERS ============ -->
+<div id="page-orders" class="page hidden">
+<main class="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary underline decoration-secondary decoration-4 mb-8">My Orders</h2>
+  <div id="orders-list" class="flex flex-col gap-4 md:gap-6"></div>
+</main>
+</div>
+<!-- ============ END MY ORDERS ============ -->
+
+<!-- ============ PAGE: ORDER DETAIL ============ -->
+<div id="page-order-detail" class="page hidden">
+<main class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <button class="flex items-center gap-2 font-label-mono text-label-mono mb-6 hover:translate-x-[-4px] transition-transform" data-nav="orders">
+    <span class="material-symbols-outlined">arrow_back</span> BACK TO ORDERS
+  </button>
+  <div class="bg-white border-4 border-ink-black hard-shadow-lg p-6 md:p-8">
+    <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+      <div>
+        <p class="od-ref font-label-mono text-label-mono text-tertiary mb-1">REF: ---</p>
+        <h3 class="font-headline-lg text-headline-lg-mobile">Order Detail</h3>
+      </div>
+      <span class="od-status status-badge-pending px-4 py-1 border-2 border-ink-black rounded-full font-label-mono text-label-mono">PENDING</span>
+    </div>
+    <p class="od-date font-label-mono text-label-mono text-xs mb-4"></p>
+    <div class="border-t-2 border-dashed border-ink-black pt-4 mb-4">
+      <h4 class="font-headline-lg-mobile text-headline-lg-mobile mb-3">Items</h4>
+      <div id="order-detail-items" class="od-items space-y-2"></div>
+    </div>
+    <div class="border-t-2 border-dashed border-ink-black pt-4 mb-4">
+      <h4 class="font-headline-lg-mobile text-headline-lg-mobile mb-2">Total</h4>
+      <p class="od-total font-headline-xl text-headline-xl text-primary">0 Birr</p>
+    </div>
+    <div class="border-t-2 border-dashed border-ink-black pt-4 mb-4">
+      <h4 class="font-headline-lg-mobile text-headline-lg-mobile mb-2">Comment</h4>
+      <p class="od-comment font-body-md text-body-md">None</p>
+    </div>
+    <div class="od-decline hidden border-t-2 border-dashed border-ink-black pt-4 mb-4">
+      <h4 class="font-headline-lg-mobile text-headline-lg-mobile text-error mb-2">Decline Reason</h4>
+      <p class="od-decline-reason font-body-md text-body-md text-error"></p>
+    </div>
+    <button class="od-cancel w-full py-4 bg-error text-white border-4 border-ink-black font-headline-lg-mobile hard-shadow hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">CANCEL ORDER</button>
+  </div>
+</main>
+</div>
+<!-- ============ END ORDER DETAIL ============ -->
+
+<!-- ============ PAGE: PROFILE ============ -->
+<div id="page-profile" class="page hidden">
+<main class="max-w-[600px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <div class="bg-white border-4 border-ink-black hard-shadow-lg p-6 md:p-8 text-center -rotate-1 hover:rotate-0 transition-transform">
+    <div class="w-24 h-24 bg-secondary rounded-full border-4 border-ink-black flex items-center justify-center mx-auto mb-4 hard-shadow">
+      <span class="material-symbols-outlined text-5xl text-white" style="font-variation-settings:'FILL' 1">person</span>
+    </div>
+    <h2 class="pf-name font-headline-xl text-headline-lg-mobile md:text-headline-xl text-ink-black">User</h2>
+    <p class="pf-username font-label-mono text-label-mono text-primary mt-2">@username</p>
+    <div class="mt-6 bg-surface-container-low p-4 border-2 border-ink-black">
+      <p class="font-body-md text-body-md text-on-surface-variant">Ready for a patty? 🍔</p>
+    </div>
+  </div>
+</main>
+</div>
+<!-- ============ END PROFILE ============ -->
+
+<!-- ============ PAGE: DEBT ============ -->
+<div id="page-debt" class="page hidden">
+<main class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <div class="bg-[#F4E4BC] border-4 border-ink-black p-6 mb-8 hard-shadow-lg text-center relative">
+    <h3 class="font-headline-xl text-headline-xl text-primary tracking-widest uppercase">WANTED</h3>
+    <p class="font-label-mono text-label-mono text-ink-black mb-4">OUTSTANDING DEBT</p>
+    <div class="text-5xl font-headline-xl text-ink-black bg-secondary-fixed inline-block px-6 py-2 border-2 border-ink-black -rotate-2" id="debt-total">0 Birr</div>
+  </div>
+  <div id="debt-list" class="space-y-4"></div>
+</main>
+</div>
+<!-- ============ END DEBT ============ -->
+
+<!-- ============ PAGE: NOTIFICATIONS ============ -->
+<div id="page-notifications" class="page hidden">
+<main class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary underline decoration-secondary decoration-4 mb-8">Notifications</h2>
+  <div id="notif-list" class="space-y-4"></div>
+</main>
+</div>
+<!-- ============ END NOTIFICATIONS ============ -->
+
+<!-- ============ PAGE: HELP ============ -->
+<div id="page-help" class="page hidden">
+<main class="max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <h2 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl scribble-highlight inline-block mb-8">Help & FAQ</h2>
+  <div id="help-list" class="space-y-4"></div>
+  <div class="mt-8 text-center">
+    <p class="font-body-md text-body-md text-on-surface-variant mb-4">Still need help?</p>
+    <button class="bg-primary text-on-primary px-8 py-4 border-4 border-ink-black font-headline-lg-mobile hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" data-nav="contact">Contact Admin</button>
+  </div>
+</main>
+</div>
+<!-- ============ END HELP ============ -->
+
+<!-- ============ PAGE: CONTACT ============ -->
+<div id="page-contact" class="page hidden">
+<main class="max-w-[600px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <h2 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl scribble-highlight inline-block mb-8">Contact Admin</h2>
+  <div class="bg-white border-4 border-ink-black hard-shadow-lg p-6 md:p-8">
+    <div class="space-y-6">
+      <div>
+        <label class="font-headline-lg text-headline-lg-mobile block mb-2">Your Message</label>
+        <textarea id="contact-message" class="w-full bg-paper-shadow border-4 border-ink-black p-4 font-body-md text-ink-black focus:outline-none focus:ring-0 min-h-[150px] hard-shadow" placeholder="What's on your mind?"></textarea>
+      </div>
+      <button id="contact-submit" class="w-full bg-primary text-white font-headline-lg py-5 border-4 border-ink-black hard-shadow-lg hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">SEND MESSAGE</button>
+      <p id="contact-success" class="font-label-mono text-label-mono text-kelp-green text-center hidden">Message sent! Admin will get back to you.</p>
+    </div>
+  </div>
+</main>
+</div>
+<!-- ============ END CONTACT ============ -->
+
+<!-- ============ PAGE: FEEDBACK ============ -->
+<div id="page-feedback" class="page hidden">
+<main class="max-w-[600px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
+  <h2 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl scribble-highlight inline-block mb-8">Feedback</h2>
+  <div class="bg-white border-4 border-ink-black hard-shadow-lg p-6 md:p-8 -rotate-1 hover:rotate-0 transition-transform">
+    <div class="space-y-6">
+      <p class="font-body-lg text-body-lg">Love the patties? Got a suggestion? Let us know!</p>
+      <div>
+        <textarea id="feedback-msg" class="w-full bg-paper-shadow border-4 border-ink-black p-4 font-body-md text-ink-black focus:outline-none focus:ring-0 min-h-[150px] hard-shadow" placeholder="Your feedback..."></textarea>
+      </div>
+      <button id="feedback-submit" class="w-full bg-kelp-green text-white font-headline-lg py-5 border-4 border-ink-black hard-shadow-lg hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">SUBMIT FEEDBACK</button>
+      <p id="feedback-success" class="font-label-mono text-label-mono text-kelp-green text-center hidden">Thank you! Your feedback is appreciated.</p>
+    </div>
+  </div>
+</main>
+</div>
+<!-- ============ END FEEDBACK ============ -->
+
+<script src="js/app.js"></script>
+</body>
+</html>
