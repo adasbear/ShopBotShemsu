@@ -313,22 +313,28 @@ function renderCart() {
     return;
   }
   items.innerHTML = state.cart.map((i) =>
-    `<div class="cart-item bg-background border-4 border-ink-black p-4 flex gap-4 items-center hard-shadow hover:rotate-0 transition-transform" style="transform:rotate(${(Math.random()*2-1).toFixed(2)}deg)">
-      <div class="w-20 h-20 bg-paper-shadow border-2 border-ink-black flex-shrink-0 flex items-center justify-center">
-        <span class="material-symbols-outlined text-3xl text-primary">restaurant</span>
+    `<div class="cart-item bg-background border-4 border-ink-black p-3 md:p-4 hard-shadow hover:rotate-0 transition-transform" style="transform:rotate(${(Math.random()*2-1).toFixed(2)}deg)">
+      <div class="flex items-start gap-3">
+        <div class="w-12 h-12 md:w-20 md:h-20 bg-paper-shadow border-2 border-ink-black flex-shrink-0 flex items-center justify-center">
+          <span class="material-symbols-outlined text-2xl md:text-3xl text-primary">restaurant</span>
+        </div>
+        <div class="flex-grow min-w-0">
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="font-headline-lg-mobile md:text-headline-lg text-ink-black truncate">${i.item.toUpperCase()}</h3>
+            <button class="cart-remove text-error hover:scale-110 transition-transform p-1 flex-shrink-0 -mt-1 -mr-1" data-item="${i.item}">
+              <span class="material-symbols-outlined text-xl">delete_forever</span>
+            </button>
+          </div>
+          <div class="flex items-center justify-between mt-2 md:mt-1">
+            <p class="font-label-mono text-label-mono text-primary">${i.price.toFixed(2)} Birr</p>
+            <div class="flex items-center gap-2 bg-secondary-container border-2 border-ink-black p-1 rounded-xl">
+              <button class="qty-minus w-7 h-7 flex items-center justify-center font-bold hover:scale-110 text-sm" data-item="${i.item}">−</button>
+              <span class="font-label-mono text-sm w-5 text-center">${i.qty}</span>
+              <button class="qty-plus w-7 h-7 flex items-center justify-center font-bold hover:scale-110 text-sm" data-item="${i.item}">+</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="flex-grow min-w-0">
-        <h3 class="font-headline-lg text-headline-lg-mobile text-ink-black mb-1 truncate">${i.item.toUpperCase()}</h3>
-        <p class="font-label-mono text-label-mono text-primary">${i.price.toFixed(2)} Birr</p>
-      </div>
-      <div class="flex items-center gap-2 bg-secondary-container border-2 border-ink-black p-1 px-2 rounded-xl">
-        <button class="qty-minus w-7 h-7 flex items-center justify-center font-bold hover:scale-110" data-item="${i.item}">−</button>
-        <span class="font-label-mono text-headline-lg-mobile w-6 text-center">${i.qty}</span>
-        <button class="qty-plus w-7 h-7 flex items-center justify-center font-bold hover:scale-110" data-item="${i.item}">+</button>
-      </div>
-      <button class="cart-remove text-error hover:scale-110 transition-transform p-1" data-item="${i.item}">
-        <span class="material-symbols-outlined">delete_forever</span>
-      </button>
     </div>`
   ).join("");
 
