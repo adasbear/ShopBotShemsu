@@ -785,16 +785,15 @@ if (tg) {
 
 // --- Referrals ---
 async function renderReferrals() {
-  await loadUser();
-  const user = state.user;
-  if (!user) return navigateTo("profile");
-  const botUsername = "ShopBotShemsuBot";
-  const link = `https://t.me/${botUsername}?start=ref_${user.id}`;
+  const link = `https://t.me/ShopBotShemsuBot?start=ref_${USER_ID}`;
   $("ref-link").value = link;
-  const res = await apiGet("/api/referrals/stats", { user_id: user.id });
-  const count = res?.count ?? 0;
-  const points = res?.points ?? 0;
-  const earnings = res?.earnings ?? [];
+  let count = 0, points = 0, earnings = [];
+  try {
+    const res = await api(`/referrals/stats?user_id=${USER_ID}`);
+    count = res.count ?? 0;
+    points = res.points ?? 0;
+    earnings = res.earnings ?? [];
+  } catch (e) {}
   $("ref-count").textContent = count;
   $("ref-points").textContent = points;
   const list = $("ref-earnings-list");
