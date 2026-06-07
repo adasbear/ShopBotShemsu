@@ -134,11 +134,18 @@ function clearCart() {
   updateCartBadge();
 }
 function updateCartBadge() {
+  const saved = localStorage.getItem("cart");
+  state.cart = saved ? JSON.parse(saved) : [];
   document.querySelectorAll(".cart-badge").forEach((el) => {
     const total = state.cart.reduce((s, i) => s + i.qty, 0);
     el.textContent = total;
     el.classList.toggle("hidden", total === 0);
   });
+  const continueBtn = $("menu-continue-btn");
+  if (continueBtn) {
+    const itemCount = state.cart.reduce((s, i) => s + i.qty, 0);
+    continueBtn.classList.toggle("hidden", itemCount === 0);
+  }
 }
 
 // --- Router ---
@@ -757,6 +764,7 @@ if (tg) {
 
 // --- Init ---
 async function init() {
+  getCart();
   await loadUser();
   updateCartBadge();
   setupNavigation();
