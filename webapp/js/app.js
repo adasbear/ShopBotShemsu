@@ -550,6 +550,9 @@ async function placeOrder(comment) {
   if (paymentMethod !== "debt" && !paymentAccountId) {
     return { error: "Please select a bank or payment method." };
   }
+  if (paymentMethod === "debt" && !_debtAllowed) {
+    return { error: "You are not on the debt allow list." };
+  }
   try {
     const result = await api("/orders", {
       method: "POST",
@@ -576,12 +579,14 @@ async function placeOrder(comment) {
 
 // --- Payment Accounts UI ---
 let _selectedPayment = { method: "bank", accountId: null, account: null };
+let _debtAllowed = false;
 
 async function loadPaymentAccountsUI() {
   try {
     const accounts = await loadPaymentAccounts();
     const methodsEl = $("payment-methods");
     if (!methodsEl) return;
+    _debtAllowed = await checkDebtAllow();
     methodsEl.innerHTML = `
       <button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform bg-secondary text-on-secondary" data-method="bank">
         <span class="material-symbols-outlined mb-1">account_balance</span>
@@ -591,12 +596,18 @@ async function loadPaymentAccountsUI() {
         <span class="material-symbols-outlined mb-1">smartphone</span>
         <span class="font-label-mono text-[10px]">TELEBIRR</span>
       </button>
-      <button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform bg-white text-ink-black" data-method="debt">
+      <button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform bg-white text-ink-black opacity-50" data-method="debt" ${_debtAllowed ? '' : 'disabled'}>
         <span class="material-symbols-outlined mb-1">payments</span>
-        <span class="font-label-mono text-[10px]">DEBT</span>
+        <span class="font-label-mono text-[10px]">${_debtAllowed ? 'DEBT' : 'DEBT (LOCKED)'}</span>
       </button>`;
+    if (!_debtAllowed) {
+      methodsEl.querySelector('[data-method="debt"]')?.addEventListener("click", (e) => {
+        alert("You are not on the debt allow list. Contact admin to be added.");
+      });
+    }
     methodsEl.querySelectorAll(".pay-method-btn").forEach(btn => {
       btn.addEventListener("click", () => {
+        if (btn.dataset.method === "debt" && !_debtAllowed) return;
         methodsEl.querySelectorAll(".pay-method-btn").forEach(b => { b.classList.remove("bg-secondary", "text-on-secondary"); b.classList.add("bg-white", "text-ink-black"); });
         btn.classList.add("bg-secondary", "text-on-secondary"); btn.classList.remove("bg-white", "text-ink-black");
         _selectedPayment.method = btn.dataset.method;
@@ -613,10 +624,13 @@ async function loadPaymentAccountsUI() {
 function renderPaymentSection(accounts) {
   const el = $("payment-accounts");
   if (!el) return;
+  const confirmSection = $("payment-confirmation-section");
   if (_selectedPayment.method === "debt") {
     el.innerHTML = '<p class="font-label-mono text-label-mono text-on-surface-variant p-2">Debt option selected. Amount will be added to your debt balance.</p>';
+    if (confirmSection) confirmSection.style.display = "none";
     return;
   }
+  if (confirmSection) confirmSection.style.display = "";
   if (_selectedPayment.method === "telebirr") {
     const tb = accounts.find(a => a.bank_name?.toLowerCase() === "telebirr");
     if (tb) {
