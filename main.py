@@ -884,10 +884,23 @@ def api_contact_admin():
         try:
             asyncio.run(_db(
                 lambda: database._supabase.table("notifications").insert({
-                    "user_id": int(user_id), "title": "Contact Admin",
+                    "user_id": int(admin_id), "title": f"📩 Contact from {name} (@{username})",
                     "body": message
                 }).execute()
             ))
+        except:
+            pass
+        try:
+            import requests
+            requests.post(
+                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                json={
+                    "chat_id": admin_id,
+                    "text": f"<b>📩 Contact from {name}</b>\n<b>@{username}</b> (user_id: {user_id})\n\n{message}",
+                    "parse_mode": "HTML"
+                },
+                timeout=10
+            )
         except:
             pass
     return jsonify({"success": True})
