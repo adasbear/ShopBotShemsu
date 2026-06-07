@@ -192,7 +192,7 @@ async def admin_lock_menu_inline_keyboard():
                 status = f" {remaining}/{stock['max_qty']} left"
         else:
             status = " ♾️ No limit"
-        cb = f"locksel_{name}"
+        cb = f"lock_sel_{name}"
         kb.append([InlineKeyboardButton(f"{name}{status}", callback_data=cb)])
     if kb:
         kb.append([InlineKeyboardButton("Unlock All 🔓", callback_data="lock_unlock_all")])

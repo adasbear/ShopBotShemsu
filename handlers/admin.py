@@ -962,9 +962,9 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text(f"❌ Error: {e}")
         return ConversationHandler.END
 
-    if data.startswith("locksel_"):
+    if data.startswith("lock_sel_"):
         try:
-            name = data.replace("locksel_", "")
+            name = data.replace("lock_sel_", "")
             from database import get_daily_stock
             stock = await get_daily_stock(name)
             if stock:
