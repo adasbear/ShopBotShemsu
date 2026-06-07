@@ -52,8 +52,7 @@ async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TY
     from database import is_item_available_today
     if not await is_item_available_today(item):
         await query.edit_message_text(
-            f"❌ <b>{item}</b> is sold out for today. Please select another item.",
-            reply_markup=await menu_inline_keyboard(parent=context.user_data.get("menu_parent")),
+            f"❌ <b>{item}</b> is sold out for today.",
             parse_mode=ParseMode.HTML
         )
         return MENU_SELECTION
