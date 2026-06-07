@@ -787,16 +787,17 @@ if (tg) {
 async function renderReferrals() {
   const user = getUser();
   if (!user) return navigateTo("profile");
-  const res = await apiGet("/api/referrals/stats", { user_id: user.id });
-  if (!res) return;
-  const { count, points, earnings } = res;
-  $("ref-count").textContent = count;
-  $("ref-points").textContent = points;
   const botUsername = "ShopBotShemsuBot";
   const link = `https://t.me/${botUsername}?start=ref_${user.id}`;
   $("ref-link").value = link;
+  const res = await apiGet("/api/referrals/stats", { user_id: user.id });
+  const count = res?.count ?? 0;
+  const points = res?.points ?? 0;
+  const earnings = res?.earnings ?? [];
+  $("ref-count").textContent = count;
+  $("ref-points").textContent = points;
   const list = $("ref-earnings-list");
-  if (!earnings || earnings.length === 0) {
+  if (!earnings.length) {
     list.innerHTML = '<p class="font-body-md text-body-md text-on-surface-variant text-center">No referrals yet. Share your link!</p>';
   } else {
     list.innerHTML = earnings.map(e => {
