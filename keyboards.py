@@ -15,7 +15,6 @@ async def menu_inline_keyboard(show_back=True, parent=None):
         is_cat = await has_sub_items(k) if not parent else False
         label = f"{k} ▶️" if is_cat else f"{k} - Birr {v}"
         kb.append([InlineKeyboardButton(label, callback_data=f"order_{k}")])
-    kb.append([InlineKeyboardButton("Other ✏️", callback_data="order_Other")])
     if show_back:
         back_data = "order_back_to_main" if parent else "order_back"
         kb.append([InlineKeyboardButton("⬅ Back", callback_data=back_data)])
@@ -77,7 +76,8 @@ def get_admin_keyboard():
     buttons = [
         ["Users", "Manage Menu", "Orders"],
         ["Debt Management", "Feedback"],
-        ["Payment Accounts", "Broadcast"]
+        ["Lock Menu 🔒", "Payment Accounts"],
+        ["Broadcast"]
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 
@@ -170,6 +170,47 @@ async def admin_allow_list_inline_keyboard():
     kb.append([InlineKeyboardButton("Add Username ➕", callback_data="admin_add_allow")])
     kb.append([InlineKeyboardButton("⬅ Back", callback_data="admin_back_debt")])
     return InlineKeyboardMarkup(kb)
+
+async def admin_lock_menu_inline_keyboard():
+    from database import get_all_menu_items, get_all_daily_stocks, is_item_available_today
+    items = await get_all_menu_items()
+    stocks = {s["name"]: s for s in await get_all_daily_stocks()}
+    kb = []
+    for row in items:
+        name = row["name"]
+        price = row["price"]
+        if price == 0.0:
+            continue
+        stock = stocks.get(name)
+        status = ""
+        if stock:
+            locked = stock.get("locked", False)
+            remaining = stock.get("remaining", 0)
+            if locked:
+                status = " 🔒 Locked"
+            else:
+                status = f" {remaining}/{stock['max_qty']} left"
+        else:
+            status = " ♾️ No limit"
+        cb = f"locksel_{name}"
+        kb.append([InlineKeyboardButton(f"{name}{status}", callback_data=cb)])
+    if kb:
+        kb.append([InlineKeyboardButton("Unlock All 🔓", callback_data="lock_unlock_all")])
+    kb.append([InlineKeyboardButton("⬅ Back", callback_data="lock_back")])
+    return InlineKeyboardMarkup(kb)
+
+
+async def admin_lock_item_keyboard(name, stock):
+    buttons = []
+    if stock:
+        if stock.get("locked"):
+            buttons.append([InlineKeyboardButton("Unlock 🔓", callback_data=f"lock_toggle_{name}")])
+        else:
+            buttons.append([InlineKeyboardButton("Lock 🔒", callback_data=f"lock_toggle_{name}")])
+        buttons.append([InlineKeyboardButton("Clear Limit ❌", callback_data=f"lock_clear_{name}")])
+    buttons.append([InlineKeyboardButton("⬅ Back to Lock Menu", callback_data="lock_back_list")])
+    return InlineKeyboardMarkup(buttons)
+
 
 def no_item_select_keyboard(order_group):
     return InlineKeyboardMarkup([

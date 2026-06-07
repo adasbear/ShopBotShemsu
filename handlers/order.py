@@ -3,7 +3,7 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, DEBT_CHOICE
+from config import MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, COMMENT_CHOICE, ORDER_COMMENT, DEBT_CHOICE
 from database import get_menu, save_order, get_user, get_admin_user_id, has_sub_items
 from keyboards import menu_inline_keyboard, add_more_or_review_keyboard, confirm_cancel_keyboard, order_accept_decline_keyboard, comment_choice_keyboard, debt_choice_keyboard
 from utils.helpers import build_order_summary, check_banned
@@ -42,9 +42,6 @@ async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TY
             return ADD_MORE_PROMPT
         await query.edit_message_text("Order Cancelled.")
         return ConversationHandler.END
-    if item == "Other":
-        await query.edit_message_text("What item do you want? Type the name below:")
-        return OTHER_ITEM_INPUT
     if await has_sub_items(item):
         await query.edit_message_text(
             f"SELECT {item.upper()}",
@@ -52,23 +49,17 @@ async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TY
             parse_mode=ParseMode.HTML
         )
         return MENU_SELECTION
+    from database import is_item_available_today
+    if not await is_item_available_today(item):
+        await query.edit_message_text(
+            f"❌ <b>{item}</b> is sold out for today. Please select another item.",
+            reply_markup=await menu_inline_keyboard(parent=context.user_data.get("menu_parent")),
+            parse_mode=ParseMode.HTML
+        )
+        return MENU_SELECTION
     context.user_data["current_item"] = item
-    context.user_data["custom_item"] = False
     await query.edit_message_text(
         f"How many <b>{item}</b>?",
-        parse_mode=ParseMode.HTML
-    )
-    return QTY_INPUT
-
-async def handle_custom_item_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    name = update.message.text.strip()
-    if not name:
-        await update.message.reply_text("Please enter a valid item name.")
-        return OTHER_ITEM_INPUT
-    context.user_data["current_item"] = name
-    context.user_data["custom_item"] = True
-    await update.message.reply_text(
-        f"How many <b>{name}</b>?",
         parse_mode=ParseMode.HTML
     )
     return QTY_INPUT
@@ -80,14 +71,11 @@ async def handle_qty(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return QTY_INPUT
 
     item = context.user_data["current_item"]
-    if context.user_data.get("custom_item"):
-        price = 0.0
-    else:
-        menu = await get_menu()
-        price = menu[item]
+    menu = await get_menu()
+    price = menu[item]
 
     context.user_data["session_items"].append({
-        "item": item, "qty": int(qty), "price": price, "custom": context.user_data.get("custom_item", False)
+        "item": item, "qty": int(qty), "price": price
     })
 
     _, total = build_order_summary(context.user_data["session_items"])

@@ -63,7 +63,9 @@ async def handle_payment_confirmation(update: Update, context: ContextTypes.DEFA
     items = context.user_data.get("session_items", [])
     account = context.user_data.get("selected_payment", {})
 
+    from database import decrement_daily_stock
     for i in items:
+        await decrement_daily_stock(i["item"])
         await save_order(user_id, i["item"], i["qty"], order_group)
 
     bank = account.get("bank_name", "?")

@@ -474,6 +474,20 @@ async def admin_show_all_debts_handler(update: Update, context: ContextTypes.DEF
     )
     return ConversationHandler.END
 
+# --- Lock Menu ---
+
+async def admin_lock_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not _check(update):
+        return ConversationHandler.END
+    from keyboards import admin_lock_menu_inline_keyboard
+    await update.message.reply_text(
+        "Set daily stock limits for menu items:",
+        reply_markup=await admin_lock_menu_inline_keyboard(),
+        parse_mode=ParseMode.HTML
+    )
+    return ConversationHandler.END
+
+
 # --- Payment Account Management ---
 
 async def admin_payment_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -920,6 +934,69 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
             except:
                 pass
             await query.edit_message_text(f"Delivered: {qty}x {item}.")
+        return ConversationHandler.END
+
+    # --- Lock Menu callbacks ---
+
+    if data == "lock_back" or data == "lock_back_list":
+        from keyboards import get_admin_keyboard
+        await query.edit_message_text("Cancelled.")
+        return ConversationHandler.END
+
+    if data == "lock_unlock_all":
+        from database import get_all_menu_items, get_all_daily_stocks, clear_daily_stock
+        today_stocks = await get_all_daily_stocks()
+        for s in today_stocks:
+            await clear_daily_stock(s["name"])
+        items = await get_all_menu_items()
+        await query.edit_message_text(
+            "🔓 All limits cleared and unlocked.",
+            reply_markup=await admin_lock_menu_inline_keyboard()
+        )
+        return ConversationHandler.END
+
+    if data.startswith("locksel_"):
+        name = data.replace("locksel_", "")
+        from database import get_daily_stock
+        stock = await get_daily_stock(name)
+        if stock:
+            locked = stock.get("locked", False)
+            remaining = stock.get("remaining", 0)
+            status = f"🔒 Locked" if locked else f"✅ {remaining}/{stock['max_qty']} remaining"
+        else:
+            status = "♾️ No limit set"
+        await query.edit_message_text(
+            f"<b>{name}</b>\n\nStatus: {status}\n\nEnter the <b>maximum quantity</b> for today (0 to disable):",
+            reply_markup=await admin_lock_item_keyboard(name, stock),
+            parse_mode=ParseMode.HTML
+        )
+        context.user_data["lock_menu_item"] = name
+        context.user_data["expect_lock_qty"] = True
+        return ConversationHandler.END
+
+    if data.startswith("lock_toggle_"):
+        name = data.replace("lock_toggle_", "")
+        from database import get_daily_stock, toggle_lock_daily_stock
+        stock = await get_daily_stock(name)
+        new_locked = not stock.get("locked", False) if stock else True
+        await toggle_lock_daily_stock(name, new_locked)
+        stock = await get_daily_stock(name)
+        await query.edit_message_text(
+            f"<b>{name}</b>\n\nStatus: {'🔒 Locked' if new_locked else '🔓 Unlocked'}",
+            reply_markup=await admin_lock_item_keyboard(name, stock),
+            parse_mode=ParseMode.HTML
+        )
+        return ConversationHandler.END
+
+    if data.startswith("lock_clear_"):
+        name = data.replace("lock_clear_", "")
+        from database import clear_daily_stock
+        await clear_daily_stock(name)
+        await query.edit_message_text(
+            f"❌ Limit cleared for <b>{name}</b>",
+            reply_markup=await admin_lock_menu_inline_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
         return ConversationHandler.END
 
     return ConversationHandler.END

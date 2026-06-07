@@ -15,7 +15,7 @@ from database import init_db, _db, get_admin_user_id
 from otp_sender import send_otp
 
 from handlers.start import start, register_user
-from handlers.order import show_menu, handle_menu_selection, handle_qty, review_order, finalize_order, handle_custom_item_name, handle_comment_choice, handle_order_comment
+from handlers.order import show_menu, handle_menu_selection, handle_qty, review_order, finalize_order, handle_comment_choice, handle_order_comment
 from handlers.admin import (
     show_admin_portal, admin_show_users, admin_show_menu,
     admin_show_orders, admin_show_new_orders, admin_show_accepted,
@@ -28,7 +28,7 @@ from handlers.admin import (
     admin_back_to_portal, admin_inline_callback,
     admin_debt_menu, admin_show_allow_list,
     admin_show_all_debts_handler, admin_payment_menu,
-    admin_no_item_start
+    admin_no_item_start, admin_lock_menu
 )
 from handlers.manage_order import view_my_orders, handle_manage_order, handle_order_action, handle_edit_item, handle_edit_qty
 from handlers.feedback import start_feedback, save_feedback_handler
@@ -133,6 +133,7 @@ conv = ConversationHandler(
         MessageHandler(filters.Regex("^Mark Delivered$"), admin_show_individual),
         MessageHandler(filters.Regex("^Mark All Arrived$"), admin_mark_all),
         MessageHandler(filters.Regex("^No Item 📦$"), admin_no_item_start),
+        MessageHandler(filters.Regex("^Lock Menu 🔒$"), admin_lock_menu),
         MessageHandler(filters.Regex("^Back to Portal$"), admin_back_to_portal),
         MessageHandler(filters.Regex("^My Debt$"), view_my_debt),
         MessageHandler(filters.Regex("^Payment Accounts$"), admin_payment_menu),
@@ -157,7 +158,7 @@ conv = ConversationHandler(
         ADMIN_ADD_SUBITEM_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_sub_item_name)],
         ADMIN_ADD_SUBITEM_PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, admin_add_sub_item_price)],
         CONTACT_ADMIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, contact_admin_send)],
-        OTHER_ITEM_INPUT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_custom_item_name)],
+
         COMMENT_CHOICE: [CallbackQueryHandler(handle_comment_choice)],
         ORDER_COMMENT: [MessageHandler(filters.TEXT & ~filters.COMMAND, handle_order_comment)],
         MANAGE_ORDER: [CallbackQueryHandler(handle_manage_order)],
@@ -313,6 +314,30 @@ async def _handle_noitem_msg(update: Update, context: ContextTypes.DEFAULT_TYPE)
         parse_mode=ParseMode.HTML
     )
 
+async def _handle_lock_qty(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.user_data.get("expect_lock_qty"):
+        return
+    qty_text = update.message.text.strip()
+    if not qty_text.isdigit():
+        await update.message.reply_text("Please enter a valid number.")
+        return
+    qty = int(qty_text)
+    name = context.user_data.get("lock_menu_item", "")
+    if not name:
+        context.user_data["expect_lock_qty"] = False
+        return
+    from database import set_daily_stock
+    await set_daily_stock(name, qty)
+    from keyboards import admin_lock_menu_inline_keyboard
+    context.user_data["expect_lock_qty"] = False
+    context.user_data.pop("lock_menu_item", None)
+    await update.message.reply_text(
+        f"✅ <b>{name}</b> limit set to {qty} for today.",
+        reply_markup=await admin_lock_menu_inline_keyboard(),
+        parse_mode=ParseMode.HTML
+    )
+
+
 async def _text_dispatcher(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Route text messages to the correct handler based on context flags."""
     if context.user_data.get("expect_debt_pay_confirmation"):
@@ -325,10 +350,12 @@ async def _text_dispatcher(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await _handle_allow_username(update, context)
     elif context.user_data.get("expect_payment_input"):
         await _handle_payment_input(update, context)
+    elif context.user_data.get("expect_lock_qty"):
+        await _handle_lock_qty(update, context)
 
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _text_dispatcher))
 application.add_handler(CallbackQueryHandler(handle_debt_pay_callback, pattern="^debt_pay_"))
-application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_|^noitem_"))
+application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_|^noitem_|^lock_"))
 
 async def _start_polling():
     await application.bot.delete_webhook()

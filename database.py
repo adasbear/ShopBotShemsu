@@ -401,3 +401,64 @@ async def seed_debts_from_json(entries):
             }).execute())
             count += 1
     return count
+
+
+# --- Daily Menu Stock / Lock ---
+
+async def _reset_daily_stock_if_needed():
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    hour = datetime.now(timezone.utc).hour
+    if hour < 6:
+        return
+    await _db(lambda: _supabase.table("daily_menu_limit").delete().neq("date", today).execute())
+
+async def get_daily_stock(name):
+    await _reset_daily_stock_if_needed()
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    result = await _db(lambda: _supabase.table("daily_menu_limit")
+        .select("*").eq("name", name).eq("date", today).limit(1).execute())
+    return result.data[0] if result.data else None
+
+async def get_all_daily_stocks():
+    await _reset_daily_stock_if_needed()
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    result = await _db(lambda: _supabase.table("daily_menu_limit")
+        .select("*").eq("date", today).execute())
+    return result.data
+
+async def set_daily_stock(name, max_qty):
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    await _db(lambda: _supabase.table("daily_menu_limit").upsert({
+        "name": name, "max_qty": max_qty, "remaining": max_qty,
+        "date": today, "locked": False
+    }).execute())
+
+async def decrement_daily_stock(name):
+    await _reset_daily_stock_if_needed()
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    stock = await get_daily_stock(name)
+    if not stock:
+        return True
+    if stock["remaining"] <= 0:
+        return False
+    new_remaining = stock["remaining"] - 1
+    await _db(lambda: _supabase.table("daily_menu_limit")
+        .update({"remaining": new_remaining}).eq("name", name).eq("date", today).execute())
+    return True
+
+async def toggle_lock_daily_stock(name, locked):
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    await _db(lambda: _supabase.table("daily_menu_limit").upsert({
+        "name": name, "date": today, "locked": locked
+    }).execute())
+
+async def clear_daily_stock(name):
+    await _db(lambda: _supabase.table("daily_menu_limit").delete().eq("name", name).execute())
+
+async def is_item_available_today(name):
+    stock = await get_daily_stock(name)
+    if not stock:
+        return True
+    if stock.get("locked"):
+        return False
+    return stock["remaining"] > 0

@@ -166,7 +166,9 @@ async def handle_debt_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
             return DEBT_CHOICE
         allowed = await is_allowed_debt(username)
         if allowed:
+            from database import decrement_daily_stock
             for i in items:
+                await decrement_daily_stock(i["item"])
                 await save_order(user_id, i["item"], i["qty"], order_group)
             user_record = await get_user(user_id)
             full_name = (user_record or {}).get("full_name", username)
