@@ -1,10 +1,13 @@
 const API = "https://shopbotshemsu-1.onrender.com/api";
-const USER_ID = 7598009952;
-const USERNAME = "adasbear";
+const tg = window.Telegram?.WebApp;
+const USER_ID = tg?.initDataUnsafe?.user?.id || 7598009952;
+const USERNAME = tg?.initDataUnsafe?.user?.username || "adasbear";
+const INIT_DATA = tg?.initData || "";
 
 let state = {
   cart: [],
   currentPage: "home",
+  navStack: ["home"],
   user: null,
   menu: [],
   orders: [],
@@ -130,7 +133,9 @@ function updateCartBadge() {
 
 // --- Router ---
 function navigateTo(page, params) {
-  state.currentPage = page;
+  if (state.navStack[state.navStack.length - 1] !== page) {
+    state.navStack.push(page);
+  }
   const hash = params ? `${page}?${new URLSearchParams(params)}` : page;
   window.location.hash = hash;
 }
@@ -144,6 +149,9 @@ function showPage(page) {
     const isActive = p === page;
     n.classList.toggle("nav-active", isActive);
   });
+  if (tg) {
+    tg.BackButton.isVisible = state.navStack.length > 1;
+  }
   window.scrollTo(0, 0);
 }
 
@@ -152,6 +160,9 @@ function initRouter() {
     const hash = window.location.hash.slice(1) || "home";
     const [page, qs] = hash.split("?");
     const params = Object.fromEntries(new URLSearchParams(qs));
+    if (state.navStack[state.navStack.length - 1] !== page) {
+      state.navStack = [page];
+    }
     showPage(page);
     initPage(page, params);
   }
@@ -647,6 +658,21 @@ function setupForms() {
       }
     });
   }
+}
+
+// --- Telegram WebApp ---
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.BackButton.onClick(() => {
+    if (state.navStack.length > 1) {
+      state.navStack.pop();
+      const prev = state.navStack[state.navStack.length - 1];
+      window.location.hash = prev;
+    } else {
+      window.location.hash = "home";
+    }
+  });
 }
 
 // --- Init ---
