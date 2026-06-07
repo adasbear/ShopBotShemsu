@@ -15,6 +15,8 @@ let state = {
   debts: [],
   notifications: [],
   paymentAccounts: [],
+  _polling: null,
+  _initialRender: true,
 };
 
 function $(id) { return document.getElementById(id); }
@@ -158,6 +160,9 @@ function navigateTo(page, params) {
 }
 
 function showPage(page) {
+  state.currentPage = page;
+  state._initialRender = true;
+  stopPolling();
   document.querySelectorAll(".page").forEach((p) => p.classList.add("hidden"));
   const el = $(`page-${page}`);
   if (el) el.classList.remove("hidden");
@@ -189,6 +194,7 @@ function initRouter() {
 
 // --- Page Init ---
 async function initPage(page, params) {
+  startPolling(page);
   switch (page) {
     case "home": renderHome(); break;
     case "menu": renderMenu(); break;
@@ -206,6 +212,31 @@ async function initPage(page, params) {
     case "help": renderHelp(); break;
     case "contact": break;
     case "feedback": break;
+  }
+}
+
+// --- Auto Refresh ---
+const POLL_INTERVAL = 15000;
+const POLL_PAGES = ["orders", "debt", "notifications", "referrals"];
+
+function startPolling(page) {
+  stopPolling();
+  if (!POLL_PAGES.includes(page)) return;
+  state._polling = setInterval(() => {
+    state._initialRender = false;
+    switch (state.currentPage) {
+      case "orders": renderOrders(); break;
+      case "debt": renderDebt(); break;
+      case "notifications": renderNotifications(); break;
+      case "referrals": renderReferrals(); break;
+    }
+  }, POLL_INTERVAL);
+}
+
+function stopPolling() {
+  if (state._polling) {
+    clearInterval(state._polling);
+    state._polling = null;
   }
 }
 
@@ -370,7 +401,9 @@ function renderCart() {
 async function renderOrders() {
   const list = $("orders-list");
   if (!list) return;
-  list.innerHTML = '<div class="text-center py-12"><div class="skeleton h-24 w-full mb-4"></div><div class="skeleton h-24 w-full"></div></div>';
+  if (state._initialRender) {
+    list.innerHTML = '<div class="text-center py-12"><div class="skeleton h-24 w-full mb-4"></div><div class="skeleton h-24 w-full"></div></div>';
+  }
   try {
     const orders = await loadOrders();
     const grouped = {};
@@ -469,7 +502,9 @@ async function renderDebt() {
   const list = $("debt-list");
   const totalEl = $("debt-total");
   if (!list) return;
-  list.innerHTML = '<div class="text-center py-12"><div class="skeleton h-16 w-full mb-4"></div><div class="skeleton h-16 w-full"></div></div>';
+  if (state._initialRender) {
+    list.innerHTML = '<div class="text-center py-12"><div class="skeleton h-16 w-full mb-4"></div><div class="skeleton h-16 w-full"></div></div>';
+  }
   try {
     const debts = await loadDebts();
     const activeTotal = await getDebtTotal();
@@ -497,6 +532,9 @@ async function renderDebt() {
 async function renderNotifications() {
   const list = $("notif-list");
   if (!list) return;
+  if (state._initialRender) {
+    list.innerHTML = '<div class="text-center py-12"><div class="skeleton h-16 w-full mb-4"></div><div class="skeleton h-16 w-full"></div></div>';
+  }
   try {
     const notifs = await loadNotifications();
     if (!notifs.length) {
