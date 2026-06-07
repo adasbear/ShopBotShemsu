@@ -347,6 +347,14 @@ function renderCart() {
   const countEl = $("cart-count");
   if (!items) return;
   getCart();
+  const commentEl = $("cart-comment");
+  const confirmEl = $("payment-confirmation");
+  const orderError = $("order-error");
+  const placeBtn = $("place-order-btn");
+  if (commentEl) commentEl.value = "";
+  if (confirmEl) confirmEl.value = "";
+  if (orderError) orderError.classList.add("hidden");
+  if (placeBtn) { placeBtn.disabled = false; placeBtn.textContent = "PLACE ORDER!"; }
   if (!state.cart.length) {
     items.innerHTML = '<div class="col-span-full text-center py-12"><span class="material-symbols-outlined text-6xl text-on-surface-variant">shopping_cart</span><p class="font-headline-lg mt-4">Your cart is empty</p><button class="mt-4 bg-primary text-white px-6 py-3 rough-border hard-shadow font-label-mono" data-nav="menu">Browse Menu</button></div>';
     subtotal.textContent = "0.00 Birr";
