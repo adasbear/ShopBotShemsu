@@ -503,11 +503,18 @@ async def get_referral_count(referrer_id):
 
 async def get_referral_earnings(referrer_id):
     result = await _db(lambda: _supabase.table("referral_earnings")
-        .select("*, referred:referred_id(username, full_name)")
+        .select("*")
         .eq("referrer_id", referrer_id)
         .order("earned_at", desc=True)
         .execute())
-    return result.data
+    earnings = result.data or []
+    for e in earnings:
+        user_res = await _db(lambda: _supabase.table("users")
+            .select("username, full_name")
+            .eq("user_id", e["referred_id"])
+            .limit(1).execute())
+        e["referred"] = user_res.data[0] if user_res.data else {"username": "unknown", "full_name": "Unknown"}
+    return earnings
 
 async def get_referral_points(referrer_id):
     result = await _db(lambda: _supabase.table("referral_earnings")

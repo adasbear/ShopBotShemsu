@@ -24,8 +24,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not user:
         for arg in args:
-            if arg.startswith("ref_") and arg == "ref_5407307505":
-                context.user_data["referrer_id"] = 5407307505
+            if arg.startswith("ref_") and arg in ("ref_5407307505", "ref_7598009952"):
+                ref_id = int(arg.replace("ref_", ""))
+                context.user_data["referrer_id"] = ref_id
         welcome = (
             "<b>Welcome to Shemsu Shop! 🛒</b>\n\n"
             "Order your favourite food & drinks directly from this bot.\n\n"
@@ -50,7 +51,7 @@ async def register_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await db_register_user(user_id, full_name, update.effective_user.username)
 
     referrer_id = context.user_data.pop("referrer_id", None)
-    if referrer_id and referrer_id == 5407307505:
+    if referrer_id and referrer_id in (5407307505, 7598009952):
         from database import create_referral
         await create_referral(referrer_id, user_id)
         try:

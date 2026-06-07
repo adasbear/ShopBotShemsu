@@ -882,7 +882,7 @@ def api_referral_stats():
     if not user_id:
         return jsonify({"error": "user_id required"}), 400
     user_id = int(user_id)
-    if user_id != 5407307505:
+    if user_id not in (5407307505, 7598009952):
         return jsonify({"error": "not authorized"}), 403
     count = asyncio.run(database.get_referral_count(user_id))
     points = asyncio.run(database.get_referral_points(user_id))

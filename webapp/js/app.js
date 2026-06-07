@@ -198,7 +198,7 @@ async function initPage(page, params) {
     case "order-placed": renderOrderPlaced(params?.og); break;
     case "profile": renderProfile(); break;
     case "referrals":
-      if (Number(USER_ID) === 5407307505) { renderReferrals(); }
+      if ([5407307505, 7598009952].includes(Number(USER_ID))) { renderReferrals(); }
       else { navigateTo("profile"); }
       break;
     case "debt": renderDebt(); break;
@@ -461,7 +461,7 @@ async function renderProfile() {
   el.querySelector(".pf-username").textContent = `@${state.user?.username || USERNAME}`;
   const refSection = document.getElementById("ref-section");
   if (refSection) {
-    refSection.classList.toggle("hidden", Number(USER_ID) !== 5407307505);
+    refSection.classList.toggle("hidden", ![5407307505, 7598009952].includes(Number(USER_ID)));
   }
 }
 
