@@ -377,7 +377,9 @@ application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _text_di
 application.add_handler(MessageHandler(filters.PHOTO, admin_photo_handle_photo))
 application.add_handler(CommandHandler("skip", admin_photo_handle_skip))
 application.add_handler(CallbackQueryHandler(handle_debt_pay_callback, pattern="^debt_pay_"))
-application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_|^noitem_|^lock_|^aphoto_|^aremove_photo_"))
+application.add_handler(CallbackQueryHandler(admin_photo_start, pattern="^aphoto_"))
+application.add_handler(CallbackQueryHandler(admin_photo_remove, pattern="^aremove_photo_"))
+application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_|^noitem_|^lock_"))
 
 async def _start_polling():
     await application.bot.delete_webhook()
