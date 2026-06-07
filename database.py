@@ -98,11 +98,12 @@ async def save_order(user_id, item, qty, order_group, status="Pending"):
 async def update_order_status(order_group, new_status):
     await _db(lambda: _supabase.table("orders").update({"status": new_status}).eq("order_group", order_group).execute())
 
-async def get_grouped_orders_by_status(status):
-    result = await _db(lambda: _supabase.table("orders")
-        .select("id, user_id, item, qty, order_group, users(full_name)")
-        .eq("status", status)
-        .execute())
+async def get_grouped_orders_by_status(status, today_only=False):
+    query = _supabase.table("orders").select("id, user_id, item, qty, order_group, users(full_name)")
+    query = query.eq("status", status)
+    if today_only:
+        query = query.gte("timestamp", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    result = await _db(lambda: query.execute())
     groups = {}
     for r in result.data:
         g = r["order_group"]

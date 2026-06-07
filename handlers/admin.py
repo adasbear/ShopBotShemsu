@@ -118,7 +118,7 @@ async def admin_show_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def admin_show_new_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _check(update):
         return ConversationHandler.END
-    groups = await get_grouped_orders_by_status("Pending")
+    groups = await get_grouped_orders_by_status("Pending", today_only=True)
     if not groups:
         await update.message.reply_text("No new orders.", reply_markup=get_admin_orders_keyboard())
         return ConversationHandler.END
