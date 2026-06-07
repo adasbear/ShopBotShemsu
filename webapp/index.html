@@ -54,10 +54,10 @@ tailwind.config = {
 <aside class="fixed left-0 top-0 z-50 hidden md:flex flex-col p-gutter gap-4 h-full w-64 bg-background border-r-4 border-ink-black shadow-[4px_0px_0px_0px_rgba(0,0,0,1)]">
   <div class="mb-6 pt-4">
     <h1 class="font-headline-lg text-headline-lg text-primary underline decoration-secondary decoration-4">Sshop</h1>
-    <div class="mt-4 flex items-center gap-3 p-2 border-2 border-ink-black bg-surface-container-low rounded-xl">
-      <div class="w-10 h-10 bg-secondary rounded-full border-2 border-ink-black flex items-center justify-center text-white">
-        <span class="material-symbols-outlined">person</span>
-      </div>
+      <div class="mt-4 flex items-center gap-3 p-2 border-2 border-ink-black bg-surface-container-low rounded-xl">
+        <div class="js-avatar w-10 h-10 bg-secondary rounded-full border-2 border-ink-black flex items-center justify-center text-white bg-cover bg-center">
+          <span class="material-symbols-outlined js-avatar-icon">person</span>
+        </div>
       <div class="min-w-0 flex-1">
         <p class="font-label-mono text-label-mono truncate pf-name-side">Member</p>
         <p class="text-[10px] font-bold truncate pf-username-side">@user</p>
@@ -86,8 +86,8 @@ tailwind.config = {
         shopping_cart
         <span class="cart-badge hidden absolute -top-1 -right-1 bg-primary text-on-primary font-label-mono text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-ink-black">0</span>
       </button>
-      <div class="w-10 h-10 rounded-full border-2 border-ink-black overflow-hidden hard-shadow-sm bg-secondary-fixed flex items-center justify-center">
-        <span class="material-symbols-outlined text-on-secondary-container">person</span>
+      <div class="js-avatar w-10 h-10 rounded-full border-2 border-ink-black overflow-hidden hard-shadow-sm bg-secondary-fixed flex items-center justify-center bg-cover bg-center">
+        <span class="material-symbols-outlined text-on-secondary-container js-avatar-icon">person</span>
       </div>
     </div>
   </div>
@@ -231,10 +231,11 @@ tailwind.config = {
         <div class="space-y-4">
           <h3 class="font-headline-lg text-headline-lg-mobile">PAYMENT METHOD</h3>
           <div id="payment-methods" class="grid grid-cols-3 gap-2"></div>
-          <div id="payment-accounts" class="bg-paper-shadow border-2 border-ink-black p-3 space-y-2"></div>
+          <div id="payment-accounts" class="bg-paper-shadow border-2 border-ink-black p-3"></div>
           <div class="space-y-2">
-            <label class="font-label-mono text-label-mono block uppercase">Transaction Reference</label>
-            <input id="payment-confirmation" class="w-full rough-input font-label-mono py-2 focus:ring-0 border-0 focus:border-b-4 placeholder:text-ink-black/30" placeholder="TXN-..." type="text"/>
+            <label class="font-label-mono text-label-mono block uppercase">Paste SMS Confirmation</label>
+            <input id="payment-confirmation" class="w-full rough-input font-label-mono py-2 focus:ring-0 border-0 focus:border-b-4 placeholder:text-ink-black/30" placeholder="Paste the confirmation SMS from your bank or Telebirr..." type="text"/>
+            <p class="font-label-mono text-[10px] text-error">⚠️ Do not send screenshots — paste text only</p>
           </div>
           <button id="place-order-btn" class="w-full bg-primary text-white font-headline-lg py-5 border-4 border-ink-black hard-shadow-lg hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:scale-95">
             PLACE ORDER!
@@ -328,9 +329,9 @@ tailwind.config = {
 <div id="page-profile" class="page hidden">
 <main class="max-w-[600px] mx-auto px-margin-mobile md:px-margin-desktop py-8">
   <div class="bg-white border-4 border-ink-black hard-shadow-lg p-6 md:p-8 text-center -rotate-1 hover:rotate-0 transition-transform">
-    <div class="w-24 h-24 bg-secondary rounded-full border-4 border-ink-black flex items-center justify-center mx-auto mb-4 hard-shadow">
-      <span class="material-symbols-outlined text-5xl text-white" style="font-variation-settings:'FILL' 1">person</span>
-    </div>
+      <div class="js-avatar w-24 h-24 bg-secondary rounded-full border-4 border-ink-black flex items-center justify-center mx-auto mb-4 hard-shadow bg-cover bg-center">
+        <span class="material-symbols-outlined text-5xl text-white js-avatar-icon" style="font-variation-settings:'FILL' 1">person</span>
+      </div>
     <h2 class="pf-name font-headline-xl text-headline-lg-mobile md:text-headline-xl text-ink-black">User</h2>
     <p class="pf-username font-label-mono text-label-mono text-primary mt-2">@username</p>
     <div class="mt-6 bg-surface-container-low p-4 border-2 border-ink-black">

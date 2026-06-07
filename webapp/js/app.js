@@ -3,6 +3,7 @@ const tg = window.Telegram?.WebApp;
 const USER_ID = tg?.initDataUnsafe?.user?.id || 7598009952;
 const USERNAME = tg?.initDataUnsafe?.user?.username || "adasbear";
 const INIT_DATA = tg?.initData || "";
+const PHOTO_URL = tg?.initDataUnsafe?.user?.photo_url || "";
 
 let state = {
   cart: [],
@@ -39,6 +40,15 @@ async function loadUser() {
   }
   document.querySelector(".pf-name-side").textContent = state.user?.full_name?.split(" ")[0] || "Member";
   document.querySelector(".pf-username-side").textContent = `@${state.user?.username || USERNAME}`;
+  if (PHOTO_URL) {
+    document.querySelectorAll(".js-avatar").forEach((div) => {
+      div.style.backgroundImage = `url(${PHOTO_URL})`;
+      div.style.backgroundSize = "cover";
+      div.style.backgroundPosition = "center";
+      const icon = div.querySelector(".js-avatar-icon");
+      if (icon) icon.style.display = "none";
+    });
+  }
 }
 
 async function loadMenu() {
@@ -190,11 +200,12 @@ async function initPage(page, params) {
 
 // --- Navigation Setup ---
 function setupNavigation() {
-  document.querySelectorAll("[data-nav]").forEach((el) => {
-    el.addEventListener("click", (e) => {
+  document.addEventListener("click", (e) => {
+    const nav = e.target.closest("[data-nav]");
+    if (nav) {
       e.preventDefault();
-      navigateTo(el.dataset.nav);
-    });
+      navigateTo(nav.dataset.nav);
+    }
   });
 }
 
@@ -533,11 +544,12 @@ function renderHelp() {
 // --- Place Order ---
 async function placeOrder(comment) {
   if (!state.cart.length) return { error: "Cart is empty" };
-  const payMethodEl = document.querySelector(".pay-method-btn.bg-secondary");
-  const payAccEl = document.querySelector(".pay-account.bg-secondary-container");
-  const paymentMethod = payMethodEl?.dataset?.method || "bank";
-  const paymentAccountId = payAccEl?.dataset?.id || null;
+  const paymentMethod = _selectedPayment.method;
+  const paymentAccountId = _selectedPayment.accountId;
   const confirmation = $("payment-confirmation")?.value?.trim() || "";
+  if (paymentMethod !== "debt" && !paymentAccountId) {
+    return { error: "Please select a bank or payment method." };
+  }
   try {
     const result = await api("/orders", {
       method: "POST",
@@ -546,7 +558,7 @@ async function placeOrder(comment) {
         username: USERNAME,
         full_name: state.user?.full_name || USERNAME,
         items: state.cart.map((i) => ({ item: i.item, qty: i.qty })),
-        payment_method: paymentMethod === "DEBT" ? "debt" : paymentMethod,
+        payment_method: paymentMethod === "debt" ? "debt" : paymentMethod,
         payment_account_id: paymentAccountId,
         confirmation: confirmation,
         comment: comment || "",
@@ -563,54 +575,103 @@ async function placeOrder(comment) {
 }
 
 // --- Payment Accounts UI ---
+let _selectedPayment = { method: "bank", accountId: null, account: null };
+
 async function loadPaymentAccountsUI() {
   try {
     const accounts = await loadPaymentAccounts();
     const methodsEl = $("payment-methods");
-    const accountsEl = $("payment-accounts");
     if (!methodsEl) return;
-    const methods = ["CBE", "TELEBIRR", "DEBT"];
-    methodsEl.innerHTML = methods.map((m, i) =>
-      `<button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform ${i === 0 ? 'bg-secondary text-on-secondary' : 'bg-white text-ink-black'}" data-method="${m}">
-        <span class="material-symbols-outlined mb-1">${m === 'CBE' ? 'account_balance' : m === 'TELEBIRR' ? 'smartphone' : 'payments'}</span>
-        <span class="font-label-mono text-[10px]">${m}</span>
-      </button>`
-    ).join("");
+    methodsEl.innerHTML = `
+      <button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform bg-secondary text-on-secondary" data-method="bank">
+        <span class="material-symbols-outlined mb-1">account_balance</span>
+        <span class="font-label-mono text-[10px]">BANK</span>
+      </button>
+      <button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform bg-white text-ink-black" data-method="telebirr">
+        <span class="material-symbols-outlined mb-1">smartphone</span>
+        <span class="font-label-mono text-[10px]">TELEBIRR</span>
+      </button>
+      <button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform bg-white text-ink-black" data-method="debt">
+        <span class="material-symbols-outlined mb-1">payments</span>
+        <span class="font-label-mono text-[10px]">DEBT</span>
+      </button>`;
     methodsEl.querySelectorAll(".pay-method-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         methodsEl.querySelectorAll(".pay-method-btn").forEach(b => { b.classList.remove("bg-secondary", "text-on-secondary"); b.classList.add("bg-white", "text-ink-black"); });
         btn.classList.add("bg-secondary", "text-on-secondary"); btn.classList.remove("bg-white", "text-ink-black");
-        renderPaymentAccounts(accounts, btn.dataset.method);
+        _selectedPayment.method = btn.dataset.method;
+        _selectedPayment.accountId = null;
+        _selectedPayment.account = null;
+        renderPaymentSection(accounts);
       });
     });
-    renderPaymentAccounts(accounts, "CBE");
+    _selectedPayment = { method: "bank", accountId: null, account: null };
+    renderPaymentSection(accounts);
   } catch(e) {}
 }
 
-function renderPaymentAccounts(accounts, method) {
+function renderPaymentSection(accounts) {
   const el = $("payment-accounts");
   if (!el) return;
-  const filtered = accounts.filter(a => a.bank_name?.toLowerCase().includes(method.toLowerCase()) || method === "DEBT");
-  if (method === "DEBT") {
-    el.innerHTML = '<p class="font-label-mono text-label-mono text-on-surface-variant">Debt option selected. Amount will be added to your debt balance.</p>';
+  if (_selectedPayment.method === "debt") {
+    el.innerHTML = '<p class="font-label-mono text-label-mono text-on-surface-variant p-2">Debt option selected. Amount will be added to your debt balance.</p>';
     return;
   }
-  if (!filtered.length) {
-    el.innerHTML = '<p class="font-label-mono text-label-mono text-on-surface-variant">No accounts available</p>';
+  if (_selectedPayment.method === "telebirr") {
+    const tb = accounts.find(a => a.bank_name?.toLowerCase() === "telebirr");
+    if (tb) {
+      _selectedPayment.accountId = tb.id;
+      _selectedPayment.account = tb;
+      el.innerHTML = `
+        <div class="p-3 bg-background border-2 border-ink-black space-y-1">
+          <p class="font-headline-lg-mobile text-headline-lg-mobile">Telebirr</p>
+          <p class="font-label-mono text-label-mono text-primary text-lg">${tb.number}</p>
+          <p class="font-label-mono text-label-mono text-on-surface-variant">Name: ${tb.holder_name}</p>
+        </div>`;
+    } else {
+      el.innerHTML = '<p class="font-label-mono text-label-mono text-on-surface-variant p-2">No Telebirr account configured.</p>';
+    }
     return;
   }
-  el.innerHTML = filtered.map(a =>
-    `<div class="pay-account flex items-center gap-3 p-2 bg-background border-2 border-ink-black cursor-pointer hover:bg-secondary-container transition-colors" data-id="${a.id}">
-      <span class="material-symbols-outlined text-primary">credit_card</span>
-      <span class="font-label-mono text-label-mono truncate">${a.bank_name} - ${(a.account_number || a.account_holder || "").slice(-6)}</span>
-    </div>`
-  ).join("");
-  el.querySelectorAll(".pay-account").forEach(div => {
-    div.addEventListener("click", () => {
-      el.querySelectorAll(".pay-account").forEach(d => d.classList.remove("bg-secondary-container"));
-      div.classList.add("bg-secondary-container");
-    });
+  const bankAccounts = accounts.filter(a => a.bank_name?.toLowerCase() !== "telebirr");
+  const uniqueBanks = [...new Set(bankAccounts.map(a => a.bank_name))];
+  let html = `<select id="bank-select" class="w-full bg-white border-2 border-ink-black p-3 font-label-mono text-label-mono focus:outline-none hard-shadow-sm mb-3">`;
+  html += `<option value="">-- Select Bank --</option>`;
+  uniqueBanks.forEach(b => {
+    html += `<option value="${b}" ${_selectedPayment.account?.bank_name === b ? 'selected' : ''}>${b}</option>`;
   });
+  html += `</select><div id="bank-account-info"></div>`;
+  el.innerHTML = html;
+  const select = $("bank-select");
+  if (select) {
+    select.addEventListener("change", () => {
+      const selected = bankAccounts.find(a => a.bank_name === select.value);
+      const info = $("bank-account-info");
+      if (selected) {
+        _selectedPayment.accountId = selected.id;
+        _selectedPayment.account = selected;
+        info.innerHTML = `
+          <div class="p-3 bg-background border-2 border-ink-black space-y-1">
+            <p class="font-headline-lg-mobile text-headline-lg-mobile">${selected.bank_name}</p>
+            <p class="font-label-mono text-label-mono text-primary text-lg">${selected.number}</p>
+            <p class="font-label-mono text-label-mono text-on-surface-variant">Name: ${selected.holder_name}</p>
+          </div>`;
+      } else {
+        _selectedPayment.accountId = null;
+        _selectedPayment.account = null;
+        info.innerHTML = '<p class="font-label-mono text-label-mono text-on-surface-variant">Select a bank to see account details.</p>';
+      }
+    });
+    if (_selectedPayment.account) {
+      select.value = _selectedPayment.account.bank_name;
+      select.dispatchEvent(new Event("change"));
+    } else if (bankAccounts.length > 0) {
+      select.value = bankAccounts[0].bank_name;
+      select.dispatchEvent(new Event("change"));
+    } else {
+      $("bank-account-info").innerHTML = '<p class="font-label-mono text-label-mono text-on-surface-variant">No bank accounts configured.</p>';
+    }
+  }
 }
 
 // --- Form Handlers ---
