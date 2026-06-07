@@ -596,18 +596,16 @@ async function loadPaymentAccountsUI() {
         <span class="material-symbols-outlined mb-1">smartphone</span>
         <span class="font-label-mono text-[10px]">TELEBIRR</span>
       </button>
-      <button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform bg-white text-ink-black opacity-50" data-method="debt" ${_debtAllowed ? '' : 'disabled'}>
-        <span class="material-symbols-outlined mb-1">payments</span>
+      <button class="pay-method-btn flex flex-col items-center justify-center p-3 border-2 border-ink-black hard-shadow-sm hover:scale-95 transition-transform bg-white text-ink-black ${_debtAllowed ? '' : 'opacity-40'}" data-method="debt">
+        <span class="material-symbols-outlined mb-1">${_debtAllowed ? 'payments' : 'lock'}</span>
         <span class="font-label-mono text-[10px]">${_debtAllowed ? 'DEBT' : 'DEBT (LOCKED)'}</span>
       </button>`;
-    if (!_debtAllowed) {
-      methodsEl.querySelector('[data-method="debt"]')?.addEventListener("click", (e) => {
-        alert("You are not on the debt allow list. Contact admin to be added.");
-      });
-    }
     methodsEl.querySelectorAll(".pay-method-btn").forEach(btn => {
       btn.addEventListener("click", () => {
-        if (btn.dataset.method === "debt" && !_debtAllowed) return;
+        if (btn.dataset.method === "debt" && !_debtAllowed) {
+          alert("You are not on the debt allow list. Contact admin to be added.");
+          return;
+        }
         methodsEl.querySelectorAll(".pay-method-btn").forEach(b => { b.classList.remove("bg-secondary", "text-on-secondary"); b.classList.add("bg-white", "text-ink-black"); });
         btn.classList.add("bg-secondary", "text-on-secondary"); btn.classList.remove("bg-white", "text-ink-black");
         _selectedPayment.method = btn.dataset.method;

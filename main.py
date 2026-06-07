@@ -765,6 +765,13 @@ def api_place_order():
     comment = data.get("comment")
     if not user_id or not items:
         return jsonify({"success": False, "error": "user_id and items required"}), 400
+    if payment_method == "debt":
+        allow = asyncio.run(_db(
+            lambda: database._supabase.table("debt_allow_list")
+            .select("id").eq("username", (username or "").lstrip("@")).limit(1).execute()
+        ))
+        if not allow.data:
+            return jsonify({"success": False, "error": "You are not on the debt allow list."}), 403
     order_group = f"APP-{datetime.now(timezone.utc).strftime('%y%m%d')}-{random.randint(1000,9999)}"
     for item in items:
         asyncio.run(database.save_order(
