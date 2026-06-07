@@ -326,16 +326,20 @@ async def _handle_lock_qty(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not name:
         context.user_data["expect_lock_qty"] = False
         return
-    from database import set_daily_stock
-    await set_daily_stock(name, qty)
-    from keyboards import admin_lock_menu_inline_keyboard
-    context.user_data["expect_lock_qty"] = False
-    context.user_data.pop("lock_menu_item", None)
-    await update.message.reply_text(
-        f"✅ <b>{name}</b> limit set to {qty} for today.",
-        reply_markup=await admin_lock_menu_inline_keyboard(),
-        parse_mode=ParseMode.HTML
-    )
+    try:
+        from database import set_daily_stock
+        await set_daily_stock(name, qty)
+        from keyboards import admin_lock_menu_inline_keyboard
+        context.user_data["expect_lock_qty"] = False
+        context.user_data.pop("lock_menu_item", None)
+        await update.message.reply_text(
+            f"✅ <b>{name}</b> limit set to {qty} for today.",
+            reply_markup=await admin_lock_menu_inline_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {e}")
+        context.user_data["expect_lock_qty"] = False
 
 
 async def _text_dispatcher(update: Update, context: ContextTypes.DEFAULT_TYPE):

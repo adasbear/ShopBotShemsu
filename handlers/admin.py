@@ -26,7 +26,8 @@ from keyboards import (
     order_deliver_keyboard, deliver_paid_debt_keyboard,
     admin_allow_list_inline_keyboard, admin_debts_inline_keyboard,
     admin_debt_action_keyboard,
-    admin_payment_accounts_keyboard
+    admin_payment_accounts_keyboard,
+    admin_lock_menu_inline_keyboard, admin_lock_item_keyboard
 )
 from utils.helpers import is_admin, BAN_MESSAGE
 
@@ -480,7 +481,6 @@ async def admin_lock_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not _check(update):
         return ConversationHandler.END
     try:
-        from keyboards import admin_lock_menu_inline_keyboard
         kb = await admin_lock_menu_inline_keyboard()
         await update.message.reply_text(
             "Set daily stock limits for menu items:",
