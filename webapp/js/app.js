@@ -785,7 +785,7 @@ if (tg) {
 
 // --- Referrals ---
 async function renderReferrals() {
-  const link = `https://t.me/ShopBotShemsuBot?start=ref_${USER_ID}`;
+  const link = `https://t.me/sshopdelivery_bot?start=ref_${USER_ID}`;
   $("ref-link").value = link;
   let count = 0, points = 0, earnings = [];
   try {
