@@ -6,7 +6,7 @@ import threading
 from datetime import datetime, timezone, timedelta
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from telegram import Update
+from telegram import Update, MenuButtonWebApp, WebAppInfo
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
@@ -113,6 +113,15 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.message.reply_text("Cancelled.")
     return ConversationHandler.END
 
+WEBAPP_URL = "https://shopbotshemsu-1.onrender.com/app/"
+
+async def webapp_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    from telegram import WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup
+    kb = InlineKeyboardMarkup([[
+        InlineKeyboardButton("Open Shop 🛍️", web_app=WebAppInfo(url=WEBAPP_URL))
+    ]])
+    await update.message.reply_text("Tap to open the Shop Mini App:", reply_markup=kb)
+
 conv = ConversationHandler(
     entry_points=[
         CommandHandler("start", start),
@@ -176,6 +185,7 @@ conv = ConversationHandler(
 )
 
 application.add_handler(conv)
+application.add_handler(CommandHandler("app", webapp_command))
 
 async def _handle_allow_username(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.user_data.get("expect_allow_username"):
@@ -368,6 +378,9 @@ async def _start_polling():
     await application.initialize()
     await application.start()
     await application.updater.start_polling()
+    await application.bot.set_chat_menu_button(
+        menu_button=MenuButtonWebApp(text="Shop 🛍️", web_app=WebAppInfo(url=WEBAPP_URL))
+    )
     while True:
         await asyncio.sleep(3600)
 
