@@ -6,7 +6,7 @@ from config import ADMIN_USERNAME, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_A
 from database import (
     get_all_users_detailed, ban_user, unban_user,
     get_menu, add_menu_item, delete_menu_item,
-    get_all_menu_items,
+    get_all_menu_items, update_menu_image, remove_menu_image, upload_menu_image,
     get_pending_summary, get_pending_orders_with_users,
     get_pending_user_ids, mark_all_arrived, mark_order_arrived,
     get_all_feedback, get_all_users,
@@ -405,6 +405,85 @@ async def admin_add_sub_item_price(update: Update, context: ContextTypes.DEFAULT
     except:
         await update.message.reply_text("Invalid price.", reply_markup=await admin_menu_edit_keyboard())
     return ConversationHandler.END
+
+# --- Menu Photo Management ---
+
+async def admin_photo_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    name = query.data.split("_", 1)[1]
+    items = await get_all_menu_items()
+    item = next((i for i in items if i["name"] == name), None)
+    if not item:
+        await query.edit_message_text("Item not found.")
+        return
+    context.user_data["expect_item_photo"] = name
+    existing = item.get("image_url")
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Cancel ❌", callback_data="admin_back_menu")]
+    ])
+    msg = f"Send a <b>photo</b> or paste an <b>image URL</b> for <b>{name}</b>"
+    if existing:
+        msg += f"\n\nCurrent photo: {existing}"
+    msg += "\n\nOr send /skip to cancel."
+    await query.edit_message_text(msg, parse_mode=ParseMode.HTML, reply_markup=kb)
+
+async def admin_photo_handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    name = context.user_data.get("expect_item_photo")
+    if not name:
+        return
+    url = update.message.text.strip()
+    if not url.startswith("http://") and not url.startswith("https://"):
+        await update.message.reply_text("Please send a valid URL (starting with http:// or https://), or send a photo directly.")
+        return
+    await update_menu_image(name, url)
+    context.user_data.pop("expect_item_photo", None)
+    await update.message.reply_text(
+        f"✅ Image URL saved for <b>{name}</b>!",
+        reply_markup=await admin_menu_edit_keyboard(),
+        parse_mode=ParseMode.HTML
+    )
+
+async def admin_photo_handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    name = context.user_data.get("expect_item_photo")
+    if not name:
+        return
+    photo = update.message.photo[-1]
+    file = await photo.get_file()
+    file_bytes = await file.download_as_bytearray()
+    try:
+        url = await upload_menu_image(file_bytes, name)
+        await update_menu_image(name, url)
+        context.user_data.pop("expect_item_photo", None)
+        await update.message.reply_text(
+            f"✅ Photo uploaded for <b>{name}</b>!",
+            reply_markup=await admin_menu_edit_keyboard(),
+            parse_mode=ParseMode.HTML
+        )
+    except Exception as e:
+        await update.message.reply_text(
+            f"❌ Upload failed: {e}",
+            reply_markup=await admin_menu_edit_keyboard()
+        )
+
+async def admin_photo_handle_skip(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.user_data.get("expect_item_photo"):
+        context.user_data.pop("expect_item_photo", None)
+        await update.message.reply_text(
+            "Cancelled.",
+            reply_markup=await admin_menu_edit_keyboard()
+        )
+    return ConversationHandler.END
+
+async def admin_photo_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    name = query.data.split("_", 2)[2]
+    await remove_menu_image(name)
+    await query.edit_message_text(
+        f"🗑️ Photo removed from <b>{name}</b>.",
+        parse_mode=ParseMode.HTML
+    )
 
 # --- Back to Portal ---
 

@@ -29,7 +29,9 @@ from handlers.admin import (
     admin_back_to_portal, admin_inline_callback,
     admin_debt_menu, admin_show_allow_list,
     admin_show_all_debts_handler, admin_payment_menu,
-    admin_no_item_start, admin_lock_menu
+    admin_no_item_start, admin_lock_menu,
+    admin_photo_start, admin_photo_handle_text, admin_photo_handle_photo,
+    admin_photo_remove, admin_photo_handle_skip
 )
 from handlers.manage_order import view_my_orders, handle_manage_order, handle_order_action, handle_edit_item, handle_edit_qty
 from handlers.feedback import start_feedback, save_feedback_handler
@@ -356,7 +358,9 @@ async def _handle_lock_qty(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def _text_dispatcher(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Route text messages to the correct handler based on context flags."""
-    if context.user_data.get("expect_debt_pay_confirmation"):
+    if context.user_data.get("expect_item_photo"):
+        await admin_photo_handle_text(update, context)
+    elif context.user_data.get("expect_debt_pay_confirmation"):
         await handle_debt_pay_confirmation(update, context)
     elif context.user_data.get("expect_decline_reason"):
         await _handle_decline_reason(update, context)
@@ -370,8 +374,10 @@ async def _text_dispatcher(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await _handle_lock_qty(update, context)
 
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _text_dispatcher))
+application.add_handler(MessageHandler(filters.PHOTO, admin_photo_handle_photo))
+application.add_handler(CommandHandler("skip", admin_photo_handle_skip))
 application.add_handler(CallbackQueryHandler(handle_debt_pay_callback, pattern="^debt_pay_"))
-application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_|^noitem_|^lock_"))
+application.add_handler(CallbackQueryHandler(admin_inline_callback, pattern="^auser_|^aban_|^aunban_|^aback_users|^adel_|^admin_add_item|^admin_add_category|^manage_cat_|^add_subitem_|^admin_back_menu|^deliver_|^ord_|^adel_allow_|^adebt_|^admin_add_allow|^admin_back_debt|^adebt_back_to_list|^adebt_filter_|^apay_|^noitem_|^lock_|^aphoto_|^aremove_photo_"))
 
 async def _start_polling():
     await application.bot.delete_webhook()
@@ -614,7 +620,7 @@ def api_update_profile():
 def api_get_menu():
     try:
         parent = request.args.get("parent")
-        query = database._supabase.table("menu").select("name, price, parent")
+        query = database._supabase.table("menu").select("name, price, parent, image_url")
         if parent:
             query = query.eq("parent", parent)
         query = query.order("parent", nullsfirst=True).order("name")
@@ -626,6 +632,7 @@ def api_get_menu():
                 "name": item["name"],
                 "price": float(item["price"]),
                 "parent": item.get("parent"),
+                "image_url": item.get("image_url") or "",
                 "available": True
             })
         return jsonify(enriched)

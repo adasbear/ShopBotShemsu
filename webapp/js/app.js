@@ -276,9 +276,10 @@ function renderMenuItems(items, category) {
   }
   grid.innerHTML = filtered.map((item) => {
     const rot = (Math.random() * 2 - 1).toFixed(2);
+    const img = item.image_url ? `<img src="${item.image_url}" alt="${item.name}" class="w-full h-full object-cover"/>` : `<span class="material-symbols-outlined text-5xl text-primary">restaurant</span>`;
     return `<div class="menu-item group bg-surface-container rough-border p-4 flex flex-col items-center text-center relative hover:scale-[1.02] transition-transform" style="transform:rotate(${rot}deg)">
       <div class="w-full aspect-square mb-4 bg-white/50 rough-border overflow-hidden flex items-center justify-center">
-        <span class="material-symbols-outlined text-5xl text-primary">restaurant</span>
+        ${img}
       </div>
       <span class="text-secondary font-headline-lg text-xl md:text-2xl mb-2">${item.price.toFixed(2)} Birr</span>
       <h3 class="font-headline-lg text-lg md:text-xl uppercase mb-4">${item.name}</h3>

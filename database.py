@@ -70,7 +70,7 @@ async def has_sub_items(name):
     return len(result.data) > 0
 
 async def get_all_menu_items():
-    result = await _db(lambda: _supabase.table("menu").select("name, price, parent").order("parent").execute())
+    result = await _db(lambda: _supabase.table("menu").select("name, price, parent, image_url").order("parent").execute())
     return result.data
 
 async def delete_menu_item(name):
@@ -82,6 +82,20 @@ async def add_menu_item(name, price, parent=None):
     if parent:
         data["parent"] = parent
     await _db(lambda: _supabase.table("menu").upsert(data).execute())
+
+async def update_menu_image(name, image_url):
+    await _db(lambda: _supabase.table("menu").update({"image_url": image_url}).eq("name", name).execute())
+
+async def remove_menu_image(name):
+    await _db(lambda: _supabase.table("menu").update({"image_url": None}).eq("name", name).execute())
+
+async def upload_menu_image(file_bytes, item_name):
+    import uuid
+    ext = "jpg"
+    path = f"menu/{item_name.replace(' ', '_')}_{uuid.uuid4().hex[:8]}.{ext}"
+    await _db(lambda: _supabase.storage.from_("menu-images").upload(path, file_bytes, {"content-type": "image/jpeg"}))
+    public_url = _supabase.storage.from_("menu-images").get_public_url(path)
+    return public_url
 
 # --- Orders ---
 

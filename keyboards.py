@@ -95,10 +95,14 @@ async def admin_menu_edit_keyboard():
     kb = []
     for row in items:
         name = row["name"]
+        photo_label = "🖼️" if row.get("image_url") else "📷"
         if await has_sub_items(name):
             kb.append([InlineKeyboardButton(f"Manage {name} ▶️", callback_data=f"manage_cat_{name}")])
         else:
-            kb.append([InlineKeyboardButton(f"Delete {name}", callback_data=f"adel_{name}")])
+            kb.append([
+                InlineKeyboardButton(f"Delete {name}", callback_data=f"adel_{name}"),
+                InlineKeyboardButton(photo_label, callback_data=f"aphoto_{name}")
+            ])
     kb.append([InlineKeyboardButton("Add Item", callback_data="admin_add_item")])
     kb.append([InlineKeyboardButton("Add Category", callback_data="admin_add_category")])
     return InlineKeyboardMarkup(kb)
@@ -108,7 +112,10 @@ async def admin_category_keyboard(category):
     items = await get_sub_menu(category)
     kb = []
     for name, price in items.items():
-        kb.append([InlineKeyboardButton(f"Delete {name}", callback_data=f"adel_{name}")])
+        kb.append([
+            InlineKeyboardButton(f"Delete {name}", callback_data=f"adel_{name}"),
+            InlineKeyboardButton("📷", callback_data=f"aphoto_{name}")
+        ])
     kb.append([InlineKeyboardButton("Add Sub-item", callback_data=f"add_subitem_{category}")])
     kb.append([InlineKeyboardButton("⬅ Back", callback_data="admin_back_menu")])
     return InlineKeyboardMarkup(kb)
