@@ -127,7 +127,9 @@ tailwind.config = {
         <div class="space-y-3">
           <input id="menu-input-name" class="w-full bg-surface-container-low border-2 border-ink-black p-3 font-body-md focus:outline-none" placeholder="Item name" />
           <input id="menu-input-price" class="w-full bg-surface-container-low border-2 border-ink-black p-3 font-body-md focus:outline-none" placeholder="Price (0 for category)" type="number" step="0.01" />
-          <select id="menu-input-parent" class="w-full bg-surface-container-low border-2 border-ink-black p-3 font-body-md focus:outline-none"><option value="">Top-level (category)</option></select>
+          <div id="menu-parent-wrap">
+            <select id="menu-input-parent" class="w-full bg-surface-container-low border-2 border-ink-black p-3 font-body-md focus:outline-none"><option value="">Top-level (category)</option></select>
+          </div>
           <input id="menu-input-image" class="w-full bg-surface-container-low border-2 border-ink-black p-3 font-body-md focus:outline-none" placeholder="Image URL (optional)" />
           <div class="flex gap-2">
             <button class="flex-1 bg-primary text-on-primary py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="saveMenuItem()">Save</button>

@@ -196,10 +196,17 @@ async function renderMenu() {
   } catch(e) { tree.innerHTML = '<div class="text-center py-12 text-error">Failed to load menu</div>'; }
 }
 
-async function showAddItem() { state._editingItem = null; $("menu-modal-title").textContent = "Add Item"; $("menu-input-name").value = ""; $("menu-input-price").value = ""; $("menu-input-image").value = ""; await populateParentSelect(); $("menu-input-parent").value = ""; $("menu-modal").classList.remove("hidden"); }
-async function showAddCategory() { state._editingItem = null; $("menu-modal-title").textContent = "Add Category"; $("menu-input-name").value = ""; $("menu-input-price").value = "0"; $("menu-input-image").value = ""; $("menu-input-parent").value = ""; $("menu-input-parent").closest("div")?.querySelector("select")?.closest("div")?.classList.add("hidden"); $("menu-modal").classList.remove("hidden"); }
-function editMenuItem(name) { const item = _menuData.find(i => i.name === name); if (!item) return; state._editingItem = name; $("menu-modal-title").textContent = "Edit Item"; $("menu-input-name").value = item.name; $("menu-input-price").value = item.price; $("menu-input-image").value = item.image_url || ""; populateParentSelect(item.parent); $("menu-modal").classList.remove("hidden"); }
-async function showAddSubItem(cat) { state._editingItem = null; $("menu-modal-title").textContent = `Add to ${cat}`; $("menu-input-name").value = ""; $("menu-input-price").value = ""; $("menu-input-image").value = ""; await populateParentSelect(cat); $("menu-input-parent").value = cat; $("menu-modal").classList.remove("hidden"); }
+function _menuModalReset() {
+  $("menu-input-name").value = "";
+  $("menu-input-price").value = "";
+  $("menu-input-image").value = "";
+  $("menu-parent-wrap").classList.remove("hidden");
+}
+
+async function showAddItem() { state._editingItem = null; _menuModalReset(); $("menu-modal-title").textContent = "Add Item"; $("menu-parent-wrap").classList.add("hidden"); $("menu-modal").classList.remove("hidden"); }
+async function showAddCategory() { state._editingItem = null; _menuModalReset(); $("menu-modal-title").textContent = "Add Category"; $("menu-input-price").value = "0"; $("menu-parent-wrap").classList.add("hidden"); $("menu-modal").classList.remove("hidden"); }
+function editMenuItem(name) { const item = _menuData.find(i => i.name === name); if (!item) return; state._editingItem = name; _menuModalReset(); $("menu-modal-title").textContent = "Edit Item"; $("menu-input-name").value = item.name; $("menu-input-price").value = item.price; $("menu-input-image").value = item.image_url || ""; populateParentSelect(item.parent); $("menu-input-parent").value = item.parent || ""; $("menu-modal").classList.remove("hidden"); }
+async function showAddSubItem(cat) { state._editingItem = null; _menuModalReset(); $("menu-modal-title").textContent = `Add to ${cat}`; await populateParentSelect(cat); $("menu-input-parent").value = cat; $("menu-modal").classList.remove("hidden"); }
 
 async function populateParentSelect(selected) {
   const sel = $("menu-input-parent");
@@ -216,7 +223,7 @@ async function populateParentSelect(selected) {
 async function saveMenuItem() {
   const name = $("menu-input-name").value.trim();
   const price = parseFloat($("menu-input-price").value);
-  const parent = $("menu-input-parent").value || null;
+  const parent = $("menu-parent-wrap").classList.contains("hidden") ? null : ($("menu-input-parent").value || null);
   const image_url = $("menu-input-image").value.trim() || null;
   if (!name) return alert("Name required");
   try {
