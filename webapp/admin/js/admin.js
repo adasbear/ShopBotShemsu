@@ -407,8 +407,8 @@ async function renderFeedback() {
 // --- Setup ---
 function setupNavigation() {
   document.addEventListener("click", (e) => {
-    const nav = e.target.closest("[data-nav]");
-    if (nav) { e.preventDefault(); navigateTo(nav.dataset.nav); }
+    const nav = e.target.closest("[data-nav], [data-page]");
+    if (nav) { e.preventDefault(); navigateTo(nav.dataset.nav || nav.dataset.page); }
   });
   document.querySelectorAll(".order-tab").forEach(btn => {
     btn.addEventListener("click", () => {

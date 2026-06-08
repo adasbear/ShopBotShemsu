@@ -1279,8 +1279,11 @@ _webapp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "webapp")
 @app.route("/app/admin/<path:filename>")
 def webapp_admin_static(filename="admin.html"):
     admin_dir = os.path.join(_webapp_dir, "admin")
-    filepath = os.path.join(_webapp_dir, filename)
-    if os.path.isfile(filepath):
+    admin_path = os.path.join(admin_dir, filename)
+    if os.path.isfile(admin_path):
+        return send_from_directory(admin_dir, filename)
+    webapp_path = os.path.join(_webapp_dir, filename)
+    if os.path.isfile(webapp_path):
         return send_from_directory(_webapp_dir, filename)
     return send_from_directory(_webapp_dir, "admin.html")
 
