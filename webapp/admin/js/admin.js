@@ -147,6 +147,13 @@ async function renderOrderDetail(og) {
     $("od-items").innerHTML = (d.items || []).map(i => `<div class="flex justify-between py-1 border-b border-dashed border-ink-black"><span>${i.qty}x ${i.item}</span></div>`).join("");
     $("od-total").textContent = `${(d.total || 0).toFixed(2)} Birr`;
     $("od-comment").textContent = d.comment || "None";
+    const payLabel = $("od-payment-label");
+    if (d.payment) {
+      payLabel.classList.remove("hidden");
+      $("od-payment").textContent = d.payment;
+    } else {
+      payLabel.classList.add("hidden");
+    }
     const actions = $("od-actions");
     if (d.status === "Pending") {
       actions.innerHTML = `
@@ -155,7 +162,10 @@ async function renderOrderDetail(og) {
         <button class="w-full bg-error text-on-error py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="declineOrder('${og}')">Decline</button>
       `;
     } else if (d.status === "Accepted") {
-      actions.innerHTML = `<button class="w-full bg-ocean-blue text-white py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="markReady('${og}')">Mark Ready</button>`;
+      actions.innerHTML = `
+        <button class="w-full bg-ocean-blue text-white py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="markReady('${og}')">Mark Ready</button>
+        <button class="w-full bg-error text-on-error py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="showNotFoundModal('${og}')">Not Found</button>
+      `;
     } else if (d.status === "Ready") {
       actions.innerHTML = `
         <p class="font-body-md text-body-md text-center mb-2">Delivered as:</p>
@@ -173,6 +183,15 @@ async function declineOrder(og) { const r = $("decline-reason")?.value; if (!r) 
 async function markReady(og) { try { await api(`/admin/orders/${og}/ready`, { method: "POST" }); navigateTo("orders"); } catch(e) { alert("Failed: " + e.message); } }
 async function deliverPaid(og) { try { await api(`/admin/orders/${og}/deliver`, { method: "POST", body: JSON.stringify({ type: "paid" }) }); navigateTo("orders"); } catch(e) { alert("Failed: " + e.message); } }
 async function deliverDebt(og) { try { await api(`/admin/orders/${og}/deliver`, { method: "POST", body: JSON.stringify({ type: "debt" }) }); navigateTo("orders"); } catch(e) { alert("Failed: " + e.message); } }
+
+let _notfoundOg = null;
+function showNotFoundModal(og) { _notfoundOg = og; $("notfound-modal").classList.remove("hidden"); $("notfound-msg").value = "The item you ordered is not available."; }
+function closeNotFoundModal() { _notfoundOg = null; $("notfound-modal").classList.add("hidden"); }
+async function confirmNotFound() {
+  const og = _notfoundOg; const msg = $("notfound-msg")?.value; if (!og || !msg) return;
+  closeNotFoundModal();
+  try { await api(`/admin/orders/${og}/notfound`, { method: "POST", body: JSON.stringify({ message: msg }) }); navigateTo("orders"); } catch(e) { alert("Failed: " + e.message); }
+}
 
 // --- Menu ---
 let _menuData = [];

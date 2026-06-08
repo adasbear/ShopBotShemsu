@@ -1097,6 +1097,22 @@ def _get_price(item_name):
         .select("price").eq("name", item_name).limit(1).execute()))
     return m.data[0]["price"] if m.data else 0
 
+@app.route("/api/admin/orders/<order_group>/notfound", methods=["POST"])
+def api_admin_notfound(order_group):
+    data = request.get_json()
+    msg = data.get("message", "The item you ordered is not available.")
+    full_msg = f"{msg}\n\n⚠️ Your money will be returned shortly."
+    asyncio.run(database.update_order_status(order_group, "Cancelled"))
+    asyncio.run(database.save_order_decline_reason(order_group, full_msg))
+    og = asyncio.run(_db(lambda: database._supabase.table("orders")
+        .select("*").eq("order_group", order_group).limit(1).execute()))
+    if og.data:
+        uid = og.data[0].get("user_id")
+        if uid:
+            _send_telegram(uid, f"<b>Item Not Available</b>\n\n{full_msg}\n\nContact @{ADMIN_USERNAMES[0]} if you have questions.")
+            _save_notification(uid, "Item Not Available", full_msg)
+    return jsonify({"success": True})
+
 @app.route("/api/admin/menu", methods=["GET"])
 def api_admin_menu():
     items = asyncio.run(database.get_all_menu_items())
