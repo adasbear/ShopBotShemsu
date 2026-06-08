@@ -1007,9 +1007,7 @@ def api_admin_accept(order_group):
         uid = og.data[0].get("user_id")
         if uid:
             _send_telegram(uid, "<b>Order Accepted!</b>\n\nYour order is being prepared.")
-            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                "user_id": int(uid), "title": "Order Accepted", "body": "Your order is being prepared."
-            }).execute()))
+            _save_notification(uid, "Order Accepted", "Your order is being prepared.")
     return jsonify({"success": True})
 
 @app.route("/api/admin/orders/<order_group>/decline", methods=["POST"])
@@ -1024,9 +1022,7 @@ def api_admin_decline(order_group):
         uid = og.data[0].get("user_id")
         if uid:
             _send_telegram(uid, f"<b>Order Declined</b>\n\n<b>Reason:</b> {reason}\n\nContact @{ADMIN_USERNAMES[0]} if you have questions.")
-            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                "user_id": int(uid), "title": "Order Declined", "body": f"Reason: {reason}"
-            }).execute()))
+            _save_notification(uid, "Order Declined", f"Reason: {reason}")
     return jsonify({"success": True})
 
 @app.route("/api/admin/orders/<order_group>/ready", methods=["POST"])
@@ -1038,9 +1034,7 @@ def api_admin_ready(order_group):
         uid = og.data[0].get("user_id")
         if uid:
             _send_telegram(uid, "<b>Order Ready!</b>\n\nYour order is ready for pickup/delivery.")
-            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                "user_id": int(uid), "title": "Order Ready", "body": "Your order is ready for pickup/delivery."
-            }).execute()))
+            _save_notification(uid, "Order Ready", "Your order is ready for pickup/delivery.")
     return jsonify({"success": True})
 
 @app.route("/api/admin/orders/<order_group>/deliver", methods=["POST"])
@@ -1063,10 +1057,16 @@ def api_admin_deliver(order_group):
         if uid:
             status_text = "Paid" if dtype == "paid" else "Added to debt"
             _send_telegram(uid, f"<b>Order Delivered</b>\n\nStatus: {status_text}")
-            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                "user_id": int(uid), "title": "Order Delivered", "body": f"Delivered - {status_text}"
-            }).execute()))
+            _save_notification(uid, "Order Delivered", f"Delivered - {status_text}")
     return jsonify({"success": True})
+
+def _save_notification(user_id, title, body):
+    try:
+        asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+            "user_id": int(user_id), "title": title, "body": body
+        }).execute()))
+    except Exception as e:
+        logging.error(f"Notification insert failed for user {user_id}: {e}")
 
 def _get_price(item_name):
     m = asyncio.run(_db(lambda: database._supabase.table("menu")
