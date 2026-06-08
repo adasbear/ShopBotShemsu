@@ -41,10 +41,13 @@ function stopAutoRefresh() {
   if (state._refreshTimer) { clearInterval(state._refreshTimer); state._refreshTimer = null; }
 }
 
+let _isRefresh = false;
+
 function startAutoRefresh(page) {
   stopAutoRefresh();
   if (!autoRefreshPages.includes(page)) return;
   state._refreshTimer = setInterval(() => {
+    _isRefresh = true;
     const params = Object.fromEntries(new URLSearchParams(window.location.hash.split("?")[1] || ""));
     initPage(state.currentPage, params);
   }, REFRESH_INTERVAL);
@@ -107,13 +110,14 @@ function initPage(page, params) {
     case "feedback": renderFeedback(); break;
     case "referred": renderReferred(); break;
   }
+  _isRefresh = false;
   startAutoRefresh(page);
 }
 
 // --- Dashboard ---
 async function renderDashboard() {
   const el = $("dash-stats");
-  el.innerHTML = '<div class="col-span-4 text-center py-8"><div class="skeleton h-16 w-full mb-2"></div><div class="skeleton h-16 w-full"></div></div>';
+  if (!_isRefresh) el.innerHTML = '<div class="col-span-4 text-center py-8"><div class="skeleton h-16 w-full mb-2"></div><div class="skeleton h-16 w-full"></div></div>';
   try {
     const d = await api("/admin/dashboard");
     el.innerHTML = `
@@ -128,7 +132,7 @@ async function renderDashboard() {
 // --- Orders ---
 async function renderOrders() {
   const list = $("orders-list");
-  list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-24 w-full mb-3"></div></div>';
+  if (!_isRefresh) list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-24 w-full mb-3"></div></div>';
   try {
     const status = state._orderFilter;
     const url = status === "all" ? "/admin/orders?today_only=1" : `/admin/orders?status=${status}`;
@@ -198,7 +202,7 @@ let _menuData = [];
 
 async function renderMenu() {
   const tree = $("menu-tree");
-  tree.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
+  if (!_isRefresh) tree.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
   try {
     _menuData = await api("/admin/menu");
     const cats = _menuData.filter(i => !i.parent);
@@ -276,7 +280,7 @@ async function deleteMenuItem(name) { if (!confirm(`Delete "${name}"?`)) return;
 // --- Stock ---
 async function renderStock() {
   const list = $("stock-list");
-  list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
+  if (!_isRefresh) list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
   try {
     const items = await api("/admin/menu");
     const stocks = await api("/admin/stock");
@@ -314,7 +318,7 @@ async function unlockAll() { if (!confirm("Unlock all items?")) return; try { aw
 // --- Debt ---
 async function renderDebt() {
   const list = $("debt-list");
-  list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
+  if (!_isRefresh) list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
   try {
     const debts = await api(`/admin/debts?filter=${state._debtFilter}`);
     if (!debts.length) { list.innerHTML = '<div class="text-center py-12 font-headline-lg-mobile text-on-surface-variant">No debts</div>'; return; }
@@ -366,7 +370,7 @@ async function removeAllow(username) { try { await api(`/admin/debt-allow-list/$
 // --- Payments ---
 async function renderPayments() {
   const list = $("payments-list");
-  list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
+  if (!_isRefresh) list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
   try {
     const accounts = await api("/payment-accounts");
     if (!accounts.length) { list.innerHTML = '<div class="text-center py-12 font-body-md text-on-surface-variant">No payment accounts</div>'; return; }
@@ -444,7 +448,7 @@ async function unbanUser(id) { try { await api(`/admin/users/${id}/unban`, { met
 // --- Feedback ---
 async function renderFeedback() {
   const list = $("feedback-list");
-  list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
+  if (!_isRefresh) list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
   try {
     const feedback = await api("/admin/feedback");
     if (!feedback.length) { list.innerHTML = '<div class="text-center py-12 font-headline-lg-mobile text-on-surface-variant">No feedback</div>'; return; }
@@ -463,7 +467,7 @@ async function renderFeedback() {
 // --- Referred Purchases ---
 async function renderReferred() {
   const list = $("referred-list");
-  list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
+  if (!_isRefresh) list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
   try {
     const earnings = await api("/admin/referrals/earnings");
     if (!earnings.length) { list.innerHTML = '<div class="text-center py-12 font-headline-lg-mobile text-on-surface-variant">No referred purchases yet</div>'; return; }
