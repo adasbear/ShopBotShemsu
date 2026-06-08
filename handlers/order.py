@@ -172,7 +172,7 @@ async def handle_order_comment(update: Update, context: ContextTypes.DEFAULT_TYP
     return ConversationHandler.END
 
 async def _notify_admin(context):
-    from database import get_admin_user_id, get_referral_count, record_referral_earning, _db
+    from database import get_admin_user_id, _db
     admin_ids = await get_admin_user_id()
     if not admin_ids:
         return
@@ -197,8 +197,6 @@ async def _notify_admin(context):
                 .select("username").eq("user_id", referrer_id).limit(1).execute())
             ref_username = ref_user.data[0]["username"] if ref_user.data else str(referrer_id)
             text += f"\n\n👤 <b>Referred by:</b> @{ref_username}"
-            items_summary = "; ".join(context.user_data.get("order_items", []))
-            await record_referral_earning(referrer_id, user_id, context.user_data["order_group"], items_summary)
     for admin_id in admin_ids:
         await context.bot.send_message(
             chat_id=admin_id,
@@ -206,24 +204,3 @@ async def _notify_admin(context):
             reply_markup=order_accept_decline_keyboard(context.user_data["order_group"]),
             parse_mode=ParseMode.HTML
         )
-    if payment:
-        text += f"\n\n<b>Payment:</b>\n{payment}"
-    if comment:
-        text += f"\n\n<b>Comment:</b> {comment}"
-    if user_id:
-        ref = await _db(lambda: _supabase.table("referrals")
-            .select("referrer_id").eq("referred_id", user_id).limit(1).execute())
-        if ref.data:
-            referrer_id = ref.data[0]["referrer_id"]
-            ref_user = await _db(lambda: _supabase.table("users")
-                .select("username").eq("user_id", referrer_id).limit(1).execute())
-            ref_username = ref_user.data[0]["username"] if ref_user.data else str(referrer_id)
-            text += f"\n\n👤 <b>Referred by:</b> @{ref_username}"
-            items_summary = "; ".join(context.user_data.get("order_items", []))
-            await record_referral_earning(referrer_id, user_id, context.user_data["order_group"], items_summary)
-    await context.bot.send_message(
-        chat_id=admin_id,
-        text=text,
-        reply_markup=order_accept_decline_keyboard(context.user_data["order_group"]),
-        parse_mode=ParseMode.HTML
-    )

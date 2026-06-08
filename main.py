@@ -782,20 +782,27 @@ def api_place_order():
     if payment_method and payment_account_id and confirmation:
         payment_info = f"{payment_method}:{payment_account_id}:{confirmation}"
         asyncio.run(database.save_order_payment(order_group, payment_info))
-    # Check referral and credit referrer
+    # Check referral for display in notification
+    ref_name = None
     ref = asyncio.run(_db(
         lambda: database._supabase.table("referrals")
         .select("referrer_id").eq("referred_id", int(user_id)).limit(1).execute()
     ))
     if ref.data:
         referrer_id = ref.data[0]["referrer_id"]
-        items_summary = "; ".join(f"{i['item']} x{i['qty']}" for i in items)
-        asyncio.run(database.record_referral_earning(referrer_id, int(user_id), order_group, items_summary))
+        ref_user = asyncio.run(_db(
+            lambda: database._supabase.table("users")
+            .select("username").eq("user_id", referrer_id).limit(1).execute()
+        ))
+        if ref_user.data:
+            ref_name = ref_user.data[0]["username"]
     # Notify all admins
     admin_ids = asyncio.run(get_admin_user_id())
     if admin_ids:
         try:
             order_summary = "; ".join(f"{i['item']} x{i['qty']}" for i in items)
+            if ref_name:
+                order_summary += f" | 👤 Referred by: @{ref_name}"
             for aid in admin_ids:
                 asyncio.run(_db(lambda aid=aid: database._supabase.table("notifications").insert({
                     "user_id": int(aid), "title": "New App Order",
@@ -1064,7 +1071,14 @@ def api_admin_deliver(order_group):
         if dtype == "debt":
             desc = "; ".join(f"{r['qty']}x {r['item']}" for r in og.data)
             asyncio.run(database.add_debt(uname, total, desc, order_group, uid, fname))
+        # Record referral earning on delivery
         if uid:
+            ref = asyncio.run(_db(lambda: database._supabase.table("referrals")
+                .select("referrer_id").eq("referred_id", uid).limit(1).execute()))
+            if ref.data:
+                referrer_id = ref.data[0]["referrer_id"]
+                items_summary = "; ".join(f"{r['item']} x{r['qty']}" for r in og.data)
+                asyncio.run(database.record_referral_earning(referrer_id, uid, order_group, items_summary))
             status_text = "Paid" if dtype == "paid" else "Added to debt"
             _send_telegram(uid, f"<b>Order Delivered</b>\n\nStatus: {status_text}")
             _save_notification(uid, "Order Delivered", f"Delivered - {status_text}")
@@ -1243,6 +1257,36 @@ def api_admin_broadcast():
 def api_admin_feedback():
     feedback = asyncio.run(database.get_all_feedback())
     return jsonify(feedback)
+
+@app.route("/api/admin/referrals/earnings", methods=["GET"])
+def api_admin_referral_earnings():
+    earnings = asyncio.run(_db(
+        lambda: database._supabase.table("referral_earnings")
+        .select("*").order("earned_at", desc=True).execute()
+    ))
+    result = []
+    for e in earnings.data:
+        referrer = asyncio.run(_db(
+            lambda: database._supabase.table("users")
+            .select("username, full_name").eq("user_id", e["referrer_id"]).limit(1).execute()
+        ))
+        referred = asyncio.run(_db(
+            lambda: database._supabase.table("users")
+            .select("username, full_name").eq("user_id", e["referred_id"]).limit(1).execute()
+        ))
+        result.append({
+            "id": e["id"],
+            "referrer_id": e["referrer_id"],
+            "referred_id": e["referred_id"],
+            "order_group": e["order_group"],
+            "items": e["items"],
+            "earned_at": e["earned_at"],
+            "referrer_username": referrer.data[0]["username"] if referrer.data else None,
+            "referrer_name": referrer.data[0]["full_name"] if referrer.data else None,
+            "referred_username": referred.data[0]["username"] if referred.data else None,
+            "referred_name": referred.data[0]["full_name"] if referred.data else None,
+        })
+    return jsonify(result)
 
 
 # --- Webapp static files ---

@@ -82,6 +82,7 @@ tailwind.config = {
         <button class="bg-white text-ink-black p-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" data-nav="users">Users</button>
         <button class="bg-white text-ink-black p-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" data-nav="broadcast">Broadcast</button>
         <button class="bg-white text-ink-black p-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" data-nav="feedback">Feedback</button>
+        <button class="bg-white text-ink-black p-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" data-nav="referred">Referred</button>
       </div>
     </div>
 
@@ -226,6 +227,11 @@ tailwind.config = {
     <div id="page-feedback" class="page hidden">
       <div id="feedback-list" class="space-y-3"></div>
     </div>
+
+    <!-- Referred Purchases -->
+    <div id="page-referred" class="page hidden">
+      <div id="referred-list" class="space-y-3"></div>
+    </div>
   </main>
 
   <!-- Bottom Nav -->
@@ -236,6 +242,7 @@ tailwind.config = {
       <button class="nav-item flex flex-col items-center gap-1 px-3 py-1 border-2 border-transparent rounded-xl transition-all" data-page="menu"><span class="material-symbols-outlined">restaurant_menu</span><span class="font-label-mono text-[10px]">Menu</span></button>
       <button class="nav-item flex flex-col items-center gap-1 px-3 py-1 border-2 border-transparent rounded-xl transition-all" data-page="stock"><span class="material-symbols-outlined">inventory_2</span><span class="font-label-mono text-[10px]">Stock</span></button>
       <button class="nav-item flex flex-col items-center gap-1 px-3 py-1 border-2 border-transparent rounded-xl transition-all" data-page="debt"><span class="material-symbols-outlined">payments</span><span class="font-label-mono text-[10px]">Debt</span></button>
+      <button class="nav-item flex flex-col items-center gap-1 px-3 py-1 border-2 border-transparent rounded-xl transition-all" data-page="referred"><span class="material-symbols-outlined">group_add</span><span class="font-label-mono text-[10px]">Referred</span></button>
     </div>
   </nav>
 </div>

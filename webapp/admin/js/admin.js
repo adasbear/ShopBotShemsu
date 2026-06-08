@@ -74,6 +74,7 @@ function initPage(page, params) {
     case "broadcast": loadUserCount(); break;
     case "users": renderUsers(); break;
     case "feedback": renderFeedback(); break;
+    case "referred": renderReferred(); break;
   }
 }
 
@@ -422,6 +423,31 @@ async function renderFeedback() {
           <p class="font-label-mono text-label-mono text-tertiary text-xs">${new Date(f.created_at).toLocaleDateString()}</p>
         </div>
         <p class="font-body-md text-body-md text-on-surface-variant">${f.msg}</p>
+      </div>
+    `).join("");
+  } catch(e) { list.innerHTML = '<div class="text-center py-12 text-error">Failed to load</div>'; }
+}
+
+// --- Referred Purchases ---
+async function renderReferred() {
+  const list = $("referred-list");
+  list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
+  try {
+    const earnings = await api("/admin/referrals/earnings");
+    if (!earnings.length) { list.innerHTML = '<div class="text-center py-12 font-headline-lg-mobile text-on-surface-variant">No referred purchases yet</div>'; return; }
+    list.innerHTML = earnings.map(e => `
+      <div class="bg-white border-4 border-ink-black hard-shadow p-4">
+        <div class="flex justify-between items-start gap-2 mb-2">
+          <p class="font-headline-lg-mobile text-headline-lg-mobile">${e.referrer_name || e.referrer_username || "Unknown"}</p>
+          <p class="font-label-mono text-label-mono text-tertiary text-xs">${new Date(e.earned_at).toLocaleDateString()}</p>
+        </div>
+        <div class="font-label-mono text-label-mono text-on-surface-variant mb-1">
+          <span class="text-kelp-green">Referred:</span> ${e.referred_name || e.referred_username || "Unknown"}
+        </div>
+        <div class="font-label-mono text-label-mono text-on-surface-variant mb-1">
+          <span class="text-primary">Order:</span> <a href="#/order-detail?og=${e.order_group}" class="underline">${e.order_group}</a>
+        </div>
+        <p class="font-body-md text-body-md text-on-surface-variant">${e.items}</p>
       </div>
     `).join("");
   } catch(e) { list.innerHTML = '<div class="text-center py-12 text-error">Failed to load</div>'; }

@@ -206,7 +206,7 @@ async def _notify_admin_debt(context, username):
     admin_ids = await get_admin_user_id()
     if not admin_ids:
         return
-    from database import record_referral_earning, _db
+    from database import _db
     comment = context.user_data.get("order_comment")
     order_name = context.user_data.get("order_name", username)
     user_id = context.user_data.get("user_id")
@@ -226,8 +226,6 @@ async def _notify_admin_debt(context, username):
                 .select("username").eq("user_id", referrer_id).limit(1).execute())
             ref_username = ref_user.data[0]["username"] if ref_user.data else str(referrer_id)
             text += f"\n\n👤 <b>Referred by:</b> @{ref_username}"
-            items_summary = "; ".join(context.user_data.get("order_items", []))
-            await record_referral_earning(referrer_id, user_id, context.user_data["order_group"], items_summary)
     for admin_id in admin_ids:
         await context.bot.send_message(
             chat_id=admin_id,

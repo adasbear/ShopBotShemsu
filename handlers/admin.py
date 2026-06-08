@@ -15,7 +15,8 @@ from database import (
     add_to_debt_allow_list, remove_from_debt_allow_list,
     get_debt_allow_list, add_debt, get_user,
     get_all_debts, mark_debt_paid, waive_debt,
-    get_payment_accounts, add_payment_account, delete_payment_account
+    get_payment_accounts, add_payment_account, delete_payment_account,
+    record_referral_earning
 )
 from keyboards import (
     get_admin_keyboard, get_admin_orders_keyboard, get_admin_debt_keyboard, get_admin_payment_keyboard,
@@ -649,6 +650,13 @@ async def _finish_delivery(context, query, order_group, on_debt=False):
             )
         except Exception as e:
             pass
+        # Record referral earning on delivery
+        import database as _db_mod
+        ref_result = await _db_mod._db(lambda: _db_mod._supabase.table("referrals")
+            .select("referrer_id").eq("referred_id", target["user_id"]).limit(1).execute())
+        if ref_result.data:
+            items_summary = "; ".join(f"{it['item']} x{it['qty']}" for it in target.get("items", []))
+            await record_referral_earning(ref_result.data[0]["referrer_id"], target["user_id"], order_group, items_summary)
     original_text = query.message.text_html or query.message.text
     label = "✅ <b>DELIVERED (DEBT)</b>" if on_debt else "✅ <b>DELIVERED (PAID)</b>"
     await query.edit_message_text(
