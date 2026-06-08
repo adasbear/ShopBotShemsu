@@ -186,7 +186,7 @@ async def handle_order_comment(update: Update, context: ContextTypes.DEFAULT_TYP
     return ConversationHandler.END
 
 async def _notify_admin(context):
-    from database import get_admin_user_id, _db, decrement_referral_discount
+    from database import get_admin_user_id, _db, _supabase, decrement_referral_discount
     admin_ids = await get_admin_user_id()
     if not admin_ids:
         return

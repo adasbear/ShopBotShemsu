@@ -206,7 +206,7 @@ async def _notify_admin_debt(context, username):
     admin_ids = await get_admin_user_id()
     if not admin_ids:
         return
-    from database import _db, decrement_referral_discount
+    from database import _db, _supabase, decrement_referral_discount
     comment = context.user_data.get("order_comment")
     order_name = context.user_data.get("order_name", username)
     user_id = context.user_data.get("user_id")
