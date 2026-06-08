@@ -77,7 +77,14 @@ def get_admin_keyboard():
         ["Users", "Manage Menu", "Orders"],
         ["Debt Management", "Feedback"],
         ["Lock Menu 🔒", "Payment Accounts"],
-        ["Broadcast"]
+        ["Test", "Broadcast"]
+    ]
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+
+def get_test_keyboard():
+    buttons = [
+        ["Test Order"],
+        ["Back to Portal"]
     ]
     return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
 

@@ -40,6 +40,7 @@ from handlers.help import show_help, handle_help_callback
 from handlers.debt import view_my_debt, handle_debt_choice, handle_debt_pay_callback, handle_debt_pay_confirmation
 from handlers.payment import handle_payment_choice, handle_payment_confirmation
 from handlers.contact import contact_admin_start, contact_admin_callback, contact_admin_send
+from handlers.test import show_test_menu, handle_test_order
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -157,6 +158,8 @@ conv = ConversationHandler(
         MessageHandler(filters.Regex("^All Debts$"), admin_show_all_debts_handler),
         MessageHandler(filters.Regex("^Contact Admin$"), contact_admin_start),
         CallbackQueryHandler(contact_admin_callback, pattern="^contact_admin$"),
+        MessageHandler(filters.Regex("^Test$"), show_test_menu),
+        MessageHandler(filters.Regex("^Test Order$"), handle_test_order),
     ],
     states={
         REGISTRATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, register_user)],
