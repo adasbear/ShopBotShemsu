@@ -902,15 +902,22 @@ def api_contact_admin():
         lambda: database._supabase.table("users").select("full_name").eq("user_id", int(user_id)).limit(1).execute()
     ))
     name = name_result.data[0]["full_name"] if name_result.data else username
+
+    # Save to feedback table so admin sees it in Feedback section
+    try:
+        asyncio.run(_db(
+            lambda: database._supabase.table("feedback").insert({
+                "user_id": int(user_id), "name": name, "msg": f"[Contact] {message}"
+            }).execute()
+        ))
+    except Exception as e:
+        logging.error(f"Contact feedback insert failed: {e}")
+
+    # Notify admins
     admin_ids = asyncio.run(get_admin_user_id())
     if admin_ids:
         for aid in admin_ids:
-            asyncio.run(_db(
-                lambda aid=aid: database._supabase.table("notifications").insert({
-                    "user_id": int(aid), "title": f"📩 Contact from {name} (@{username})",
-                    "body": message
-                }).execute()
-            ))
+            _save_notification(aid, f"📩 Contact from {name} (@{username})", message)
             _send_telegram(aid, f"<b>📩 Contact from {name}</b>\n<b>@{username}</b> (user_id: {user_id})\n\n{message}")
     return jsonify({"success": True})
 
