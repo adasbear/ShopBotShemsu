@@ -15,8 +15,10 @@ function shorten(s, n=40) { return s?.length > n ? s.slice(0, n) + "..." : s || 
 // --- Router ---
 function navigateTo(page, params) {
   if (state.navStack[state.navStack.length - 1] !== page) state.navStack.push(page);
+  showPage(page);
+  initPage(page, params || {});
   const hash = params ? `${page}?${new URLSearchParams(params)}` : page;
-  window.location.hash = hash;
+  if (window.location.hash !== `#${hash}`) window.location.hash = hash;
 }
 
 function showPage(page) {
@@ -39,8 +41,10 @@ function initRouter() {
     const [page, qs] = hash.split("?");
     const params = Object.fromEntries(new URLSearchParams(qs));
     if (state.navStack[state.navStack.length - 1] !== page) state.navStack = [page];
-    showPage(page);
-    initPage(page, params);
+    if (state.currentPage !== page) {
+      showPage(page);
+      initPage(page, params);
+    }
   }
   window.addEventListener("hashchange", handleHash);
   handleHash();
