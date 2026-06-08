@@ -12,6 +12,17 @@ async function api(path, opts = {}) {
 
 function shorten(s, n=40) { return s?.length > n ? s.slice(0, n) + "..." : s || ""; }
 
+const state = {
+  navStack: [],
+  currentPage: 'dashboard',
+  _orderFilter: 'Pending',
+  _debtFilter: 'active',
+  _editingItem: null,
+};
+
+const $ = id => document.getElementById(id);
+const tg = window.Telegram?.WebApp || null;
+
 // --- Router ---
 function navigateTo(page, params) {
   if (state.navStack[state.navStack.length - 1] !== page) state.navStack.push(page);
