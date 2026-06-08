@@ -137,7 +137,8 @@ async function renderOrderDetail(og) {
     if (d.status === "Pending") {
       actions.innerHTML = `
         <button class="w-full bg-kelp-green text-white py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="acceptOrder('${og}')">Accept</button>
-        <div class="flex gap-2"><input id="decline-reason" class="flex-1 bg-surface-container-low border-2 border-ink-black p-3 font-body-md focus:outline-none" placeholder="Decline reason..." /><button class="bg-error text-on-error px-4 py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="declineOrder('${og}')">Decline</button></div>
+        <input id="decline-reason" class="w-full bg-surface-container-low border-2 border-ink-black p-3 font-body-md focus:outline-none" placeholder="Decline reason..." />
+        <button class="w-full bg-error text-on-error py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="declineOrder('${og}')">Decline</button>
       `;
     } else if (d.status === "Accepted") {
       actions.innerHTML = `<button class="w-full bg-ocean-blue text-white py-3 border-2 border-ink-black font-headline-lg-mobile uppercase hard-shadow active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" onclick="markReady('${og}')">Mark Ready</button>`;
