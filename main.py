@@ -959,8 +959,330 @@ def api_get_help():
         ]
     })
 
+# --- Admin API endpoints ---
+ADMIN_IDS = [7041035485, 5703977567]
+
+@app.route("/api/admin/check", methods=["GET"])
+def api_admin_check():
+    user_id = request.args.get("user_id")
+    if user_id:
+        try:
+            if int(user_id) in ADMIN_IDS:
+                return jsonify({"admin": True})
+        except: pass
+    return jsonify({"admin": False})
+
+@app.route("/api/admin/dashboard", methods=["GET"])
+def api_admin_dashboard():
+    pending = asyncio.run(database.get_grouped_orders_by_status("Pending", today_only=True))
+    total_orders = asyncio.run(database.get_grouped_orders_by_status(None, today_only=True))
+    profit = asyncio.run(database.get_todays_profit())
+    users = asyncio.run(database.get_all_users())
+    return jsonify({
+        "pending_orders": len(pending) if pending else 0,
+        "today_orders": len(total_orders) if total_orders else 0,
+        "total_users": len(users) if users else 0,
+        "today_profit": profit or 0.0
+    })
+
+@app.route("/api/admin/orders", methods=["GET"])
+def api_admin_orders():
+    status = request.args.get("status")
+    today_only = request.args.get("today_only", "0") == "1"
+    orders = asyncio.run(database.get_grouped_orders_by_status(status if status else None, today_only))
+    result = []
+    for g in orders:
+        items_raw = asyncio.run(_db(lambda: database._supabase.table("orders")
+            .select("item, qty").eq("order_group", g["order_group"]).execute()))
+        user = asyncio.run(_db(lambda: database._supabase.table("users")
+            .select("full_name").eq("user_id", g.get("user_id", 0)).limit(1).execute()))
+        result.append({
+            "order_group": g["order_group"],
+            "status": g.get("status", "Pending"),
+            "user_name": user.data[0]["full_name"] if user.data else None,
+            "user_id": g.get("user_id"),
+            "items": items_raw.data,
+            "total": g.get("total", 0),
+            "timestamp": g.get("timestamp", "")
+        })
+    return jsonify(result)
+
+@app.route("/api/admin/orders/<order_group>/accept", methods=["POST"])
+def api_admin_accept(order_group):
+    asyncio.run(database.update_order_status(order_group, "Accepted"))
+    og = asyncio.run(_db(lambda: database._supabase.table("orders")
+        .select("*").eq("order_group", order_group).limit(1).execute()))
+    if og.data:
+        uid = og.data[0].get("user_id")
+        if uid:
+            try:
+                import requests
+                requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                    json={"chat_id": uid, "text": "<b>Order Accepted!</b>\n\nYour order is being prepared.", "parse_mode": "HTML"}, timeout=10)
+                asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                    "user_id": int(uid), "title": "Order Accepted", "body": "Your order is being prepared."
+                }).execute()))
+            except: pass
+    return jsonify({"success": True})
+
+@app.route("/api/admin/orders/<order_group>/decline", methods=["POST"])
+def api_admin_decline(order_group):
+    data = request.get_json()
+    reason = data.get("reason", "No reason provided")
+    asyncio.run(database.update_order_status(order_group, "Declined"))
+    asyncio.run(database.save_order_decline_reason(order_group, reason))
+    og = asyncio.run(_db(lambda: database._supabase.table("orders")
+        .select("*").eq("order_group", order_group).limit(1).execute()))
+    if og.data:
+        uid = og.data[0].get("user_id")
+        if uid:
+            try:
+                import requests
+                requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                    json={"chat_id": uid, "text": f"<b>Order Declined</b>\n\n<b>Reason:</b> {reason}\n\nContact @{ADMIN_USERNAMES[0]} if you have questions.", "parse_mode": "HTML"}, timeout=10)
+                asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                    "user_id": int(uid), "title": "Order Declined", "body": f"Reason: {reason}"
+                }).execute()))
+            except: pass
+    return jsonify({"success": True})
+
+@app.route("/api/admin/orders/<order_group>/ready", methods=["POST"])
+def api_admin_ready(order_group):
+    asyncio.run(database.update_order_status(order_group, "Ready"))
+    og = asyncio.run(_db(lambda: database._supabase.table("orders")
+        .select("*").eq("order_group", order_group).limit(1).execute()))
+    if og.data:
+        uid = og.data[0].get("user_id")
+        if uid:
+            try:
+                import requests
+                requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                    json={"chat_id": uid, "text": "<b>Order Ready!</b>\n\nYour order is ready for pickup/delivery.", "parse_mode": "HTML"}, timeout=10)
+                asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                    "user_id": int(uid), "title": "Order Ready", "body": "Your order is ready for pickup/delivery."
+                }).execute()))
+            except: pass
+    return jsonify({"success": True})
+
+@app.route("/api/admin/orders/<order_group>/deliver", methods=["POST"])
+def api_admin_deliver(order_group):
+    data = request.get_json()
+    dtype = data.get("type", "paid")
+    og = asyncio.run(_db(lambda: database._supabase.table("orders")
+        .select("*").eq("order_group", order_group).execute()))
+    asyncio.run(database.update_order_status(order_group, "Delivered"))
+    if og.data:
+        uid = og.data[0].get("user_id")
+        user = asyncio.run(_db(lambda: database._supabase.table("users")
+            .select("username, full_name").eq("user_id", uid).limit(1).execute()))
+        uname = user.data[0]["username"] if user.data else "unknown"
+        fname = user.data[0]["full_name"] if user.data else "Unknown"
+        total = sum(r.get("qty", 0) * (_get_price(r["item"]) or 0) for r in og.data)
+        if dtype == "debt":
+            desc = "; ".join(f"{r['qty']}x {r['item']}" for r in og.data)
+            asyncio.run(database.add_debt(uname, total, desc, order_group, uid, fname))
+        if uid:
+            try:
+                import requests
+                status_text = "Paid" if dtype == "paid" else "Added to debt"
+                requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                    json={"chat_id": uid, "text": f"<b>Order Delivered</b>\n\nStatus: {status_text}", "parse_mode": "HTML"}, timeout=10)
+                asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                    "user_id": int(uid), "title": "Order Delivered", "body": f"Delivered - {status_text}"
+                }).execute()))
+            except: pass
+    return jsonify({"success": True})
+
+def _get_price(item_name):
+    m = asyncio.run(_db(lambda: database._supabase.table("menu")
+        .select("price").eq("name", item_name).limit(1).execute()))
+    return m.data[0]["price"] if m.data else 0
+
+@app.route("/api/admin/menu", methods=["GET"])
+def api_admin_menu():
+    items = asyncio.run(database.get_all_menu_items())
+    return jsonify(items)
+
+@app.route("/api/admin/menu", methods=["POST"])
+def api_admin_add_menu():
+    data = request.get_json()
+    name = data.get("name")
+    price = data.get("price", 0)
+    parent = data.get("parent")
+    image_url = data.get("image_url")
+    if not name: return jsonify({"error": "name required"}), 400
+    asyncio.run(database.add_menu_item(name, float(price), parent))
+    if image_url: asyncio.run(database.update_menu_image(name, image_url))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/menu/<path:item_name>", methods=["PUT"])
+def api_admin_update_menu(item_name):
+    data = request.get_json()
+    name = data.get("name")
+    price = data.get("price")
+    parent = data.get("parent")
+    image_url = data.get("image_url")
+    if name and name != item_name:
+        asyncio.run(_db(lambda: database._supabase.table("menu")
+            .update({"name": name}).eq("name", item_name).execute()))
+    updates = {}
+    if price is not None: updates["price"] = float(price)
+    if parent is not None: updates["parent"] = parent if parent else None
+    if image_url is not None: updates["image_url"] = image_url if image_url else None
+    if updates:
+        asyncio.run(_db(lambda: database._supabase.table("menu")
+            .update(updates).eq("name", name or item_name).execute()))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/menu/<path:item_name>", methods=["DELETE"])
+def api_admin_delete_menu(item_name):
+    asyncio.run(database.delete_menu_item(item_name))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/stock", methods=["GET"])
+def api_admin_stock():
+    stocks = asyncio.run(database.get_all_daily_stocks())
+    return jsonify(stocks)
+
+@app.route("/api/admin/stock/<path:name>", methods=["PUT"])
+def api_admin_set_stock(name):
+    data = request.get_json()
+    max_qty = data.get("max_qty", 0)
+    asyncio.run(database.set_daily_stock(name, int(max_qty)))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/stock/<path:name>/toggle-lock", methods=["POST"])
+def api_admin_toggle_lock(name):
+    stock = asyncio.run(database.get_daily_stock(name))
+    locked = not (stock.get("locked") if stock else False)
+    asyncio.run(database.toggle_lock_daily_stock(name, locked))
+    return jsonify({"success": True, "locked": locked})
+
+@app.route("/api/admin/stock/<path:name>", methods=["DELETE"])
+def api_admin_clear_stock(name):
+    asyncio.run(database.clear_daily_stock(name))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/stock/unlock-all", methods=["POST"])
+def api_admin_unlock_all():
+    items = asyncio.run(database.get_all_menu_items())
+    for i in items:
+        if i.get("price", 0) > 0:
+            asyncio.run(database.clear_daily_stock(i["name"]))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/debts", methods=["GET"])
+def api_admin_debts():
+    filter_type = request.args.get("filter", "active")
+    debts = asyncio.run(database.get_all_debts(filter_type))
+    return jsonify(debts)
+
+@app.route("/api/admin/debts/<int:debt_id>/pay", methods=["POST"])
+def api_admin_debt_pay(debt_id):
+    asyncio.run(database.mark_debt_paid(debt_id))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/debts/<int:debt_id>/waive", methods=["POST"])
+def api_admin_debt_waive(debt_id):
+    asyncio.run(database.waive_debt(debt_id))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/debt-allow-list", methods=["GET"])
+def api_admin_allow_list():
+    entries = asyncio.run(database.get_debt_allow_list())
+    return jsonify(entries)
+
+@app.route("/api/admin/debt-allow-list", methods=["POST"])
+def api_admin_add_allow():
+    data = request.get_json()
+    username = data.get("username", "").lstrip("@")
+    if not username: return jsonify({"error": "username required"}), 400
+    asyncio.run(database.add_to_debt_allow_list(username, "webapp"))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/debt-allow-list/<path:username>", methods=["DELETE"])
+def api_admin_remove_allow(username):
+    asyncio.run(database.remove_from_debt_allow_list(username))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/payment-accounts", methods=["GET"])
+def api_admin_payment_accounts():
+    accounts = asyncio.run(database.get_payment_accounts())
+    return jsonify(accounts)
+
+@app.route("/api/admin/payment-accounts", methods=["POST"])
+def api_admin_add_payment():
+    data = request.get_json()
+    bank_name = data.get("bank_name")
+    number = data.get("number")
+    holder_name = data.get("holder_name", "")
+    if not bank_name or not number: return jsonify({"error": "bank_name and number required"}), 400
+    asyncio.run(database.add_payment_account(bank_name, number, holder_name))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/payment-accounts/<int:pid>", methods=["DELETE"])
+def api_admin_delete_payment(pid):
+    asyncio.run(database.delete_payment_account(pid))
+    return jsonify({"success": True})
+
+@app.route("/api/admin/users", methods=["GET"])
+def api_admin_users():
+    users = asyncio.run(database.get_all_users_detailed())
+    return jsonify(users)
+
+@app.route("/api/admin/users/<int:uid>/ban", methods=["POST"])
+def api_admin_ban(uid):
+    asyncio.run(database.ban_user(uid))
+    try:
+        import requests
+        requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+            json={"chat_id": uid, "text": "<b>You have been banned.</b>", "parse_mode": "HTML"}, timeout=10)
+    except: pass
+    return jsonify({"success": True})
+
+@app.route("/api/admin/users/<int:uid>/unban", methods=["POST"])
+def api_admin_unban(uid):
+    asyncio.run(database.unban_user(uid))
+    try:
+        import requests
+        requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+            json={"chat_id": uid, "text": "<b>You have been unbanned.</b>", "parse_mode": "HTML"}, timeout=10)
+    except: pass
+    return jsonify({"success": True})
+
+@app.route("/api/admin/broadcast", methods=["POST"])
+def api_admin_broadcast():
+    data = request.get_json()
+    message = data.get("message", "")
+    if not message: return jsonify({"error": "message required"}), 400
+    users = asyncio.run(database.get_all_users())
+    sent = 0
+    import requests
+    for (uid,) in users:
+        try:
+            requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                json={"chat_id": uid, "text": f"<b>Broadcast</b>\n\n{message}", "parse_mode": "HTML"}, timeout=5)
+            sent += 1
+        except: pass
+    return jsonify({"success": True, "sent": sent})
+
+@app.route("/api/admin/feedback", methods=["GET"])
+def api_admin_feedback():
+    feedback = asyncio.run(database.get_all_feedback())
+    return jsonify(feedback)
+
+
 # --- Webapp static files ---
 _webapp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "webapp")
+
+@app.route("/app/admin/")
+@app.route("/app/admin/<path:filename>")
+def webapp_admin_static(filename="admin.html"):
+    admin_dir = os.path.join(_webapp_dir, "admin")
+    filepath = os.path.join(_webapp_dir, filename)
+    if os.path.isfile(filepath):
+        return send_from_directory(_webapp_dir, filename)
+    return send_from_directory(_webapp_dir, "admin.html")
 
 @app.route("/app/")
 @app.route("/app/<path:filename>")

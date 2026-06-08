@@ -859,6 +859,10 @@ async function renderReferrals() {
 
 // --- Init ---
 async function init() {
+  try {
+    const res = await api(`/admin/check?user_id=${USER_ID}`);
+    if (res.admin) { window.location.href = "/app/admin/"; return; }
+  } catch(e) {}
   getCart();
   await loadUser();
   updateCartBadge();
