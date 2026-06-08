@@ -253,7 +253,7 @@ async function renderStock() {
           </div>
           <div class="flex gap-1 flex-shrink-0">
             <button class="bg-primary text-on-primary px-2 py-1 border-2 border-ink-black font-label-mono text-label-mono text-xs hard-shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all" onclick="showSetStock('${i.name}')">Limit</button>
-            ${st && !st.locked ? `<button class="bg-secondary-fixed text-ink-black px-2 py-1 border-2 border-ink-black font-label-mono text-label-mono text-xs hard-shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all" onclick="toggleLock('${i.name}')">Lock</button>` : ""}
+            ${!st?.locked ? `<button class="bg-secondary-fixed text-ink-black px-2 py-1 border-2 border-ink-black font-label-mono text-label-mono text-xs hard-shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all" onclick="toggleLock('${i.name}')">Lock</button>` : ""}
             ${st ? `<button class="bg-error text-on-error px-2 py-1 border-2 border-ink-black font-label-mono text-label-mono text-xs hard-shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all" onclick="clearStock('${i.name}')">Clear</button>` : ""}
           </div>
         </div>
