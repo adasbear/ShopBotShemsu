@@ -1274,6 +1274,10 @@ def api_admin_referral_earnings():
             lambda: database._supabase.table("users")
             .select("username, full_name").eq("user_id", e["referred_id"]).limit(1).execute()
         ))
+        status_res = asyncio.run(_db(
+            lambda: database._supabase.table("orders")
+            .select("status").eq("order_group", e["order_group"]).limit(1).execute()
+        ))
         result.append({
             "id": e["id"],
             "referrer_id": e["referrer_id"],
@@ -1285,6 +1289,7 @@ def api_admin_referral_earnings():
             "referrer_name": referrer.data[0]["full_name"] if referrer.data else None,
             "referred_username": referred.data[0]["username"] if referred.data else None,
             "referred_name": referred.data[0]["full_name"] if referred.data else None,
+            "status": status_res.data[0]["status"] if status_res.data else "Unknown",
         })
     return jsonify(result)
 

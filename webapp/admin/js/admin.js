@@ -446,6 +446,7 @@ async function renderReferred() {
         </div>
         <div class="font-label-mono text-label-mono text-on-surface-variant mb-1">
           <span class="text-primary">Order:</span> <a href="#/order-detail?og=${e.order_group}" class="underline">${e.order_group}</a>
+          <span class="inline-block px-2 py-0.5 ml-2 border-2 border-ink-black rounded-full text-xs font-label-mono">${e.status || "Unknown"}</span>
         </div>
         <p class="font-body-md text-body-md text-on-surface-variant">${e.items}</p>
       </div>
