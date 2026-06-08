@@ -253,6 +253,7 @@ async function renderStock() {
           </div>
           <div class="flex gap-1 flex-shrink-0">
             <button class="bg-primary text-on-primary px-2 py-1 border-2 border-ink-black font-label-mono text-label-mono text-xs hard-shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all" onclick="showSetStock('${i.name}')">Limit</button>
+            ${st && !st.locked ? `<button class="bg-secondary-fixed text-ink-black px-2 py-1 border-2 border-ink-black font-label-mono text-label-mono text-xs hard-shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all" onclick="toggleLock('${i.name}')">Lock</button>` : ""}
             ${st ? `<button class="bg-error text-on-error px-2 py-1 border-2 border-ink-black font-label-mono text-label-mono text-xs hard-shadow active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all" onclick="clearStock('${i.name}')">Clear</button>` : ""}
           </div>
         </div>
@@ -265,6 +266,7 @@ let _stockEditing = null;
 function showSetStock(name) { _stockEditing = name; $("stock-modal-title").textContent = `Limit for ${name}`; $("stock-input-qty").value = ""; $("stock-modal").classList.remove("hidden"); }
 function closeStockModal() { $("stock-modal").classList.add("hidden"); }
 async function saveStockLimit() { const qty = parseInt($("stock-input-qty").value); if (!qty || qty < 1) return alert("Enter valid qty"); try { await api(`/admin/stock/${encodeURIComponent(_stockEditing)}`, { method: "PUT", body: JSON.stringify({ max_qty: qty }) }); closeStockModal(); renderStock(); } catch(e) { alert("Failed: " + e.message); } }
+async function toggleLock(name) { try { await api(`/admin/stock/${encodeURIComponent(name)}/toggle-lock`, { method: "POST" }); renderStock(); } catch(e) { alert("Failed: " + e.message); } }
 async function clearStock(name) { try { await api(`/admin/stock/${encodeURIComponent(name)}`, { method: "DELETE" }); renderStock(); } catch(e) { alert("Failed: " + e.message); } }
 async function unlockAll() { if (!confirm("Unlock all items?")) return; try { await api("/admin/stock/unlock-all", { method: "POST" }); renderStock(); } catch(e) { alert("Failed: " + e.message); } }
 
