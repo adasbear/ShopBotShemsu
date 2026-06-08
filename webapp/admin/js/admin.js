@@ -465,7 +465,9 @@ async function renderReferred() {
   const list = $("referred-list");
   list.innerHTML = '<div class="text-center py-8"><div class="skeleton h-16 w-full mb-2"></div></div>';
   try {
-    const earnings = await api("/admin/referrals/earnings");
+    const [earnings, disc] = await Promise.all([api("/admin/referrals/earnings"), api("/admin/referrals/discount")]);
+    const remEl = $("discount-remaining");
+    if (remEl) remEl.textContent = disc.remaining;
     if (!earnings.length) { list.innerHTML = '<div class="text-center py-12 font-headline-lg-mobile text-on-surface-variant">No referred purchases yet</div>'; return; }
     list.innerHTML = earnings.map(e => `
       <div class="bg-white border-4 border-ink-black hard-shadow p-4">
@@ -484,6 +486,17 @@ async function renderReferred() {
       </div>
     `).join("");
   } catch(e) { list.innerHTML = '<div class="text-center py-12 text-error">Failed to load</div>'; }
+}
+
+async function setDiscount() {
+  const count = parseInt($("discount-count")?.value);
+  if (isNaN(count) || count < 0) return alert("Enter a valid number");
+  try {
+    const r = await api("/admin/referrals/discount", { method: "POST", body: JSON.stringify({ count }) });
+    $("discount-remaining").textContent = r.remaining;
+    $("discount-count").value = "";
+    renderReferred();
+  } catch(e) { alert("Failed: " + e.message); }
 }
 
 // --- Setup ---

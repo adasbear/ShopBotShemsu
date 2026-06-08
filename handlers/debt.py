@@ -206,14 +206,15 @@ async def _notify_admin_debt(context, username):
     admin_ids = await get_admin_user_id()
     if not admin_ids:
         return
-    from database import _db
+    from database import _db, decrement_referral_discount
     comment = context.user_data.get("order_comment")
     order_name = context.user_data.get("order_name", username)
     user_id = context.user_data.get("user_id")
+    total = context.user_data.get("order_total", 0)
     text = (
         f"<b>DEBT ORDER FROM: {order_name} (@{username})</b>\n\n"
         f"{chr(10).join(context.user_data['order_items'])}\n\n"
-        f"TOTAL: Birr {context.user_data['order_total']:.2f}"
+        f"TOTAL: Birr {total:.2f}"
     )
     if comment:
         text += f"\n\n<b>Comment:</b> {comment}"
@@ -233,3 +234,14 @@ async def _notify_admin_debt(context, username):
             reply_markup=order_accept_decline_keyboard(context.user_data["order_group"]),
             parse_mode=ParseMode.HTML
         )
+    if context.user_data.get("discount_applied") and user_id:
+        remaining = await decrement_referral_discount()
+        for admin_id in admin_ids:
+            try:
+                await context.bot.send_message(
+                    chat_id=admin_id,
+                    text=f"🔖 Referral discount used! ({remaining} remaining)",
+                    parse_mode=ParseMode.HTML
+                )
+            except Exception:
+                pass

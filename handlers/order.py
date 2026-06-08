@@ -95,8 +95,24 @@ async def review_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return MENU_SELECTION
 
+    from database import is_referred_user, get_referral_discount_remaining
     summary, total = build_order_summary(context.user_data["session_items"])
-    text = f"FINAL ORDER REVIEW\n\n{summary}\n\nTOTAL: Birr {total:.2f}\n\nConfirm order?"
+    user_id = update.effective_user.id
+    referred = await is_referred_user(user_id)
+    remaining = await get_referral_discount_remaining()
+    discount = referred and remaining > 0
+    text = f"FINAL ORDER REVIEW\n\n{summary}\n\n"
+    if discount:
+        discounted = round(total * 0.9, 2)
+        text += f"<s>TOTAL: Birr {total:.2f}</s>\n"
+        text += f"<b>TOTAL (10% off): Birr {discounted:.2f}</b>\n\n"
+        context.user_data["order_total"] = discounted
+        context.user_data["discount_applied"] = True
+    else:
+        text += f"TOTAL: Birr {total:.2f}\n\n"
+        context.user_data["order_total"] = total
+        context.user_data["discount_applied"] = False
+    text += "Confirm order?"
 
     await query.edit_message_text(
         text,
@@ -119,12 +135,10 @@ async def finalize_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     order_group = f"{user_id}_{int(time.time()*1000)}"
     items = context.user_data.get("session_items", [])
-    total_cost = 0
     item_lines = []
 
     for i in items:
         cost = i["qty"] * i["price"]
-        total_cost += cost
         if i.get("custom"):
             item_lines.append(f"{i['qty']}x {i['item']} (Custom request)")
         else:
@@ -134,7 +148,7 @@ async def finalize_order(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data["order_group"] = order_group
     context.user_data["order_name"] = user_name
     context.user_data["order_items"] = item_lines
-    context.user_data["order_total"] = total_cost
+    # Keep the total from review_order (already includes discount if applicable)
 
     await query.edit_message_text(
         "How would you like to pay?",
@@ -172,17 +186,18 @@ async def handle_order_comment(update: Update, context: ContextTypes.DEFAULT_TYP
     return ConversationHandler.END
 
 async def _notify_admin(context):
-    from database import get_admin_user_id, _db
+    from database import get_admin_user_id, _db, decrement_referral_discount
     admin_ids = await get_admin_user_id()
     if not admin_ids:
         return
     comment = context.user_data.get("order_comment")
     payment = context.user_data.get("payment_info")
     user_id = context.user_data.get("user_id")
+    total = context.user_data.get("order_total", 0)
     text = (
         f"<b>NEW ORDER FROM: {context.user_data['order_name']}</b>\n\n"
         f"{chr(10).join(context.user_data['order_items'])}\n\n"
-        f"TOTAL: Birr {context.user_data['order_total']:.2f}"
+        f"TOTAL: Birr {total:.2f}"
     )
     if payment:
         text += f"\n\n<b>Payment:</b>\n{payment}"
@@ -204,3 +219,15 @@ async def _notify_admin(context):
             reply_markup=order_accept_decline_keyboard(context.user_data["order_group"]),
             parse_mode=ParseMode.HTML
         )
+    # Apply referral discount and notify admin
+    if context.user_data.get("discount_applied") and user_id:
+        remaining = await decrement_referral_discount()
+        for admin_id in admin_ids:
+            try:
+                await context.bot.send_message(
+                    chat_id=admin_id,
+                    text=f"🔖 Referral discount used! ({remaining} remaining)",
+                    parse_mode=ParseMode.HTML
+                )
+            except Exception:
+                pass

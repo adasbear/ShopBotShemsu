@@ -815,12 +815,26 @@ def api_place_order():
     ))
     prices = {r["name"]: r["price"] for r in menu_data.data}
     total = sum(prices.get(i["item"], 0) * i["qty"] for i in items)
+    # Apply referral discount if applicable
+    discount_applied = False
+    referred = asyncio.run(database.is_referred_user(int(user_id)))
+    remaining = asyncio.run(database.get_referral_discount_remaining())
+    if referred and remaining > 0:
+        total = round(total * 0.9, 2)
+        new_remaining = asyncio.run(database.decrement_referral_discount())
+        discount_applied = True
+        # Notify admin
+        admin_ids = asyncio.run(get_admin_user_id())
+        for aid in admin_ids:
+            _send_telegram(aid, f"🔖 Referral discount used! ({new_remaining} remaining)")
+            _save_notification(aid, "Referral Discount Used", f"{new_remaining} discounts remaining")
     return jsonify({
         "success": True,
         "order_group": order_group,
         "total": total,
         "payment_method": payment_method,
-        "status": "Pending"
+        "status": "Pending",
+        "discount_applied": discount_applied
     })
 
 
@@ -1313,6 +1327,34 @@ def api_admin_referral_earnings():
             "status": status_res.data[0]["status"] if status_res.data else "Unknown",
         })
     return jsonify(result)
+
+
+# --- Referral Discount ---
+
+@app.route("/api/admin/referrals/discount", methods=["GET"])
+def api_admin_get_discount():
+    remaining = asyncio.run(database.get_referral_discount_remaining())
+    return jsonify({"remaining": remaining})
+
+@app.route("/api/admin/referrals/discount", methods=["POST"])
+def api_admin_set_discount():
+    data = request.get_json()
+    count = int(data.get("count", 0))
+    asyncio.run(database.set_setting("referral_discount_remaining", str(count)))
+    return jsonify({"success": True, "remaining": count})
+
+@app.route("/api/referrals/discount-status", methods=["GET"])
+def api_referral_discount_status():
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return jsonify({"is_referred": False, "discount_remaining": 0, "has_discount": False})
+    is_referred = asyncio.run(database.is_referred_user(int(user_id)))
+    remaining = asyncio.run(database.get_referral_discount_remaining())
+    return jsonify({
+        "is_referred": is_referred,
+        "discount_remaining": remaining,
+        "has_discount": is_referred and remaining > 0
+    })
 
 
 # --- Webapp static files ---

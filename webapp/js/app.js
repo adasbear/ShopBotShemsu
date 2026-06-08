@@ -390,8 +390,26 @@ function renderCart() {
 
   const total = getCartTotal();
   subtotal.textContent = `${total.toFixed(2)} Birr`;
-  totalEl.textContent = `${total.toFixed(2)} Birr`;
   countEl.textContent = `${state.cart.reduce((s, i) => s + i.qty, 0)} ITEMS`;
+  // Check referral discount
+  const discountRow = $("cart-discount-row");
+  const discountEl = $("cart-discount");
+  if (discountRow) discountRow.classList.add("hidden");
+  if (USER_ID) {
+    api(`/referrals/discount-status?user_id=${USER_ID}`).then(s => {
+      if (s.has_discount) {
+        const disc = Math.round(total * 0.1 * 100) / 100;
+        const finalTotal = total - disc;
+        if (discountEl) discountEl.textContent = `-${disc.toFixed(2)} Birr`;
+        if (discountRow) discountRow.classList.remove("hidden");
+        totalEl.innerHTML = `<span class="line-through text-on-surface-variant mr-2">${total.toFixed(2)} Birr</span> ${finalTotal.toFixed(2)} Birr`;
+      } else {
+        totalEl.textContent = `${total.toFixed(2)} Birr`;
+      }
+    }).catch(() => { totalEl.textContent = `${total.toFixed(2)} Birr`; });
+  } else {
+    totalEl.textContent = `${total.toFixed(2)} Birr`;
+  }
 
   items.querySelectorAll(".qty-minus").forEach((btn) => {
     btn.addEventListener("click", () => { updateCartQty(btn.dataset.item, -1); renderCart(); });

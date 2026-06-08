@@ -537,3 +537,35 @@ async def record_referral_earning(referrer_id, referred_id, order_group, items_s
         "items": items_summary,
         "earned_at": datetime.now(timezone.utc).isoformat()
     }).execute())
+
+# --- Settings / Discount ---
+async def get_setting(key, default="0"):
+    try:
+        result = await _db(lambda: _supabase.table("settings").select("value").eq("key", key).limit(1).execute())
+        return result.data[0]["value"] if result.data else default
+    except Exception:
+        return default
+
+async def set_setting(key, value):
+    try:
+        await _db(lambda: _supabase.table("settings").upsert({"key": key, "value": str(value)}).execute())
+    except Exception:
+        pass
+
+async def get_referral_discount_remaining():
+    return int(await get_setting("referral_discount_remaining", "0"))
+
+async def decrement_referral_discount():
+    remaining = await get_referral_discount_remaining()
+    if remaining > 0:
+        remaining -= 1
+        await set_setting("referral_discount_remaining", str(remaining))
+    return remaining
+
+async def is_referred_user(user_id):
+    try:
+        result = await _db(lambda: _supabase.table("referrals")
+            .select("id").eq("referred_id", int(user_id)).limit(1).execute())
+        return len(result.data) > 0
+    except Exception:
+        return False
