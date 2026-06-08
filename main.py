@@ -998,19 +998,24 @@ def api_admin_orders():
     status = request.args.get("status")
     today_only = request.args.get("today_only", "0") == "1"
     orders = asyncio.run(database.get_grouped_orders_by_status(status if status else None, today_only))
+    menu_prices = asyncio.run(_db(
+        lambda: database._supabase.table("menu").select("name, price").execute()
+    ))
+    prices = {r["name"]: r["price"] for r in menu_prices.data}
     result = []
     for g in orders:
         items_raw = asyncio.run(_db(lambda: database._supabase.table("orders")
             .select("item, qty").eq("order_group", g["order_group"]).execute()))
         user = asyncio.run(_db(lambda: database._supabase.table("users")
             .select("full_name").eq("user_id", g.get("user_id", 0)).limit(1).execute()))
+        total = sum(prices.get(i["item"], 0) * i["qty"] for i in items_raw.data)
         result.append({
             "order_group": g["order_group"],
             "status": g.get("status", "Pending"),
             "user_name": user.data[0]["full_name"] if user.data else None,
             "user_id": g.get("user_id"),
             "items": items_raw.data,
-            "total": g.get("total", 0),
+            "total": total,
             "timestamp": g.get("timestamp", "")
         })
     return jsonify(result)
