@@ -18,7 +18,37 @@ const state = {
   _orderFilter: 'Pending',
   _debtFilter: 'active',
   _editingItem: null,
+  _refreshTimer: null,
 };
+
+function getStatusBadge(status) {
+  const colors = {
+    Pending: "background:#f59e0b;color:#000",
+    Accepted: "background:#3b82f6;color:#fff",
+    Ready: "background:#f97316;color:#fff",
+    Delivered: "background:#8BC34A;color:#000",
+    Declined: "background:#ba1a1a;color:#fff",
+    Cancelled: "background:#6b7280;color:#fff",
+  };
+  const style = colors[status] || "background:#6b7280;color:#fff";
+  return `<span class="inline-block px-2 py-0.5 border-2 border-ink-black rounded-full text-xs font-label-mono" style="${style}">${status || "Unknown"}</span>`;
+}
+
+const REFRESH_INTERVAL = 15000;
+const autoRefreshPages = ["dashboard", "orders", "menu", "stock", "debt", "payments", "users", "feedback", "referred"];
+
+function stopAutoRefresh() {
+  if (state._refreshTimer) { clearInterval(state._refreshTimer); state._refreshTimer = null; }
+}
+
+function startAutoRefresh(page) {
+  stopAutoRefresh();
+  if (!autoRefreshPages.includes(page)) return;
+  state._refreshTimer = setInterval(() => {
+    const params = Object.fromEntries(new URLSearchParams(window.location.hash.split("?")[1] || ""));
+    initPage(state.currentPage, params);
+  }, REFRESH_INTERVAL);
+}
 
 const $ = id => document.getElementById(id);
 const tg = window.Telegram?.WebApp || null;
@@ -33,6 +63,7 @@ function navigateTo(page, params) {
 }
 
 function showPage(page) {
+  stopAutoRefresh();
   state.currentPage = page;
   document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
   const el = $(`page-${page}`);
@@ -76,6 +107,7 @@ function initPage(page, params) {
     case "feedback": renderFeedback(); break;
     case "referred": renderReferred(); break;
   }
+  startAutoRefresh(page);
 }
 
 // --- Dashboard ---
@@ -446,7 +478,7 @@ async function renderReferred() {
         </div>
         <div class="font-label-mono text-label-mono text-on-surface-variant mb-1">
           <span class="text-primary">Order:</span> <a href="#/order-detail?og=${e.order_group}" class="underline">${e.order_group}</a>
-          <span class="inline-block px-2 py-0.5 ml-2 border-2 border-ink-black rounded-full text-xs font-label-mono">${e.status || "Unknown"}</span>
+          ${getStatusBadge(e.status)}
         </div>
         <p class="font-body-md text-body-md text-on-surface-variant">${e.items}</p>
       </div>
