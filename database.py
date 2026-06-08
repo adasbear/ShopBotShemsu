@@ -119,10 +119,12 @@ async def get_grouped_orders_by_status(status, today_only=False):
     if status is not None:
         query = query.eq("status", status)
     if today_only:
-        today_start = datetime.now(timezone.utc).replace(hour=6, minute=0, second=0, microsecond=0)
-        if datetime.now(timezone.utc) < today_start:
-            today_start -= timedelta(days=1)
-        query = query.gte("timestamp", today_start.isoformat())
+        now_et = datetime.now(timezone.utc) + timedelta(hours=3)
+        today_start_et = now_et.replace(hour=6, minute=0, second=0, microsecond=0)
+        if now_et < today_start_et:
+            today_start_et -= timedelta(days=1)
+        today_start_utc = today_start_et - timedelta(hours=3)
+        query = query.gte("timestamp", today_start_utc.isoformat())
     result = await _db(lambda: query.execute())
     groups = {}
     for r in result.data:
