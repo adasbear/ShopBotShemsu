@@ -842,7 +842,26 @@ def api_place_order():
 def api_cancel_order(order_group):
     if not order_group:
         return jsonify({"success": False, "error": "order_group required"}), 400
+    # Check order exists, is Pending, and before 6PM UTC
+    og = asyncio.run(_db(lambda: database._supabase.table("orders")
+        .select("status, timestamp").eq("order_group", order_group).limit(1).execute()))
+    if not og.data:
+        return jsonify({"success": False, "error": "Order not found"}), 404
+    status = og.data[0]["status"]
+    if status != "Pending":
+        return jsonify({"success": False, "error": "Only pending orders can be cancelled"}), 400
+    ts = og.data[0].get("timestamp", "")
+    if ts:
+        order_time = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        now = datetime.now(timezone.utc)
+        if order_time.date() != now.date() or now.hour >= 18:
+            return jsonify({"success": False, "error": "Orders can only be cancelled before 6PM UTC on the same day"}), 400
     asyncio.run(database.cancel_order_group(order_group))
+    # Notify all admins
+    admin_ids = asyncio.run(get_admin_user_id())
+    for aid in admin_ids:
+        _send_telegram(aid, f"<b>ORDER CANCELLED BY USER</b>\n\nOrder: {order_group}")
+        _save_notification(aid, "Order Cancelled by User", f"Order {order_group}")
     return jsonify({"success": True})
 
 

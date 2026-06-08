@@ -276,6 +276,9 @@ async function loadDebtTotalForHome() {
   } catch (e) {}
 }
 
+let _menuSubItems = [];
+let _menuCategory = "All";
+
 async function renderMenu() {
   const grid = $("menu-grid");
   if (!grid) return;
@@ -283,7 +286,7 @@ async function renderMenu() {
   try {
     const items = await loadMenu();
     const categories = items.filter((i) => i.price === 0);
-    const subItems = items.filter((i) => i.price > 0);
+    _menuSubItems = items.filter((i) => i.price > 0);
     const cats = categories.length ? categories.map((c) => c.name) : ["All"];
 
     let catHtml = cats.map((c) =>
@@ -299,21 +302,36 @@ async function renderMenu() {
         });
         btn.classList.add("scribble-highlight");
         btn.classList.remove("opacity-60");
-        renderMenuItems(subItems, btn.dataset.cat);
+        _menuCategory = btn.dataset.cat;
+        applyMenuFilters();
       });
     });
 
-    renderMenuItems(subItems, "All");
+    // Search input
+    const searchInput = $("menu-search");
+    if (searchInput) {
+      searchInput.value = "";
+      searchInput.oninput = () => applyMenuFilters();
+    }
+
+    _menuCategory = "All";
+    applyMenuFilters();
   } catch (e) {
     grid.innerHTML = `<div class="col-span-full text-center py-12"><p class="text-error font-headline-lg">Failed to load menu</p></div>`;
   }
 }
 
-function renderMenuItems(items, category) {
+function applyMenuFilters() {
+  const search = ($("menu-search")?.value || "").toLowerCase().trim();
+  let filtered = _menuCategory === "All" ? _menuSubItems : _menuSubItems.filter((i) => i.parent === _menuCategory);
+  if (search) filtered = filtered.filter((i) => i.name.toLowerCase().includes(search));
+  renderMenuItems(filtered);
+}
+
+function renderMenuItems(filtered) {
   const grid = $("menu-grid");
-  const filtered = category === "All" ? items : items.filter((i) => i.parent === category);
   if (!filtered.length) {
-    grid.innerHTML = `<div class="col-span-full text-center py-12"><p class="font-headline-lg text-on-surface-variant">No items in this category</p></div>`;
+    grid.innerHTML = `<div class="col-span-full text-center py-12"><p class="font-headline-lg text-on-surface-variant">No items found</p></div>`;
     return;
   }
   grid.innerHTML = filtered.map((item) => {
