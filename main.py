@@ -1088,8 +1088,8 @@ def api_admin_ready(order_group):
     if og.data:
         uid = og.data[0].get("user_id")
         if uid:
-            _send_telegram(uid, "<b>Order Ready!</b>\n\nYour order is ready for pickup/delivery.")
-            _save_notification(uid, "Order Ready", "Your order is ready for pickup/delivery.")
+            _send_telegram(uid, "<b>Order Ready!</b>\n\nYour order is ready for pickup/delivery.\n\n📍 Residence A drom number 122")
+            _save_notification(uid, "Order Ready", "Your order is ready for pickup/delivery. Residence A drom number 122")
     return jsonify({"success": True})
 
 @app.route("/api/admin/orders/<order_group>/deliver", methods=["POST"])

@@ -860,7 +860,7 @@ async def admin_inline_callback(update: Update, context: ContextTypes.DEFAULT_TY
             try:
                 await context.bot.send_message(
                     target["user_id"],
-                    "<b>Order Ready for Pickup!</b>\n\nYour order is ready. Please come and pick it up.",
+                    "<b>Order Ready for Pickup!</b>\n\nYour order is ready. Please come and pick it up.\n\n📍 Residence A drom number 122",
                     parse_mode=ParseMode.HTML
                 )
             except:
