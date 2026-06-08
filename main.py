@@ -3,6 +3,7 @@ import asyncio
 import logging
 import random
 import threading
+import requests
 from datetime import datetime, timezone, timedelta
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -465,22 +466,9 @@ def api_request_otp():
 
     # Try bot first (for existing users who have messaged the bot)
     if user_id:
-        try:
-            import requests
-            r = requests.post(
-                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                json={
-                    "chat_id": user_id,
-                    "text": f"<b>Shemsu Shop Login Code</b>\n\n{otp}\n\nExpires in 5 minutes.",
-                    "parse_mode": "HTML"
-                },
-                timeout=10
-            )
-            if r.ok:
-                sent = True
-                logging.info(f"OTP sent to user_id={user_id} via bot")
-        except Exception as e:
-            logging.warning(f"Bot send failed for user_id={user_id}: {e}")
+        if _send_telegram(user_id, f"<b>Shemsu Shop Login Code</b>\n\n{otp}\n\nExpires in 5 minutes."):
+            sent = True
+            logging.info(f"OTP sent to user_id={user_id} via bot")
 
     # Fallback: try Pyrogram (for new users or if bot fails)
     if not sent:
@@ -914,28 +902,13 @@ def api_contact_admin():
     admin_ids = asyncio.run(get_admin_user_id())
     if admin_ids:
         for aid in admin_ids:
-            try:
-                asyncio.run(_db(
-                    lambda aid=aid: database._supabase.table("notifications").insert({
-                        "user_id": int(aid), "title": f"📩 Contact from {name} (@{username})",
-                        "body": message
-                    }).execute()
-                ))
-            except:
-                pass
-            try:
-                import requests
-                requests.post(
-                    f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                    json={
-                        "chat_id": aid,
-                        "text": f"<b>📩 Contact from {name}</b>\n<b>@{username}</b> (user_id: {user_id})\n\n{message}",
-                        "parse_mode": "HTML"
-                    },
-                    timeout=10
-                )
-            except:
-                pass
+            asyncio.run(_db(
+                lambda aid=aid: database._supabase.table("notifications").insert({
+                    "user_id": int(aid), "title": f"📩 Contact from {name} (@{username})",
+                    "body": message
+                }).execute()
+            ))
+            _send_telegram(aid, f"<b>📩 Contact from {name}</b>\n<b>@{username}</b> (user_id: {user_id})\n\n{message}")
     return jsonify({"success": True})
 
 
@@ -958,6 +931,20 @@ def api_get_help():
             {"id": "contact", "title": "Contact Admin", "content": f"If you need help, use the Contact Admin form or message @{ADMIN_USERNAMES[0]} directly on Telegram.\n\nThe admin will respond as soon as possible."},
         ]
     })
+
+def _send_telegram(chat_id, text):
+    try:
+        r = requests.post(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+            json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
+            timeout=10
+        )
+        if not r.ok:
+            logging.error(f"Telegram send failed to {chat_id}: {r.status_code} {r.text}")
+        return r.ok
+    except Exception as e:
+        logging.error(f"Telegram send exception to {chat_id}: {e}")
+        return False
 
 # --- Admin API endpoints ---
 ADMIN_IDS = [7041035485, 5703977567]
@@ -1019,14 +1006,10 @@ def api_admin_accept(order_group):
     if og.data:
         uid = og.data[0].get("user_id")
         if uid:
-            try:
-                import requests
-                requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                    json={"chat_id": uid, "text": "<b>Order Accepted!</b>\n\nYour order is being prepared.", "parse_mode": "HTML"}, timeout=10)
-                asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                    "user_id": int(uid), "title": "Order Accepted", "body": "Your order is being prepared."
-                }).execute()))
-            except: pass
+            _send_telegram(uid, "<b>Order Accepted!</b>\n\nYour order is being prepared.")
+            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                "user_id": int(uid), "title": "Order Accepted", "body": "Your order is being prepared."
+            }).execute()))
     return jsonify({"success": True})
 
 @app.route("/api/admin/orders/<order_group>/decline", methods=["POST"])
@@ -1040,14 +1023,10 @@ def api_admin_decline(order_group):
     if og.data:
         uid = og.data[0].get("user_id")
         if uid:
-            try:
-                import requests
-                requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                    json={"chat_id": uid, "text": f"<b>Order Declined</b>\n\n<b>Reason:</b> {reason}\n\nContact @{ADMIN_USERNAMES[0]} if you have questions.", "parse_mode": "HTML"}, timeout=10)
-                asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                    "user_id": int(uid), "title": "Order Declined", "body": f"Reason: {reason}"
-                }).execute()))
-            except: pass
+            _send_telegram(uid, f"<b>Order Declined</b>\n\n<b>Reason:</b> {reason}\n\nContact @{ADMIN_USERNAMES[0]} if you have questions.")
+            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                "user_id": int(uid), "title": "Order Declined", "body": f"Reason: {reason}"
+            }).execute()))
     return jsonify({"success": True})
 
 @app.route("/api/admin/orders/<order_group>/ready", methods=["POST"])
@@ -1058,14 +1037,10 @@ def api_admin_ready(order_group):
     if og.data:
         uid = og.data[0].get("user_id")
         if uid:
-            try:
-                import requests
-                requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                    json={"chat_id": uid, "text": "<b>Order Ready!</b>\n\nYour order is ready for pickup/delivery.", "parse_mode": "HTML"}, timeout=10)
-                asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                    "user_id": int(uid), "title": "Order Ready", "body": "Your order is ready for pickup/delivery."
-                }).execute()))
-            except: pass
+            _send_telegram(uid, "<b>Order Ready!</b>\n\nYour order is ready for pickup/delivery.")
+            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                "user_id": int(uid), "title": "Order Ready", "body": "Your order is ready for pickup/delivery."
+            }).execute()))
     return jsonify({"success": True})
 
 @app.route("/api/admin/orders/<order_group>/deliver", methods=["POST"])
@@ -1086,15 +1061,11 @@ def api_admin_deliver(order_group):
             desc = "; ".join(f"{r['qty']}x {r['item']}" for r in og.data)
             asyncio.run(database.add_debt(uname, total, desc, order_group, uid, fname))
         if uid:
-            try:
-                import requests
-                status_text = "Paid" if dtype == "paid" else "Added to debt"
-                requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                    json={"chat_id": uid, "text": f"<b>Order Delivered</b>\n\nStatus: {status_text}", "parse_mode": "HTML"}, timeout=10)
-                asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                    "user_id": int(uid), "title": "Order Delivered", "body": f"Delivered - {status_text}"
-                }).execute()))
-            except: pass
+            status_text = "Paid" if dtype == "paid" else "Added to debt"
+            _send_telegram(uid, f"<b>Order Delivered</b>\n\nStatus: {status_text}")
+            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
+                "user_id": int(uid), "title": "Order Delivered", "body": f"Delivered - {status_text}"
+            }).execute()))
     return jsonify({"success": True})
 
 def _get_price(item_name):
@@ -1237,21 +1208,13 @@ def api_admin_users():
 @app.route("/api/admin/users/<int:uid>/ban", methods=["POST"])
 def api_admin_ban(uid):
     asyncio.run(database.ban_user(uid))
-    try:
-        import requests
-        requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": uid, "text": "<b>You have been banned.</b>", "parse_mode": "HTML"}, timeout=10)
-    except: pass
+    _send_telegram(uid, "<b>You have been banned.</b>")
     return jsonify({"success": True})
 
 @app.route("/api/admin/users/<int:uid>/unban", methods=["POST"])
 def api_admin_unban(uid):
     asyncio.run(database.unban_user(uid))
-    try:
-        import requests
-        requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            json={"chat_id": uid, "text": "<b>You have been unbanned.</b>", "parse_mode": "HTML"}, timeout=10)
-    except: pass
+    _send_telegram(uid, "<b>You have been unbanned.</b>")
     return jsonify({"success": True})
 
 @app.route("/api/admin/broadcast", methods=["POST"])
@@ -1261,13 +1224,9 @@ def api_admin_broadcast():
     if not message: return jsonify({"error": "message required"}), 400
     users = asyncio.run(database.get_all_users())
     sent = 0
-    import requests
     for (uid,) in users:
-        try:
-            requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                json={"chat_id": uid, "text": f"<b>Broadcast</b>\n\n{message}", "parse_mode": "HTML"}, timeout=5)
+        if _send_telegram(uid, f"<b>Broadcast</b>\n\n{message}"):
             sent += 1
-        except: pass
     return jsonify({"success": True, "sent": sent})
 
 @app.route("/api/admin/feedback", methods=["GET"])
