@@ -1,18 +1,18 @@
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import ADMIN_USERNAME
+from config import ADMIN_USERNAMES
 from database import get_user
 from keyboards import get_banned_keyboard
 
 BAN_MESSAGE = (
     "<b>You have been banned</b>\n\n"
     "You have violated one or more of our rules so you are banned.\n"
-    f"If you believe this was a mistake, contact @{ADMIN_USERNAME} or use the <b>Contact Admin</b> button below."
+    f"If you believe this was a mistake, contact @{ADMIN_USERNAMES[0]} or use the <b>Contact Admin</b> button below."
 )
 
 def is_admin(username):
-    return username == ADMIN_USERNAME
+    return username in ADMIN_USERNAMES
 
 async def check_banned(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
     user_id = update.effective_user.id

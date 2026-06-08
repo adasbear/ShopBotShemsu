@@ -6,8 +6,8 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-ADMIN_USERNAME = "PPopa054"
-ADMIN_USER_ID = 7041035485
+ADMIN_USERNAMES = ["PPopa054", "dark_riderr0"]
+ADMIN_USER_IDS = [7041035485, 5703977567]
 
 PYRO_API_ID = int(os.getenv("PYRO_API_ID", 0))
 PYRO_API_HASH = os.getenv("PYRO_API_HASH", "")

@@ -34,23 +34,24 @@ async def contact_admin_send(update: Update, context: ContextTypes.DEFAULT_TYPE)
     msg = update.message.text
     username = update.effective_user.username or "no username"
 
-    admin_id = await get_admin_user_id()
-    if admin_id:
-        try:
-            await context.bot.send_message(
-                admin_id,
-                f"<b>Message from banned user</b>\n\n"
-                f"Name: {name}\n"
-                f"Username: @{username}\n"
-                f"User ID: {user_id}\n\n"
-                f"{msg}",
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup([[
-                    InlineKeyboardButton("Unban User", callback_data=f"aunban_{user_id}")
-                ]])
-            )
-        except:
-            pass
+    admin_ids = await get_admin_user_id()
+    if admin_ids:
+        for admin_id in admin_ids:
+            try:
+                await context.bot.send_message(
+                    admin_id,
+                    f"<b>Message from banned user</b>\n\n"
+                    f"Name: {name}\n"
+                    f"Username: @{username}\n"
+                    f"User ID: {user_id}\n\n"
+                    f"{msg}",
+                    parse_mode="HTML",
+                    reply_markup=InlineKeyboardMarkup([[
+                        InlineKeyboardButton("Unban User", callback_data=f"aunban_{user_id}")
+                    ]])
+                )
+            except:
+                pass
 
     await update.message.reply_text(
         "Your message has been sent to the admin. They will review your case.",

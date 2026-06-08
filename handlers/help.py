@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, ConversationHandler
 
-from config import HELP_MENU, ADMIN_USERNAME
+from config import HELP_MENU, ADMIN_USERNAMES
 from utils.helpers import check_banned
 
 HELP_TEXTS = {
@@ -42,9 +42,9 @@ HELP_TEXTS = {
     ),
     "contact": (
         "<b>Contact Admin</b>\n\n"
-        f"If you need help, send a message to @{ADMIN_USERNAME}:\n\n"
+        f"If you need help, send a message to @{ADMIN_USERNAMES[0]}:\n\n"
         "• Type <b>/start</b> and tap <b>Contact Admin</b>\n"
-        f"• Or message @{ADMIN_USERNAME} directly on Telegram\n\n"
+        f"• Or message @{ADMIN_USERNAMES[0]} directly on Telegram\n\n"
         "The admin will respond as soon as possible."
     ),
 }

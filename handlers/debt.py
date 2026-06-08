@@ -203,8 +203,8 @@ async def handle_debt_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def _notify_admin_debt(context, username):
-    admin_id = await get_admin_user_id()
-    if not admin_id:
+    admin_ids = await get_admin_user_id()
+    if not admin_ids:
         return
     from database import record_referral_earning, _db
     comment = context.user_data.get("order_comment")
@@ -228,9 +228,10 @@ async def _notify_admin_debt(context, username):
             text += f"\n\n👤 <b>Referred by:</b> @{ref_username}"
             items_summary = "; ".join(context.user_data.get("order_items", []))
             await record_referral_earning(referrer_id, user_id, context.user_data["order_group"], items_summary)
-    await context.bot.send_message(
-        chat_id=admin_id,
-        text=text,
-        reply_markup=order_accept_decline_keyboard(context.user_data["order_group"]),
-        parse_mode=ParseMode.HTML
-    )
+    for admin_id in admin_ids:
+        await context.bot.send_message(
+            chat_id=admin_id,
+            text=text,
+            reply_markup=order_accept_decline_keyboard(context.user_data["order_group"]),
+            parse_mode=ParseMode.HTML
+        )

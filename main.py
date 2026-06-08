@@ -10,7 +10,7 @@ from telegram import Update, MenuButtonWebApp, WebAppInfo
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ConversationHandler
 
-from config import BOT_TOKEN, ADMIN_USERNAME, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, HELP_MENU, DEBT_CHOICE, PAYMENT_CHOICE, PAYMENT_CONFIRM, PYRO_API_ID
+from config import BOT_TOKEN, ADMIN_USERNAMES, REGISTRATION, MENU_SELECTION, QTY_INPUT, ADD_MORE_PROMPT, CONFIRM_ORDER, GIVING_FEEDBACK, ADMIN_BROADCAST, ADMIN_ADD_ITEM_NAME, ADMIN_ADD_ITEM_PRICE, CONTACT_ADMIN, OTHER_ITEM_INPUT, COMMENT_CHOICE, ORDER_COMMENT, MANAGE_ORDER, ORDER_ACTION, EDIT_ITEM, EDIT_QTY, ADMIN_ADD_CATEGORY, ADMIN_MANAGE_CATEGORY, ADMIN_ADD_SUBITEM_NAME, ADMIN_ADD_SUBITEM_PRICE, HELP_MENU, DEBT_CHOICE, PAYMENT_CHOICE, PAYMENT_CONFIRM, PYRO_API_ID
 import database
 from database import init_db, _db, get_admin_user_id
 from otp_sender import send_otp
@@ -262,7 +262,7 @@ async def _handle_decline_reason(update: Update, context: ContextTypes.DEFAULT_T
         try:
             await context.bot.send_message(
                 user_id,
-                f"<b>Order Declined</b>\n\n<b>Reason:</b> {reason}\n\nContact @{ADMIN_USERNAME} if you have questions.",
+                f"<b>Order Declined</b>\n\n<b>Reason:</b> {reason}\n\nContact @{ADMIN_USERNAMES[0]} if you have questions.",
                 parse_mode=ParseMode.HTML
             )
         except:
@@ -305,7 +305,7 @@ async def _handle_noitem_msg(update: Update, context: ContextTypes.DEFAULT_TYPE)
         try:
             await context.bot.send_message(
                 user_id,
-                f"<b>Item Not Available</b>\n\n{full_msg}\n\nContact @{ADMIN_USERNAME} if you have questions.",
+                f"<b>Item Not Available</b>\n\n{full_msg}\n\nContact @{ADMIN_USERNAMES[0]} if you have questions.",
                 parse_mode=ParseMode.HTML
             )
         except:
@@ -800,15 +800,16 @@ def api_place_order():
         referrer_id = ref.data[0]["referrer_id"]
         items_summary = "; ".join(f"{i['item']} x{i['qty']}" for i in items)
         asyncio.run(database.record_referral_earning(referrer_id, int(user_id), order_group, items_summary))
-    # Notify admin
-    admin_id = asyncio.run(get_admin_user_id())
-    if admin_id:
+    # Notify all admins
+    admin_ids = asyncio.run(get_admin_user_id())
+    if admin_ids:
         try:
             order_summary = "; ".join(f"{i['item']} x{i['qty']}" for i in items)
-            asyncio.run(_db(lambda: database._supabase.table("notifications").insert({
-                "user_id": int(admin_id), "title": "New App Order",
-                "body": f"From {full_name or username}: {order_summary}"
-            }).execute()))
+            for aid in admin_ids:
+                asyncio.run(_db(lambda aid=aid: database._supabase.table("notifications").insert({
+                    "user_id": int(aid), "title": "New App Order",
+                    "body": f"From {full_name or username}: {order_summary}"
+                }).execute()))
         except Exception:
             pass
     menu_data = asyncio.run(_db(
@@ -910,30 +911,31 @@ def api_contact_admin():
         lambda: database._supabase.table("users").select("full_name").eq("user_id", int(user_id)).limit(1).execute()
     ))
     name = name_result.data[0]["full_name"] if name_result.data else username
-    admin_id = asyncio.run(get_admin_user_id())
-    if admin_id:
-        try:
-            asyncio.run(_db(
-                lambda: database._supabase.table("notifications").insert({
-                    "user_id": int(admin_id), "title": f"📩 Contact from {name} (@{username})",
-                    "body": message
-                }).execute()
-            ))
-        except:
-            pass
-        try:
-            import requests
-            requests.post(
-                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-                json={
-                    "chat_id": admin_id,
-                    "text": f"<b>📩 Contact from {name}</b>\n<b>@{username}</b> (user_id: {user_id})\n\n{message}",
-                    "parse_mode": "HTML"
-                },
-                timeout=10
-            )
-        except:
-            pass
+    admin_ids = asyncio.run(get_admin_user_id())
+    if admin_ids:
+        for aid in admin_ids:
+            try:
+                asyncio.run(_db(
+                    lambda aid=aid: database._supabase.table("notifications").insert({
+                        "user_id": int(aid), "title": f"📩 Contact from {name} (@{username})",
+                        "body": message
+                    }).execute()
+                ))
+            except:
+                pass
+            try:
+                import requests
+                requests.post(
+                    f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                    json={
+                        "chat_id": aid,
+                        "text": f"<b>📩 Contact from {name}</b>\n<b>@{username}</b> (user_id: {user_id})\n\n{message}",
+                        "parse_mode": "HTML"
+                    },
+                    timeout=10
+                )
+            except:
+                pass
     return jsonify({"success": True})
 
 
@@ -953,7 +955,7 @@ def api_get_help():
             {"id": "edit_cancel", "title": "Edit / Cancel Orders", "content": "You can edit or cancel Pending orders before 6PM UTC:\n1. Go to My Orders\n2. Tap the order\n3. Choose Cancel Order\n\nAfter 6PM UTC, orders cannot be modified."},
             {"id": "debt", "title": "Debt System", "content": "Eligible users can order on debt:\n1. When ordering, select Debt as payment method\n2. The amount is added to your debt balance\n3. Pay later via My Debt section\n\nOnly whitelisted users can use the debt system."},
             {"id": "payment", "title": "Payment Methods", "content": "We accept bank transfers:\n1. Select your bank from the available accounts\n2. Transfer the exact amount shown\n3. Paste your SMS confirmation or transaction reference\n4. Admin will verify and accept your order"},
-            {"id": "contact", "title": "Contact Admin", "content": f"If you need help, use the Contact Admin form or message @{ADMIN_USERNAME} directly on Telegram.\n\nThe admin will respond as soon as possible."},
+            {"id": "contact", "title": "Contact Admin", "content": f"If you need help, use the Contact Admin form or message @{ADMIN_USERNAMES[0]} directly on Telegram.\n\nThe admin will respond as soon as possible."},
         ]
     })
 

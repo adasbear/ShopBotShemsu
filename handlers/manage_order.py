@@ -127,8 +127,8 @@ async def handle_order_action(update: Update, context: ContextTypes.DEFAULT_TYPE
     if action == "confirm_cancel":
         order_group = context.user_data["manage_order_group"]
         await cancel_order_group(order_group)
-        admin_id = await get_admin_user_id()
-        if admin_id:
+        admin_ids = await get_admin_user_id()
+        for admin_id in admin_ids:
             user = update.effective_user
             name = user.full_name or user.username or str(user.id)
             await context.bot.send_message(

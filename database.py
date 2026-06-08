@@ -43,13 +43,15 @@ async def get_all_users():
     return [(r["user_id"],) for r in result.data]
 
 async def get_admin_user_id():
-    from config import ADMIN_USERNAME, ADMIN_USER_ID
-    result = await _db(lambda: _supabase.table("users").select("user_id").eq("username", ADMIN_USERNAME).execute())
-    if result.data:
-        return result.data[0]["user_id"]
-    if ADMIN_USER_ID:
-        return ADMIN_USER_ID
-    return None
+    from config import ADMIN_USERNAMES, ADMIN_USER_IDS
+    ids = set()
+    for username in ADMIN_USERNAMES:
+        result = await _db(lambda: _supabase.table("users").select("user_id").eq("username", username).execute())
+        if result.data:
+            ids.add(result.data[0]["user_id"])
+    for uid in ADMIN_USER_IDS:
+        ids.add(uid)
+    return list(ids) if ids else []
 
 # --- Menu ---
 
