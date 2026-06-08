@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from supabase import create_client
 from config import SUPABASE_URL, SUPABASE_KEY
 
