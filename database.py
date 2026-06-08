@@ -116,9 +116,13 @@ async def update_order_status(order_group, new_status):
 
 async def get_grouped_orders_by_status(status, today_only=False):
     query = _supabase.table("orders").select("id, user_id, item, qty, order_group, users(full_name)")
-    query = query.eq("status", status)
+    if status is not None:
+        query = query.eq("status", status)
     if today_only:
-        query = query.gte("timestamp", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+        today_start = datetime.now(timezone.utc).replace(hour=6, minute=0, second=0, microsecond=0)
+        if datetime.now(timezone.utc) < today_start:
+            today_start -= timedelta(days=1)
+        query = query.gte("timestamp", today_start.isoformat())
     result = await _db(lambda: query.execute())
     groups = {}
     for r in result.data:
