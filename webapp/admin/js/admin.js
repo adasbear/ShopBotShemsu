@@ -438,11 +438,11 @@ async function renderReferred() {
     list.innerHTML = earnings.map(e => `
       <div class="bg-white border-4 border-ink-black hard-shadow p-4">
         <div class="flex justify-between items-start gap-2 mb-2">
-          <p class="font-headline-lg-mobile text-headline-lg-mobile">${e.referrer_name || e.referrer_username || "Unknown"}</p>
+          <p class="font-headline-lg-mobile text-headline-lg-mobile">${e.referred_name || e.referred_username || "Unknown"}</p>
           <p class="font-label-mono text-label-mono text-tertiary text-xs">${new Date(e.earned_at).toLocaleDateString()}</p>
         </div>
         <div class="font-label-mono text-label-mono text-on-surface-variant mb-1">
-          <span class="text-kelp-green">Referred:</span> ${e.referred_name || e.referred_username || "Unknown"}
+          <span class="text-kelp-green">Referred by:</span> ${e.referrer_name || e.referrer_username || "Unknown"}
         </div>
         <div class="font-label-mono text-label-mono text-on-surface-variant mb-1">
           <span class="text-primary">Order:</span> <a href="#/order-detail?og=${e.order_group}" class="underline">${e.order_group}</a>
