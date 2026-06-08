@@ -975,12 +975,16 @@ def api_admin_check():
 @app.route("/api/admin/dashboard", methods=["GET"])
 def api_admin_dashboard():
     pending = asyncio.run(database.get_grouped_orders_by_status("Pending", today_only=True))
-    total_orders = asyncio.run(database.get_grouped_orders_by_status(None, today_only=True))
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    all_today = asyncio.run(_db(lambda: database._supabase.table("orders")
+        .select("order_group", count="exact")
+        .gte("timestamp", today)
+        .execute()))
     profit = asyncio.run(database.get_todays_profit())
     users = asyncio.run(database.get_all_users())
     return jsonify({
         "pending_orders": len(pending) if pending else 0,
-        "today_orders": len(total_orders) if total_orders else 0,
+        "today_orders": all_today.count or 0,
         "total_users": len(users) if users else 0,
         "today_profit": profit or 0.0
     })
